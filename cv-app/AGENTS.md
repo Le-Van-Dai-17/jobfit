@@ -18,7 +18,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## Architecture Rules
 
 - **Framework:** Next.js 16.2.12 App Router.
-- **Routing:** Tất cả route đều là `"use client"` SPA pages trong `app/` directory.
+- **Routing:** Server Components mặc định trong `app/` directory. Chỉ dùng `"use client"` ở component thực sự cần state, event handler hoặc browser API.
 - **Components:** Component dùng chung đặt trong `components/`, phân loại theo domain (layout/, dashboard/).
 - **State management:** Dùng React `useState` hiện tại. Khi mở rộng, ưu tiên React Context hoặc Zustand.
 - **API layer:** Chưa có — khi thêm, tạo `lib/api/` và gọi từ server actions hoặc client components.

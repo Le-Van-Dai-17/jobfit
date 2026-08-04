@@ -1,5 +1,3 @@
-"use client";
-
 import AtsGauge from "@/components/dashboard/AtsGauge";
 import {
   Briefcase,
@@ -15,7 +13,7 @@ import {
   Clock
 } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { FadeIn } from "@/components/ui/FadeIn";
 
 const stats = [
   { title: "Công việc phù hợp AI", value: "24", change: "+5 tuần này", icon: Briefcase, color: "text-indigo-600", bg: "bg-indigo-50" },
@@ -58,9 +56,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Hero Welcome Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
+      <FadeIn
         className="relative rounded-3xl gradient-primary p-8 text-white overflow-hidden shadow-lg shadow-indigo-200/50"
       >
         <div className="absolute right-0 top-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -92,7 +88,7 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
-      </motion.div>
+      </FadeIn>
 
       {/* Grid Overview Stats & ATS Gauge */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -104,11 +100,9 @@ export default function Dashboard() {
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <motion.div
+              <FadeIn
                 key={stat.title}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                delay={index * 0.1}
                 className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between hover:border-indigo-200 transition-all group"
               >
                 <div className="flex items-center justify-between">
@@ -124,7 +118,7 @@ export default function Dashboard() {
                     {stat.change}
                   </div>
                 </div>
-              </motion.div>
+              </FadeIn>
             );
           })}
         </div>
