@@ -1,4 +1,4 @@
-"use client";
+
 
 import { Mail, Phone, MapPin, Award, ShieldCheck } from "lucide-react";
 
