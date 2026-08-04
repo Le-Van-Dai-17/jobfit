@@ -1,9 +1,9 @@
 <div align="center">
   
-  # ✨ Lumina AI
+  # ✨ CV_KADA
   ### The Next-Gen Career & Resume Platform
   
-  Lumina AI là một nền tảng toàn diện hỗ trợ ứng viên từ bước tạo CV chuyên nghiệp đến khi nhận được Offer. Được xây dựng dựa trên kiến trúc **Modular Monolith** với công nghệ AI tiên tiến, giúp tự động hóa quá trình tối ưu hồ sơ và phỏng vấn.
+  CV_KADA là một nền tảng toàn diện hỗ trợ ứng viên từ bước tạo CV chuyên nghiệp đến khi nhận được Offer. Được xây dựng dựa trên kiến trúc **Modular Monolith** với công nghệ AI tiên tiến, giúp tự động hóa quá trình tối ưu hồ sơ và phỏng vấn.
 
   ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
   ![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)
@@ -102,7 +102,7 @@ npm run dev
 ## 🔒 Đăng nhập môi trường Dev/Demo
 
 Để test nhanh mà không cần cấu hình Google/GitHub OAuth, hệ thống cung cấp sẵn tính năng đăng nhập bằng Email tĩnh (Credentials Provider).
-- **Email:** `demo@lumina.ai`
+- **Email:** `demo@cvkada.com`
 - **Password:** `123456`
 
 ---

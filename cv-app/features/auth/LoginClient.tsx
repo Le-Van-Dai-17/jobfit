@@ -6,7 +6,7 @@ import { Sparkles, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 
 export default function LoginClient() {
-  const [email, setEmail] = useState("demo@lumina.ai");
+  const [email, setEmail] = useState("demo@cvkada.com");
   const [password, setPassword] = useState("123456");
   const [error, setError] = useState("");
 
@@ -34,7 +34,7 @@ export default function LoginClient() {
         
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            Chào mừng đến với Lumina <span className="gradient-text">AI</span>
+            Chào mừng đến với CV_<span className="gradient-text">KADA</span>
           </h2>
           <p className="mt-2 text-sm text-text-muted">
             Đăng nhập để tạo CV chuyên nghiệp và theo dõi ứng tuyển
@@ -75,7 +75,7 @@ export default function LoginClient() {
           </button>
 
           <p className="text-xs text-center text-slate-500 pt-2">
-            Demo: email <strong className="text-slate-700">demo@lumina.ai</strong> / mật khẩu <strong className="text-slate-700">123456</strong>
+            Demo: email <strong className="text-slate-700">demo@cvkada.com</strong> / mật khẩu <strong className="text-slate-700">123456</strong>
           </p>
         </div>
       </div>

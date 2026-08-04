@@ -13,9 +13,9 @@ const inter = Inter({
 import { SidebarProvider } from "@/components/layout/SidebarContext";
 
 export const metadata: Metadata = {
-  title: "Lumina AI - Platform Quản lý CV & Tối ưu Nghề nghiệp Thông minh",
+  title: "CV_KADA - Platform Quản lý CV & Tối ưu Nghề nghiệp Thông minh",
   description:
-    "Nền tảng tạo CV, phân tích điểm ATS, tối ưu từ khóa nghề nghiệp và phỏng vấn mô phỏng với trí tuệ nhân tạo AI.",
+    "Trình tạo CV, tối ưu ATS, phân tích Job Match bằng AI và quản lý quá trình ứng tuyển.",
 };
 
 export default function RootLayout({

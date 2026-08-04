@@ -60,7 +60,7 @@ export default function Sidebar() {
             </div>
             <div>
               <h1 className="font-bold text-foreground text-lg leading-tight tracking-tight">
-                Lumina <span className="gradient-text">AI</span>
+                CV_<span className="gradient-text">KADA</span>
               </h1>
               <p className="text-xs text-text-muted font-medium">Career & Resume Platform</p>
             </div>
