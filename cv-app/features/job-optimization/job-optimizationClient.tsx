@@ -1,123 +1,140 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, CheckCircle, AlertCircle, Zap, RefreshCw, Layers } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Textarea";
+import { Wand2, AlertCircle, RefreshCw, ChevronRight } from "lucide-react";
+import type { OptimizationResult } from "@/lib/ai/gemini";
+import Link from "next/link";
 
-export default function JobOptimizationPage() {
-  const [analyzing, setAnalyzing] = useState(false);
+export default function JobOptimizationClient() {
+  const [jobDescription, setJobDescription] = useState("");
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [result, setResult] = useState<OptimizationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const missingKeywords = ["GraphQL", "Docker / Kubernetes", "Micro Frontends", "Unit Testing (Jest)"];
-  const matchedKeywords = ["React.js", "Next.js", "TypeScript", "Tailwind CSS", "State Management", "RESTful API"];
+  const handleOptimize = async () => {
+    if (!jobDescription.trim()) {
+      setError("Vui lòng nhập mô tả công việc (JD)");
+      return;
+    }
+
+    setIsOptimizing(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const res = await fetch("/api/ai/optimize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobDescription }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Có lỗi xảy ra khi tối ưu");
+      }
+
+      setResult(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Không thể kết nối đến máy chủ AI");
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 bg-purple-50 text-purple-700 font-bold text-xs rounded-md">
-              AI ATS Engine 3.0
-            </span>
-            <h1 className="text-xl font-extrabold text-slate-900">Tối ưu CV theo Job Description</h1>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Dán mô tả công việc (JD) mục tiêu để AI tự động trích xuất từ khóa và đề xuất câu chỉnh sửa chuẩn ATS.
-          </p>
-        </div>
-
-        <button
-          onClick={() => {
-            setAnalyzing(true);
-            setTimeout(() => setAnalyzing(false), 1000);
-          }}
-          className="flex items-center gap-2 px-4 py-2.5 gradient-primary text-white font-semibold text-xs rounded-xl shadow-xs hover:opacity-95 transition-all shrink-0"
-        >
-          {analyzing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-amber-300" />}
-          <span>Phân tích & Tối ưu AI</span>
-        </button>
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+          <Wand2 className="h-8 w-8 text-primary" />
+          Tối ưu hóa CV (AI Optimization)
+        </h1>
+        <p className="mt-2 text-text-muted">
+          AI sẽ đọc CV của bạn và viết lại các phần Tóm tắt (Summary) và Kinh nghiệm (Experience) để chứa nhiều từ khóa ATS nhất.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Job Description Input Box */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 space-y-3 shadow-xs">
-          <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-            <Layers className="w-4 h-4 text-indigo-600" />
-            Mô tả công việc mục tiêu (Job Description)
-          </h3>
-          <textarea
-            rows={14}
-            className="w-full p-3 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
-            defaultValue={`Chúng tôi đang tìm kiếm Senior Frontend Engineer kinh nghiệm làm việc với React, Next.js, TypeScript và GraphQL.
-Yêu cầu ứng viên nắm vững State Management, tối ưu hóa Web Vitals, làm việc với Docker/Kubernetes và viết Unit Testing (Jest). Có tư duy sản phẩm tốt và kinh nghiệm Micro Frontends.`}
-          />
-        </div>
+      <div className="space-y-4 bg-surface-white p-6 rounded-2xl shadow-sm border border-border-light">
+        <label className="block text-sm font-semibold text-foreground">
+          Mô tả công việc (Job Description)
+        </label>
+        <Textarea
+          className="min-h-[200px] resize-y"
+          placeholder="Dán nội dung JD vào đây..."
+          value={jobDescription}
+          onChange={(e) => setJobDescription(e.target.value)}
+          disabled={isOptimizing}
+        />
+        
+        {error && (
+          <div className="p-3 text-sm text-error bg-error-container/30 rounded-lg border border-error/20 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {error}
+          </div>
+        )}
 
-        {/* AI Recommendations Dashboard */}
-        <div className="lg:col-span-7 space-y-4">
-          {/* ATS Score Improvement Summary */}
-          <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-2xl p-6 shadow-md space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs font-semibold text-indigo-300">Dự đoán kết quả tối ưu</span>
-                <h3 className="text-lg font-extrabold text-white mt-0.5">Điểm ATS có thể đạt 96/100</h3>
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-xl font-black text-amber-300 border border-white/20">
-                +14%
-              </div>
+        <Button 
+          className="gap-2 text-base h-12 w-full sm:w-auto" 
+          onClick={handleOptimize}
+          disabled={isOptimizing}
+        >
+          {isOptimizing ? (
+            <>
+              <RefreshCw className="h-5 w-5 animate-spin" />
+              Đang viết lại CV...
+            </>
+          ) : (
+            <>
+              <Wand2 className="h-5 w-5" />
+              Tối ưu hóa ngay
+            </>
+          )}
+        </Button>
+      </div>
+
+      {result && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <h2 className="text-xl font-bold text-foreground border-b border-border-light pb-2">
+            Đề xuất bản thảo mới
+          </h2>
+
+          <div className="bg-surface-low p-6 rounded-2xl border border-primary/20 space-y-3 relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+              Summary
             </div>
-
-            <p className="text-xs text-indigo-200 leading-relaxed">
-              Bằng cách bổ sung thêm 4 từ khóa chuyên môn bên dưới vào phần Kinh nghiệm làm việc, hồ sơ của bạn sẽ xếp hạng nằm trong <strong className="text-white">Top 5% ứng viên sáng giá nhất</strong>.
+            <h3 className="font-semibold text-foreground text-sm uppercase tracking-wider">Tóm tắt bản thân</h3>
+            <p className="text-slate-700 whitespace-pre-wrap leading-relaxed text-sm">
+              {result.improvedSummary}
             </p>
           </div>
 
-          {/* Missing Keywords Box */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-3 shadow-xs">
-            <h4 className="font-bold text-slate-900 text-xs flex items-center gap-2 text-rose-600">
-              <AlertCircle className="w-4 h-4" />
-              Từ khóa còn thiếu trong CV ({missingKeywords.length})
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {missingKeywords.map((kw) => (
-                <span key={kw} className="px-3 py-1 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-lg flex items-center gap-1.5">
-                  + {kw}
-                </span>
-              ))}
-            </div>
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground text-sm uppercase tracking-wider">Kinh nghiệm làm việc</h3>
+            {result.improvedExperiences.map((exp, i) => (
+              <div key={i} className="bg-surface-low p-6 rounded-2xl border border-primary/20 space-y-3 relative">
+                <div className="absolute top-0 right-0 bg-primary/80 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                  Experience
+                </div>
+                <div className="text-xs text-text-muted font-mono">ID: {exp.id}</div>
+                <p className="text-slate-700 whitespace-pre-wrap leading-relaxed text-sm">
+                  {exp.suggestedDescription}
+                </p>
+              </div>
+            ))}
           </div>
 
-          {/* Matched Keywords Box */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-3 shadow-xs">
-            <h4 className="font-bold text-slate-900 text-xs flex items-center gap-2 text-emerald-600">
-              <CheckCircle className="w-4 h-4" />
-              Từ khóa đã trùng khớp ({matchedKeywords.length})
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {matchedKeywords.map((kw) => (
-                <span key={kw} className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-lg">
-                  ✓ {kw}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* AI Rephrase Suggestion */}
-          <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-indigo-600" />
-              <span className="text-xs font-bold text-indigo-900">AI Đề xuất câu chỉnh sửa bullet point</span>
-            </div>
-            <div className="bg-white p-3.5 rounded-xl border border-indigo-100 text-xs text-slate-700 space-y-1.5">
-              <p className="text-[11px] text-slate-400 font-semibold uppercase">Thay vì ghi:</p>
-              <p className="text-slate-600 line-through">&ldquo;Đã viết code React và kết nối API backend cho ứng dụng dashboard.&rdquo;</p>
-              <p className="text-[11px] text-indigo-600 font-bold uppercase pt-1">Đề xuất viết lại chuẩn ATS:</p>
-              <p className="font-semibold text-slate-900 bg-indigo-50/50 p-2 rounded-lg border border-indigo-100/60">
-                &ldquo;Phát triển ứng dụng Web SaaS bằng React.js, TypeScript và GraphQL API; xây dựng kiến trúc Micro Frontends giúp tối ưu điểm Web Vitals tăng 35%.&rdquo;
-              </p>
-            </div>
+          <div className="flex justify-end pt-4">
+            <Link href="/my-cv">
+              <Button variant="outline" className="gap-2">
+                Quay lại Trình sửa CV
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
