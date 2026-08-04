@@ -16,6 +16,19 @@
 
 ---
 
+## 👥 Nhóm Phát triển (Team Members)
+
+Dự án được phát triển bởi các thành viên:
+
+| STT | Họ và Tên | MSSV | Vai trò trong dự án |
+| :---: | :--- | :--- | :--- |
+| 1 | **Lê Văn Đại** | N23DCCN144 | **Team Leader & Fullstack Developer:** Thiết kế kiến trúc tổng thể, tích hợp Auth.js và phát triển tính năng AI. |
+| 2 | **Phạm Văn Đoàn** | N23DCCN010 | **Frontend Developer:** Xây dựng giao diện UI/UX, phát triển tính năng CV Builder và Application Tracker. |
+| 3 | **Trần Trường Thuận** | N23DCCN060 | **Backend Developer:** Thiết kế Database Schema (Prisma, Supabase), xây dựng các API và Server Actions cốt lõi. |
+| 4 | **Phan Giảng Bình** | N24DECE056 | **AI & Data Engineer:** Tối ưu hóa Prompts cho Gemini AI, phát triển tính năng Mock Interview và Job Matching. |
+
+---
+
 ## 🚀 Tính năng cốt lõi (Core Features)
 
 - 📄 **Trình tạo CV Tương tác (Realtime CV Builder)**
@@ -116,19 +129,6 @@ npm run dev
 - Tách biệt `AIProvider` adapter để dễ dàng thay đổi nhà cung cấp AI trong tương lai (OpenAI, Anthropic) mà không ảnh hưởng Domain Logic.
 
 *Tham khảo các tài liệu chi tiết tại thư mục `docs/adr/`.*
-
----
-
-## 👥 Nhóm Phát triển (Team Members)
-
-Dự án được phát triển bởi các thành viên:
-
-| STT | Họ và Tên | MSSV | Vai trò trong dự án |
-| :---: | :--- | :--- | :--- |
-| 1 | **Lê Văn Đại** | N23DCCN144 | **Team Leader & Fullstack Developer:** Thiết kế kiến trúc tổng thể, tích hợp Auth.js và phát triển tính năng AI. |
-| 2 | **Phạm Văn Đoàn** | N23DCCN010 | **Frontend Developer:** Xây dựng giao diện UI/UX, phát triển tính năng CV Builder và Application Tracker. |
-| 3 | **Trần Trường Thuận** | N23DCCN060 | **Backend Developer:** Thiết kế Database Schema (Prisma, Supabase), xây dựng các API và Server Actions cốt lõi. |
-| 4 | **Phan Giảng Bình** | N24DECE056 | **AI & Data Engineer:** Tối ưu hóa Prompts cho Gemini AI, phát triển tính năng Mock Interview và Job Matching. |
 
 ---
 
