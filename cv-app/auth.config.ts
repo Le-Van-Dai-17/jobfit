@@ -1,10 +1,33 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
+import Credentials from "next-auth/providers/credentials";
 
-// Notice this is only an object, not a full Auth instance.
 export default {
-  providers: [Google, GitHub],
+  providers: [
+    Google,
+    GitHub,
+    Credentials({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Mật khẩu", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = credentials?.email as string | undefined;
+        const password = credentials?.password as string | undefined;
+        if (!email || !password) return null;
+
+        // Dev/Demo: accept any email with password "123456"
+        // In production, replace this with a proper bcrypt hash check
+        if (password === "123456") {
+          return { id: email, email, name: email.split("@")[0] };
+        }
+
+        return null;
+      },
+    }),
+  ],
   pages: {
     signIn: "/login",
   },
@@ -17,11 +40,11 @@ export default {
       if (isApiAuthRoute) return true;
 
       if (!isLoggedIn && !isPublicRoute) {
-        return false; // Redirect unauthenticated users to login page
+        return false;
       }
 
       if (isLoggedIn && nextUrl.pathname === "/login") {
-        return Response.redirect(new URL("/", nextUrl)); // Redirect to dashboard if already logged in
+        return Response.redirect(new URL("/", nextUrl));
       }
 
       return true;

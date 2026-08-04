@@ -9,10 +9,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
     ...authConfig.callbacks,
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        // Optionally fetch role or other data here if not handled by adapter implicitly
+    async jwt({ token, user, account }) {
+      if (user && account) {
+        // For Credentials provider, the adapter does NOT create a DB user.
+        // We must upsert manually so foreign-key references work.
+        if (account.provider === "credentials" && user.email) {
+          const dbUser = await prisma.user.upsert({
+            where: { email: user.email },
+            update: { name: user.name },
+            create: {
+              email: user.email,
+              name: user.name || user.email.split("@")[0],
+              role: "USER",
+            },
+          });
+          token.id = dbUser.id;
+          token.sub = dbUser.id;
+        } else {
+          // OAuth providers — adapter already created the user
+          token.id = user.id;
+        }
       }
       return token;
     },

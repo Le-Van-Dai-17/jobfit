@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   FileText,
@@ -13,7 +14,8 @@ import {
   User,
   Zap,
   ChevronRight,
-  X
+  X,
+  LogOut
 } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 import { cn } from "@/lib/utils";
@@ -131,7 +133,7 @@ export default function Sidebar() {
           </Link>
         </div>
 
-        {/* User Profile Badge */}
+        {/* User Profile Badge + Sign Out */}
         <div className="p-3 border-t border-border-light flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-surface-container border-2 border-primary flex items-center justify-center font-bold text-foreground text-xs shadow-sm">
             VN
@@ -140,8 +142,16 @@ export default function Sidebar() {
             <p className="text-xs font-bold text-foreground truncate">Vũ Nguyễn</p>
             <p className="text-[11px] text-text-muted truncate">Senior Frontend Developer</p>
           </div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="p-2 text-text-muted hover:text-error hover:bg-error-container/20 rounded-lg transition-colors"
+            title="Đăng xuất"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </aside>
     </>
   );
 }
+

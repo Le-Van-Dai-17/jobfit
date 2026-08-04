@@ -4,7 +4,7 @@ import { useCvStore } from "../store/useCvStore";
 
 export function CvPreview() {
   const { cvData } = useCvStore();
-  const { personalInfo, experiences, educations, skills } = cvData;
+  const { personalInfo, experiences = [], educations = [], skills = [] } = cvData;
 
   return (
     <div className="h-full overflow-y-auto bg-slate-200 p-4 md:p-8 flex justify-center">
@@ -12,21 +12,21 @@ export function CvPreview() {
         {/* Header */}
         <header className="border-b-2 border-slate-800 pb-6 mb-6">
           <h1 className="text-4xl font-extrabold uppercase tracking-tight text-slate-900">
-            {personalInfo.fullName || "Tên của bạn"}
+            {personalInfo?.fullName || "Tên của bạn"}
           </h1>
           <h2 className="text-xl text-primary font-semibold mt-1">
-            {personalInfo.title || "Vị trí ứng tuyển"}
+            {personalInfo?.title || "Vị trí ứng tuyển"}
           </h2>
           
           <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm text-slate-600">
-            {personalInfo.email && <span>{personalInfo.email}</span>}
-            {personalInfo.phone && <span>{personalInfo.phone}</span>}
-            {personalInfo.location && <span>{personalInfo.location}</span>}
+            {personalInfo?.email && <span>{personalInfo.email}</span>}
+            {personalInfo?.phone && <span>{personalInfo.phone}</span>}
+            {personalInfo?.location && <span>{personalInfo.location}</span>}
           </div>
         </header>
 
         {/* Summary */}
-        {personalInfo.summary && (
+        {personalInfo?.summary && (
           <section className="mb-6">
             <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
               {personalInfo.summary}
@@ -73,7 +73,12 @@ export function CvPreview() {
                 <h3 className="text-lg font-bold text-slate-900 border-b border-slate-300 pb-1 mb-4 uppercase tracking-wider">
                   Học vấn
                 </h3>
-                {/* To be implemented in state */}
+                {educations.map((edu) => (
+                  <div key={edu.id} className="mb-2">
+                    <p className="font-bold text-slate-800 text-sm">{edu.institution}</p>
+                    <p className="text-xs text-slate-600">{edu.degree} {edu.field && `- ${edu.field}`}</p>
+                  </div>
+                ))}
               </section>
             )}
 
@@ -83,7 +88,13 @@ export function CvPreview() {
                 <h3 className="text-lg font-bold text-slate-900 border-b border-slate-300 pb-1 mb-4 uppercase tracking-wider">
                   Kỹ năng
                 </h3>
-                {/* To be implemented in state */}
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((skill) => (
+                    <span key={skill.id} className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-md font-medium">
+                      {skill.name}
+                    </span>
+                  ))}
+                </div>
               </section>
             )}
           </div>
