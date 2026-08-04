@@ -29,6 +29,28 @@ Dự án được phát triển bởi các thành viên:
 
 ---
 
+## 🎯 Khách hàng mục tiêu & Nỗi đau (Persona & Pain Points)
+
+**Chân dung người dùng (Persona):**
+- Sinh viên Công nghệ thông tin mới ra trường (Fresher) hoặc Lập trình viên có 1-3 năm kinh nghiệm (Junior/Mid-level).
+- **Mục tiêu:** Cần một CV chuẩn ATS, thể hiện rõ kỹ năng chuyên môn, kinh nghiệm dự án và muốn tìm được công việc phù hợp với mức lương kỳ vọng.
+
+**Nỗi đau (Pain Points):**
+- ❌ Dùng các mẫu thiết kế (Canva/Word) sặc sỡ nhưng **không thân thiện với hệ thống quét CV tự động (ATS)**.
+- ❌ Không biết cách viết mô tả kinh nghiệm (Experience) sao cho thu hút, thường viết lan man, **thiếu keyword** quan trọng theo yêu cầu của Job Description (JD).
+- ❌ Rải CV nhiều nơi nhưng **tỷ lệ phản hồi thấp** (rớt từ vòng hồ sơ) do CV không "khớp" với JD.
+- ❌ Quản lý trạng thái ứng tuyển lộn xộn trên Excel/Ghi chú, thường xuyên quên lịch hoặc nhầm lẫn giữa các công ty.
+- ❌ Thiếu tự tin, không biết nhà tuyển dụng sẽ hỏi gì trong buổi phỏng vấn dựa trên CV và JD cụ thể.
+
+## 💡 Giải pháp từ CV_KADA (Solutions)
+- ✅ Trình tạo CV giao diện trực quan, cấu trúc xuất chuẩn ATS dành riêng cho kỹ sư công nghệ.
+- ✅ Tích hợp AI phân tích điểm Match Score giữa CV và JD, gợi ý bổ sung keyword bị thiếu.
+- ✅ AI hỗ trợ viết lại mô tả kinh nghiệm chuyên nghiệp (theo format STAR).
+- ✅ Kanban board giúp theo dõi phễu ứng tuyển trực quan (Applied -> Interview -> Offer -> Reject).
+- ✅ Phỏng vấn giả lập (Mock Interview) với AI: AI đóng vai nhà tuyển dụng đặt câu hỏi và chấm điểm câu trả lời của bạn.
+
+---
+
 ## 🚀 Tính năng cốt lõi (Core Features)
 
 - 📄 **Trình tạo CV Tương tác (Realtime CV Builder)**
