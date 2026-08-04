@@ -166,3 +166,137 @@ export async function optimizeResume(
     throw error;
   }
 }
+
+// -----------------------------------------------------------------------------
+// MOCK INTERVIEW FEATURES
+// -----------------------------------------------------------------------------
+
+export interface InterviewQuestionResult {
+  questions: {
+    id: string;
+    questionText: string;
+    expectedKeywords: string[];
+    orderIndex: number;
+  }[];
+}
+
+const interviewQuestionsSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    questions: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          id: { type: Type.STRING },
+          questionText: { type: Type.STRING },
+          expectedKeywords: { 
+            type: Type.ARRAY, 
+            items: { type: Type.STRING } 
+          },
+          orderIndex: { type: Type.INTEGER }
+        },
+        required: ["id", "questionText", "expectedKeywords", "orderIndex"]
+      }
+    }
+  },
+  required: ["questions"]
+};
+
+export async function generateInterviewQuestions(
+  cvData: unknown,
+  jobDescription: string
+): Promise<InterviewQuestionResult> {
+  const prompt = `
+    You are an expert technical interviewer. I will give you a candidate's CV data (JSON) and a Job Description.
+    Your task is to generate exactly 3 highly relevant interview questions.
+    Question 1: A behavioral or culture-fit question based on their experience.
+    Question 2: A technical or domain-specific question based on the Job Description and their skills.
+    Question 3: A situational or problem-solving question combining their past experience and the new role.
+    
+    For each question, provide a list of "expectedKeywords" you would listen for in a good answer.
+    Assign a unique string ID and orderIndex (1, 2, 3) to each question.
+
+    ### CV Data:
+    ${JSON.stringify(cvData, null, 2)}
+    
+    ### Job Description:
+    ${jobDescription}
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: interviewQuestionsSchema,
+        temperature: 0.7,
+      },
+    });
+
+    if (response.text) {
+      return JSON.parse(response.text) as InterviewQuestionResult;
+    }
+    throw new Error("AI returned empty response");
+  } catch (error) {
+    console.error("Gemini Generate Questions failed:", error);
+    throw error;
+  }
+}
+
+export interface InterviewEvaluationResult {
+  score: number; // 0-10
+  feedback: string;
+}
+
+const interviewEvaluationSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    score: { type: Type.INTEGER, description: "Score from 0 to 10" },
+    feedback: { type: Type.STRING, description: "Constructive feedback and correct approach" }
+  },
+  required: ["score", "feedback"]
+};
+
+export async function evaluateInterviewAnswer(
+  questionText: string,
+  expectedKeywords: string[],
+  answerText: string
+): Promise<InterviewEvaluationResult> {
+  const prompt = `
+    You are an expert technical interviewer evaluating a candidate's answer.
+    
+    ### Question asked:
+    ${questionText}
+    
+    ### Expected concepts/keywords:
+    ${expectedKeywords.join(", ")}
+    
+    ### Candidate's Answer:
+    ${answerText}
+    
+    Evaluate the candidate's answer based on correctness, clarity, and whether they hit the expected concepts.
+    Provide a score out of 10 and constructive feedback. If the score is low, explain what was missing.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: interviewEvaluationSchema,
+        temperature: 0.2,
+      },
+    });
+
+    if (response.text) {
+      return JSON.parse(response.text) as InterviewEvaluationResult;
+    }
+    throw new Error("AI returned empty response");
+  } catch (error) {
+    console.error("Gemini Evaluation failed:", error);
+    throw error;
+  }
+}
