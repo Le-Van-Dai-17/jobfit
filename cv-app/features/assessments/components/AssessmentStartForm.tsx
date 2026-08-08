@@ -25,9 +25,13 @@ type JobOption = {
 export function AssessmentStartForm({
   resumeVersions,
   jobs,
+  selectedResumeVersionId,
+  selectedJobId,
 }: {
   resumeVersions: ResumeOption[];
   jobs: JobOption[];
+  selectedResumeVersionId?: string;
+  selectedJobId?: string;
 }) {
   const [state, formAction, pending] = useActionState(
     createAssessmentSessionAction,
@@ -44,8 +48,11 @@ export function AssessmentStartForm({
         <select
           id="resumeVersionId"
           name="resumeVersionId"
+          defaultValue={selectedResumeVersionId ?? ""}
           disabled={disabled || pending}
           className="h-10 w-full rounded-md border border-border-light bg-surface-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-invalid={Boolean(state.fieldErrors?.resumeVersionId)}
+          aria-describedby={state.fieldErrors?.resumeVersionId ? "resumeVersionId-error" : undefined}
           required
         >
           <option value="">Chọn CV</option>
@@ -55,6 +62,11 @@ export function AssessmentStartForm({
             </option>
           ))}
         </select>
+        {state.fieldErrors?.resumeVersionId && (
+          <p id="resumeVersionId-error" className="text-xs font-medium text-error">
+            {state.fieldErrors.resumeVersionId[0]}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -64,8 +76,11 @@ export function AssessmentStartForm({
         <select
           id="jobId"
           name="jobId"
+          defaultValue={selectedJobId ?? ""}
           disabled={disabled || pending}
           className="h-10 w-full rounded-md border border-border-light bg-surface-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-invalid={Boolean(state.fieldErrors?.jobId)}
+          aria-describedby={state.fieldErrors?.jobId ? "jobId-error" : undefined}
           required
         >
           <option value="">Chọn JD</option>
@@ -75,6 +90,11 @@ export function AssessmentStartForm({
             </option>
           ))}
         </select>
+        {state.fieldErrors?.jobId && (
+          <p id="jobId-error" className="text-xs font-medium text-error">
+            {state.fieldErrors.jobId[0]}
+          </p>
+        )}
       </div>
 
       <div className="flex items-end">

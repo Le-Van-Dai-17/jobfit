@@ -6,7 +6,7 @@ CV_KADA is a Next.js recruiting MVP for Vietnamese IT candidates and employers. 
 CV -> realistic engineering tasks -> evidence-based assessment results for employers
 ```
 
-The current app includes supporting CV, jobs, matching, optimization, tracker, and interview flows. Some flows are implemented against Prisma/Auth.js/AI routes; others still contain demo state while the assessment vertical slice is being built.
+The current app includes supporting CV, jobs, matching, optimization, tracker, and interview flows. Some flows are implemented against Prisma/Auth.js/AI routes; others still contain demo state. The assessment vertical slice now connects saved CV versions and active jobs to deterministic engineering tasks, submissions, and advisory evidence-based reports.
 
 ## Stack
 
@@ -28,6 +28,8 @@ cd cv-app
 npm ci
 cp .env.example .env
 npm run db:generate
+npm run db:push
+npm run db:seed
 npm run dev
 ```
 
@@ -58,11 +60,13 @@ Implemented:
 - Prisma schema for users, resumes, jobs, applications, interviews, AI runs, and file assets.
 - Resume/job repositories and services.
 - CV save action and application/AI route handlers.
+- Assessment sessions tied to user-owned CV versions and active jobs, with rubric tasks, submission evaluation, and employer-safe advisory reports.
 - Baseline lint, typecheck, unit test, and build scripts.
 
 Partial or mock:
 
 - Dashboard, jobs, tracker, interview, and profile screens still include demo/client state.
+- Dedicated manual JD creation/import and employer company report sharing are not implemented yet.
 - Gemini-backed routes require credentials for live calls and do not yet provide a CI-safe provider adapter for every path.
 - AI result validation/audit persistence, shared ownership helpers, storage, and employer assessment reporting remain incomplete.
 

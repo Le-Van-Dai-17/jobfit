@@ -18,6 +18,14 @@ type Task = {
 export function AssessmentSubmissionForm({ sessionId, tasks }: { sessionId: string; tasks: Task[] }) {
   const [state, formAction, pending] = useActionState(submitAssessmentAction, initialAssessmentActionState);
 
+  if (tasks.length === 0) {
+    return (
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        Phiên đánh giá chưa có bài tập khả dụng. Vui lòng quay lại danh sách đánh giá và tạo phiên mới.
+      </div>
+    );
+  }
+
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="sessionId" value={sessionId} />

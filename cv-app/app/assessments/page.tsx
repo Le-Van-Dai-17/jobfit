@@ -6,13 +6,22 @@ import { auth } from "@/auth";
 import { AssessmentStartForm } from "@/features/assessments/components/AssessmentStartForm";
 import { assessmentService } from "@/features/assessments/services/assessment.service";
 
-export default async function AssessmentsPage() {
+export default async function AssessmentsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ resumeVersionId?: string; jobId?: string }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
   }
 
   const { resumeVersions, jobs, sessions } = await assessmentService.getStartOptions(session.user.id);
+  const params = await searchParams;
+  const selectedResumeVersionId = resumeVersions.some((version) => version.id === params?.resumeVersionId)
+    ? params?.resumeVersionId
+    : undefined;
+  const selectedJobId = jobs.some((job) => job.id === params?.jobId) ? params?.jobId : undefined;
   const hasMissingData = resumeVersions.length === 0 || jobs.length === 0;
 
   return (
@@ -23,19 +32,45 @@ export default async function AssessmentsPage() {
           CV + JD thành bài tập kỹ thuật có bằng chứng
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-text-muted">
-          Chọn một phiên bản CV và JD để tạo bài tập thực tế, nộp giải thích giải pháp, rồi nhận báo cáo rubric có thể chia sẻ an toàn với nhà tuyển dụng.
+          Chọn một phiên bản CV và JD để tạo bài tập thực tế, nộp giải thích giải pháp, rồi nhận báo cáo rubric
+          có thể chia sẻ an toàn với nhà tuyển dụng.
         </p>
       </section>
 
       {hasMissingData && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          {resumeVersions.length === 0
-            ? "Bạn cần lưu ít nhất một phiên bản CV trước khi tạo đánh giá."
-            : "Chưa có JD khả dụng trong hệ thống. Hãy thêm hoặc đồng bộ JD trước khi tạo đánh giá."}
+          <p>
+            {resumeVersions.length === 0
+              ? "Bạn cần lưu ít nhất một phiên bản CV trước khi tạo đánh giá."
+              : "Chưa có JD khả dụng trong hệ thống. Hãy thêm hoặc đồng bộ JD trước khi tạo đánh giá."}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {resumeVersions.length === 0 && (
+              <Link
+                href="/my-cv"
+                className="rounded-md bg-white px-3 py-2 font-semibold text-amber-900 outline-none ring-1 ring-amber-200 focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Tạo hoặc lưu CV
+              </Link>
+            )}
+            {jobs.length === 0 && (
+              <Link
+                href="/jobs"
+                className="rounded-md bg-white px-3 py-2 font-semibold text-amber-900 outline-none ring-1 ring-amber-200 focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                Xem luồng JD
+              </Link>
+            )}
+          </div>
         </div>
       )}
 
-      <AssessmentStartForm resumeVersions={resumeVersions} jobs={jobs} />
+      <AssessmentStartForm
+        resumeVersions={resumeVersions}
+        jobs={jobs}
+        selectedResumeVersionId={selectedResumeVersionId}
+        selectedJobId={selectedJobId}
+      />
 
       <section className="rounded-lg border border-border-light bg-surface-white p-4">
         <div className="flex items-center gap-2">

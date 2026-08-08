@@ -9,9 +9,9 @@
 | `/my-cv` | `app/my-cv/page.tsx` | Partial | CV editor and preview with save action/backend support; persistence flow needs hardening. |
 | `/job-optimization` | `app/job-optimization/page.tsx` | Partial | Calls AI optimization route when authenticated and configured. |
 | `/job-match` | `app/job-match/page.tsx` | Partial | Calls AI match route; structured persistence is not complete. |
-| `/jobs` | `app/jobs/page.tsx` | Partial/mock | Job repository exists; screen still contains demo/client behavior. |
-| `/assessments` | `app/assessments/page.tsx` | Implemented | Candidate selects user-owned CV version and JD, creates realistic engineering tasks, and sees recent sessions. |
-| `/assessments/[sessionId]` | `app/assessments/[sessionId]/page.tsx` | Implemented | Candidate submits text solutions and sees persisted advisory rubric/evidence report. |
+| `/jobs` | `app/jobs/page.tsx` | Partial/mock | Job repository exists; screen still contains demo/client behavior, with a handoff CTA into assessments. |
+| `/assessments` | `app/assessments/page.tsx` | Implemented | Candidate selects user-owned CV version and JD, supports safe query preselection, creates realistic engineering tasks, handles missing CV/JD states, and sees recent sessions. |
+| `/assessments/[sessionId]` | `app/assessments/[sessionId]/page.tsx` | Implemented | Candidate submits text solutions and sees persisted advisory rubric/evidence report; unauthorized access renders an ownership-safe denial state. |
 | `/interview` | `app/interview/page.tsx` | Partial | AI question/evaluation routes exist; persistence and consent handling are incomplete. |
 | `/tracker` | `app/tracker/page.tsx` | Partial/mock | Application API/model exists; Kanban state still needs full persistence. |
 | `/profile` | `app/profile/page.tsx` | Mock | Profile model exists; page is primarily demo presentation. |
@@ -48,3 +48,4 @@ ResumeVersion + Job
 ## Not Yet Routed
 
 - Employer company access/sharing for assessment reports is not implemented yet; reports are candidate-visible and employer-safe in content.
+- Manual JD creation/import is not yet implemented as a dedicated route; current JD selection depends on active `Job` rows or demo job UI.

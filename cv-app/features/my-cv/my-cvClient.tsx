@@ -6,7 +6,7 @@ import { CvPreview } from "@/features/cv/components/CvPreview";
 import { useCvStore } from "@/features/cv/store/useCvStore";
 import { saveCvAction } from "@/features/cv/actions/save-cv";
 import { Button } from "@/components/ui/Button";
-import { Save, FileText, LayoutDashboard } from "lucide-react";
+import { ClipboardCheck, Save, FileText, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { CvData } from "@/features/cv/schemas/cv.schema";
 
@@ -68,6 +68,12 @@ export default function MyCvClient({ initialResumeId, initialData }: MyCvClientP
         
         <div className="flex items-center gap-3">
           {isDirty && <span className="text-xs text-warning font-medium">Chưa lưu thay đổi</span>}
+          <Link href="/assessments">
+            <Button variant="outline" className="gap-2">
+              <ClipboardCheck className="h-4 w-4" />
+              Tạo đánh giá
+            </Button>
+          </Link>
           <Button 
             onClick={handleSave} 
             disabled={!isDirty || isSaving}

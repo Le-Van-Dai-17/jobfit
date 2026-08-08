@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, MapPin, Building2, DollarSign, Filter, Bookmark, ArrowUpRight } from "lucide-react";
+import { Search, MapPin, Building2, DollarSign, Filter, Bookmark, ArrowUpRight, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 
 const allJobs = [
@@ -122,6 +122,13 @@ export default function JobsPage() {
                 >
                   <span>Ứng tuyển ngay</span>
                   <ArrowUpRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/assessments"
+                  className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-xs font-semibold text-indigo-700 outline-none transition-colors hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-500"
+                >
+                  <ClipboardCheck className="h-4 w-4" />
+                  <span>Tạo bài kỹ thuật</span>
                 </Link>
               </div>
             </div>

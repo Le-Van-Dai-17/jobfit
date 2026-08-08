@@ -114,9 +114,17 @@ export class AssessmentRepository {
         },
       });
 
-      return tx.assessmentSession.update({
-        where: { id: input.sessionId },
+      const updated = await tx.assessmentSession.updateMany({
+        where: { id: input.sessionId, userId: input.userId },
         data: { status: "EVALUATED", completedAt: new Date() },
+      });
+
+      if (updated.count !== 1) {
+        throw new Error("Assessment session ownership changed before saving the result.");
+      }
+
+      const session = await tx.assessmentSession.findFirst({
+        where: { id: input.sessionId, userId: input.userId },
         include: {
           job: true,
           resumeVersion: { include: { resume: true } },
@@ -125,6 +133,12 @@ export class AssessmentRepository {
           result: true,
         },
       });
+
+      if (!session) {
+        throw new Error("Assessment session was not found after saving the result.");
+      }
+
+      return session;
     });
   }
 }
