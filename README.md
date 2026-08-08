@@ -1,3 +1,13 @@
+## Current MVP Scope
+
+CV_KADA hiện tập trung vào vòng lặp:
+
+```text
+CV -> realistic engineering tasks -> evidence-based assessment results for employers
+```
+
+Các luồng CV, jobs, matching, optimization, tracker và interview chỉ hỗ trợ vòng lặp này. Không mở rộng sản phẩm thành certification platform, social network hoặc LMS.
+
 <div align="center">
   
   # ✨ CV_KADA

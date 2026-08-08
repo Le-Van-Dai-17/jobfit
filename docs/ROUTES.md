@@ -1,110 +1,51 @@
-# Routes — Lumina AI
+# Routes - CV_KADA
 
-## Danh sách routes
+## UI Routes
 
-| Route | File | Mô tả |
-|-------|------|-------|
-| `/` | `app/page.tsx` | Dashboard tổng quan |
-| `/my-cv` | `app/my-cv/page.tsx` | Quản lý và chỉnh sửa CV |
-| `/job-optimization` | `app/job-optimization/page.tsx` | Tối ưu CV theo mô tả công việc |
-| `/job-match` | `app/job-match/page.tsx` | Phân tích mức độ phù hợp CV vs JD |
-| `/jobs` | `app/jobs/page.tsx` | Tìm kiếm việc làm |
-| `/interview` | `app/interview/page.tsx` | Phỏng vấn mô phỏng AI |
-| `/tracker` | `app/tracker/page.tsx` | Theo dõi quy trình ứng tuyển |
-| `/profile` | `app/profile/page.tsx` | Hồ sơ nghề nghiệp cá nhân |
+| Route | File | Status | Notes |
+| --- | --- | --- | --- |
+| `/` | `app/page.tsx` | Implemented, partial data | Dashboard overview with some demo metrics/state. |
+| `/login` | `app/login/page.tsx` | Implemented | Auth.js sign-in UI, including demo credentials path. |
+| `/my-cv` | `app/my-cv/page.tsx` | Partial | CV editor and preview with save action/backend support; persistence flow needs hardening. |
+| `/job-optimization` | `app/job-optimization/page.tsx` | Partial | Calls AI optimization route when authenticated and configured. |
+| `/job-match` | `app/job-match/page.tsx` | Partial | Calls AI match route; structured persistence is not complete. |
+| `/jobs` | `app/jobs/page.tsx` | Partial/mock | Job repository exists; screen still contains demo/client behavior, with a handoff CTA into assessments. |
+| `/assessments` | `app/assessments/page.tsx` | Implemented | Candidate selects user-owned CV version and JD, supports safe query preselection, creates realistic engineering tasks, handles missing CV/JD states, and sees recent sessions. |
+| `/assessments/[sessionId]` | `app/assessments/[sessionId]/page.tsx` | Implemented | Candidate submits text solutions and sees persisted advisory rubric/evidence report; unauthorized access renders an ownership-safe denial state. |
+| `/interview` | `app/interview/page.tsx` | Partial | AI question/evaluation routes exist; persistence and consent handling are incomplete. |
+| `/tracker` | `app/tracker/page.tsx` | Partial/mock | Application API/model exists; Kanban state still needs full persistence. |
+| `/profile` | `app/profile/page.tsx` | Mock | Profile model exists; page is primarily demo presentation. |
 
-## Chi tiết từng route
+## API And Server Routes
 
-### Dashboard (`/`)
+| Route | File | Status | Notes |
+| --- | --- | --- | --- |
+| `/api/auth/[...nextauth]` | `app/api/auth/[...nextauth]/route.ts` | Implemented | Auth.js route handlers. |
+| `/api/applications` | `app/api/applications/route.ts` | Partial | Application operations with authenticated user context. |
+| `/api/ai/match` | `app/api/ai/match/route.ts` | Partial/live credential | Requires auth, a user-owned resume, and `GEMINI_API_KEY` for live calls. |
+| `/api/ai/optimize` | `app/api/ai/optimize/route.ts` | Partial/live credential | Requires auth, a user-owned resume, and `GEMINI_API_KEY` for live calls. |
+| `/api/ai/interview/generate` | `app/api/ai/interview/generate/route.ts` | Partial/live credential | Generates interview questions through Gemini. |
+| `/api/ai/interview/evaluate` | `app/api/ai/interview/evaluate/route.ts` | Partial/live credential | Evaluates interview answers through Gemini. |
 
-**Mục đích:** Cung cấp tổng quan nhanh về toàn bộ hệ thống.
+## Data Relationships
 
-**Dữ liệu sử dụng:**
-- ATS score: từ CV hiện tại
-- Job stats: tổng số jobs đã apply, interview rate, response rate
-- Danh sách jobs đề xuất: từ dữ liệu jobs
-- Activity timeline: từ tracker
+```text
+User
+  -> Profile -> Experience / Education / Skill / Certificate
+  -> Resume -> ResumeVersion
+  -> SavedJob -> Job
+  -> Application -> Job + optional ResumeVersion
+  -> InterviewSession -> Job? -> InterviewQuestion -> InterviewAnswer
+  -> AssessmentSession -> AssessmentTask / AssessmentSubmission / AssessmentResult
+  -> AiRun
+  -> FileAsset
 
-### Quản lý CV (`/my-cv`)
-
-**Mục đích:** Cho phép người dùng tạo và chỉnh sửa CV với preview trực tiếp.
-
-**Dữ liệu sử dụng:**
-- CV data: personal info, experience entries, skills
-- Tất cả đều là mock data hiện tại
-
-**Quan hệ:** CV data là đầu vào cho job-optimization, job-match, và profile.
-
-### Tối ưu CV theo Job (`/job-optimization`)
-
-**Mục đích:** Phân tích CV hiện tại so với mô tả công việc và đề xuất cải thiện.
-
-**Dữ liệu sử dụng:**
-- CV data (từ my-cv)
-- JD text (người dùng paste vào)
-- ATS score, missing/matched keywords (AI-generated)
-
-### Phân tích Job Match (`/job-match`)
-
-**Mục đích:** Đánh giá mức độ phù hợp giữa CV và một công việc cụ thể.
-
-**Dữ liệu sử dụng:**
-- CV data (từ my-cv)
-- JD data (từ jobs)
-- Match % breakdown (AI-generated)
-
-### Tìm việc làm (`/jobs`)
-
-**Mục đích:** Duyệt và tìm kiếm việc làm với điểm phù hợp AI.
-
-**Dữ liệu sử dụng:**
-- Job listings (mock data)
-- AI match score (từ job-match logic)
-
-**Quan hệ:** Jobs data được dùng bởi Dashboard (recommended), tracker (applied jobs).
-
-### Phỏng vấn AI (`/interview`)
-
-**Mục đích:** Mô phỏng phỏng vấn với AI, cung cấp phản hồi real-time.
-
-**Dữ liệu sử dụng:**
-- CV data (để tạo câu hỏi phù hợp)
-- Câu hỏi phỏng vấn (mock)
-- Feedback metrics (accuracy, clarity)
-
-### Theo dõi ứng tuyển (`/tracker`)
-
-**Mục đích:** Quản lý quy trình ứng tuyển dạng Kanban.
-
-**Dữ liệu sử dụng:**
-- Applications data (mock), mỗi application liên kết với một job từ jobs
-- 4 trạng thái: Applied → Interview → Offer → Rejected
-
-**Quan hệ:** Liên kết với jobs data (jobId), cập nhật dashboard stats.
-
-### Hồ sơ nghề nghiệp (`/profile`)
-
-**Mục đích:** Hiển thị thông tin cá nhân, kỹ năng, chứng chỉ.
-
-**Dữ liệu sử dụng:**
-- User profile data
-- Skills (từ CV data)
-- Certificates (mock)
-
-## Sơ đồ quan hệ dữ liệu
-
+ResumeVersion + Job
+  -> MatchAnalysis
+  -> AssessmentSession
 ```
-CV Data (my-cv)
-  ├── → job-optimization (phân tích CV vs JD)
-  ├── → job-match (so khớp với jobs)
-  ├── → interview (tạo câu hỏi)
-  └── → profile (kỹ năng)
 
-Jobs Data
-  ├── → dashboard (recommended jobs)
-  ├── → job-match (so khớp với CV)
-  └── → tracker (applications)
+## Not Yet Routed
 
-Tracker Data
-  └── → dashboard (activity timeline, stats)
-```
+- Employer company access/sharing for assessment reports is not implemented yet; reports are candidate-visible and employer-safe in content.
+- Manual JD creation/import is not yet implemented as a dedicated route; current JD selection depends on active `Job` rows or demo job UI.

@@ -1,58 +1,86 @@
-# Lumina AI - Nền tảng Quản lý CV & Tối ưu Nghề nghiệp Thông minh
+# CV_KADA
 
-Lumina AI là nền tảng hỗ trợ người tìm việc quản lý CV, tối ưu hồ sơ theo yêu cầu công việc, phân tích mức độ phù hợp, và theo dõi quá trình ứng tuyển — tất cả được hỗ trợ bởi AI.
+CV_KADA is a Next.js recruiting MVP for Vietnamese IT candidates and employers. The product loop is:
 
-## Tình trạng hiện tại
-
-**Prototype giao diện (UI-only).** Toàn bộ ứng dụng hiện đang ở giai đoạn prototype với dữ liệu mẫu (mock data) được nhúng trong các client component. Chưa có kết nối backend, API, hay xác thực người dùng.
-
-## Công nghệ sử dụng
-
-| Công nghệ | Phiên bản |
-|-----------|-----------|
-| Next.js | 16.2.12 |
-| React | 19.2.4 |
-| TypeScript | ^5 |
-| Tailwind CSS | ^4 |
-| Framer Motion | ^12.42.2 |
-| Lucide React | ^1.27.0 |
-| ESLint | ^9 |
-
-## Cài đặt và chạy
-
-```bash
-# Di chuyển vào thư mục dự án
-cd cv-app
-
-# Cài đặt dependencies (chỉ dùng npm)
-npm install
-
-# Chạy môi trường phát triển
-npm run dev
-
-# Kiểm tra toàn bộ (lint + typecheck + build)
-npm run check
+```text
+CV -> realistic engineering tasks -> evidence-based assessment results for employers
 ```
 
-Mở [http://localhost:3000](http://localhost:3000) để xem kết quả.
+The current app includes supporting CV, jobs, matching, optimization, tracker, and interview flows. Some flows are implemented against Prisma/Auth.js/AI routes; others still contain demo state. The assessment vertical slice now connects saved CV versions and active jobs to deterministic engineering tasks, submissions, and advisory evidence-based reports.
 
-## Các route hiện có
+## Stack
 
-| Route | Trang | Mô tả |
-|-------|-------|-------|
-| `/` | Dashboard | Tổng quan, thống kê, chỉ số ATS, việc làm đề xuất |
-| `/my-cv` | Quản lý CV | Soạn thảo CV với form + xem trước |
-| `/job-optimization` | Tối ưu CV | Phân tích CV theo mô tả công việc, đề xuất từ khóa |
-| `/job-match` | Phân tích Job Match | Đánh giá mức độ phù hợp CV với JD |
-| `/jobs` | Tìm việc làm | Tìm kiếm việc làm với điểm phù hợp AI |
-| `/interview` | Phỏng vấn AI | Mô phỏng phỏng vấn với phản hồi thời gian thực |
-| `/tracker` | Theo dõi ứng tuyển | Kanban theo dõi quy trình ứng tuyển |
-| `/profile` | Hồ sơ nghề nghiệp | Kỹ năng, chứng chỉ, thông tin cá nhân |
+| Technology | Version / Role |
+| --- | --- |
+| Next.js | 16.2.12 App Router |
+| React | 19.2.4 |
+| TypeScript | Strict app code |
+| Tailwind CSS | v4 styling |
+| Prisma | PostgreSQL data model and repositories |
+| Auth.js | Authentication |
+| Gemini | Live AI provider for existing AI routes |
+| Vitest | Unit tests |
 
-## Quy ước dự án
+## Setup
 
-- **Client Components:** Tất cả page đều là `"use client"` do sử dụng state và event handlers.
-- **Kiến trúc thư mục:** `app/` chứa routes, `components/` chứa các component dùng chung (layout, dashboard).
-- **Thiết kế:** Design tokens được định nghĩa trong `DESIGN.md` (màu sắc, typography, spacing, border radius).
-- **Package manager:** Chỉ dùng **npm**. Không tạo `pnpm-lock.yaml` hoặc `yarn.lock`.
-- **AI Agents:** Khi code, đọc tài liệu Next.js trong `node_modules/next/dist/docs/` trước.
+```bash
+cd cv-app
+npm ci
+cp .env.example .env
+npm run db:generate
+npx prisma migrate deploy
+npm run db:seed
+npm run dev
+```
+
+Use npm only. Do not add another lockfile.
+
+For local demo auth, the credentials provider accepts any email with password `123456`. Real persistence requires PostgreSQL connection strings in `.env`. Live AI features require `GEMINI_API_KEY`; leave it empty for local/CI paths that should not call external AI.
+
+### Database migrations
+
+`20260809000000_baseline` is a complete baseline from an empty PostgreSQL database to the current schema. New databases should use `npx prisma migrate deploy`; the migration creates the core `User`, `ResumeVersion`, and `Job` tables before adding assessment foreign keys.
+
+For an existing database that was previously created with `prisma db push`, **do not run the baseline blindly**. First back up the database and confirm that its tables, columns, indexes, constraints, and enums match `prisma/schema.prisma` (review a schema diff with the responsible operator). Only after confirming equivalence, record the baseline without executing its SQL:
+
+```bash
+npx prisma migrate resolve --applied 20260809000000_baseline
+npx prisma migrate deploy
+```
+
+`migrate resolve --applied` only updates Prisma migration history; it does not validate or repair the existing schema. If the schema differs, reconcile it with a reviewed migration instead of marking the baseline as applied.
+
+## Verification
+
+Run these from `cv-app/` before committing milestone work:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test:unit
+npm run build
+git diff --check
+```
+
+`npm run check` runs lint, typecheck, unit tests, and build.
+
+## Current Status
+
+Implemented:
+
+- Next.js App Router shell and Vietnamese UI routes.
+- Auth.js route and protected routes.
+- Prisma schema for users, resumes, jobs, applications, interviews, AI runs, and file assets.
+- Resume/job repositories and services.
+- CV save action and application/AI route handlers.
+- Assessment sessions tied to user-owned CV versions and active jobs, with rubric tasks, submission evaluation, and employer-safe advisory reports.
+- Baseline lint, typecheck, unit test, and build scripts.
+
+Partial or mock:
+
+- Dashboard, jobs, tracker, interview, and profile screens still include demo/client state.
+- Dedicated manual JD creation/import and employer company report sharing are not implemented yet.
+- Gemini-backed routes require credentials for live calls and do not yet provide a CI-safe provider adapter for every path.
+- AI result validation/audit persistence, shared ownership helpers, storage, and employer assessment reporting remain incomplete.
+
+See `../docs/PRD.md` and `../docs/ROUTES.md` for the Milestone 0 truth inventory.

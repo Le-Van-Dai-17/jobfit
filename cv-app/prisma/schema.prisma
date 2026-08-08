@@ -32,6 +32,7 @@ model User {
   applications       Application[]
   savedJobs          SavedJob[]
   interviewSessions  InterviewSession[]
+  assessmentSessions AssessmentSession[]
   aiRuns             AiRun[]
   fileAssets         FileAsset[]
 }
@@ -196,6 +197,7 @@ model ResumeVersion {
   // Relations
   applications   Application[]
   matchAnalyses  MatchAnalysis[]
+  assessmentSessions AssessmentSession[]
 
   @@index([resumeId])
 }
@@ -224,6 +226,116 @@ model Job {
   applications   Application[]
   matchAnalyses  MatchAnalysis[]
   interviewSessions InterviewSession[]
+  assessmentSessions AssessmentSession[]
+}
+
+// -----------------------------------------------------------------------------
+// ENGINEERING ASSESSMENTS
+// -----------------------------------------------------------------------------
+model AssessmentSession {
+  id              String   @id @default(cuid())
+  userId          String
+  resumeVersionId String
+  jobId           String
+  status          AssessmentStatus @default(TASKS_GENERATED)
+  roleTitle       String
+  seniority       AssessmentSeniority
+  summary         String?  @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeVersion   ResumeVersion @relation(fields: [resumeVersionId], references: [id], onDelete: Restrict)
+  job             Job      @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  tasks           AssessmentTask[]
+  submissions     AssessmentSubmission[]
+  result          AssessmentResult?
+
+  @@index([userId])
+  @@index([resumeVersionId])
+  @@index([jobId])
+}
+
+enum AssessmentStatus {
+  TASKS_GENERATED
+  SUBMITTED
+  EVALUATED
+  CANCELLED
+}
+
+enum AssessmentSeniority {
+  INTERN
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+}
+
+model AssessmentTask {
+  id          String   @id @default(cuid())
+  sessionId   String
+  orderIndex  Int
+  type        AssessmentTaskType
+  title       String
+  prompt      String   @db.Text
+  skills      String[]
+  rubric      Json
+  expectedEvidence String[]
+
+  createdAt   DateTime @default(now())
+
+  session     AssessmentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  submissions AssessmentSubmission[]
+
+  @@index([sessionId])
+}
+
+enum AssessmentTaskType {
+  SYSTEM_DESIGN
+  DEBUGGING
+  IMPLEMENTATION_PLAN
+  CODE_REVIEW
+}
+
+model AssessmentSubmission {
+  id          String   @id @default(cuid())
+  sessionId   String
+  taskId      String
+  userId      String
+  answerText  String   @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  session     AssessmentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  task        AssessmentTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, taskId])
+  @@index([userId])
+  @@index([taskId])
+}
+
+model AssessmentResult {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  userId      String
+  advisoryScore Int
+  rubricBreakdown Json
+  strengths   String[]
+  gaps        String[]
+  evidence    Json
+  limitations String[]
+  reportSummary String @db.Text
+  evaluatorModel String
+  promptVersion String
+
+  createdAt   DateTime @default(now())
+
+  session     AssessmentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model SavedJob {
