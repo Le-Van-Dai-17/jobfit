@@ -142,8 +142,9 @@ export class AssessmentService {
     const parsed = AssessmentSubmissionSchema.parse(input);
     const session = await this.getSession(userId, parsed.sessionId);
     const taskIds = new Set(session.tasks.map((task) => task.id));
+    const submittedTaskIds = new Set(parsed.answers.map((answer) => answer.taskId));
     const hasUnknownTask = parsed.answers.some((answer) => !taskIds.has(answer.taskId));
-    if (hasUnknownTask || parsed.answers.length !== session.tasks.length) {
+    if (hasUnknownTask || parsed.answers.length !== session.tasks.length || submittedTaskIds.size !== taskIds.size) {
       throw new AssessmentValidationError("Cần trả lời đầy đủ đúng các bài tập trong phiên hiện tại.");
     }
 

@@ -100,4 +100,29 @@ describe("AssessmentService", () => {
     expect(provider.evaluate).not.toHaveBeenCalled();
     expect(repository.saveSubmissionsAndResult).not.toHaveBeenCalled();
   });
+
+  it("rejects duplicated task answers that omit a required task", async () => {
+    repository.findSessionForUser.mockResolvedValue({
+      id: "session-1",
+      roleTitle: "Backend Engineer",
+      seniority: "MID",
+      tasks: [
+        { id: "task-1", title: "Task 1", prompt: "Prompt", expectedEvidence: [], rubric: [] },
+        { id: "task-2", title: "Task 2", prompt: "Prompt", expectedEvidence: [], rubric: [] },
+      ],
+    });
+
+    await expect(
+      service.submitAndEvaluate("user-1", {
+        sessionId: "session-1",
+        answers: [
+          { taskId: "task-1", answerText: "x".repeat(140) },
+          { taskId: "task-1", answerText: "y".repeat(140) },
+        ],
+      })
+    ).rejects.toBeInstanceOf(AssessmentValidationError);
+
+    expect(provider.evaluate).not.toHaveBeenCalled();
+    expect(repository.saveSubmissionsAndResult).not.toHaveBeenCalled();
+  });
 });
