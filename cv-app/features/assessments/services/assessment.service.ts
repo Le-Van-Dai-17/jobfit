@@ -1,7 +1,11 @@
 import type { AssessmentSeniority, AssessmentTaskType, Prisma } from "@prisma/client";
 
 import { DeterministicAssessmentProvider, type AssessmentEvaluationProvider } from "../providers/assessment.provider";
-import { assessmentRepository, type AssessmentRepository } from "../repositories/assessment.repository";
+import {
+  assessmentRepository,
+  AssessmentSessionStateError,
+  type AssessmentRepository,
+} from "../repositories/assessment.repository";
 import { AssessmentSubmissionSchema, AssessmentRubricSchema } from "../schemas/assessment.schema";
 
 type TaskDraft = {
@@ -141,6 +145,9 @@ export class AssessmentService {
   async submitAndEvaluate(userId: string, input: { sessionId: string; answers: Array<{ taskId: string; answerText: string }> }) {
     const parsed = AssessmentSubmissionSchema.parse(input);
     const session = await this.getSession(userId, parsed.sessionId);
+    if (session.status !== "TASKS_GENERATED") {
+      throw new AssessmentValidationError("Phiên đánh giá này đã được nộp hoặc không còn nhận bài.");
+    }
     const taskIds = new Set(session.tasks.map((task) => task.id));
     const submittedTaskIds = new Set(parsed.answers.map((answer) => answer.taskId));
     const hasUnknownTask = parsed.answers.some((answer) => !taskIds.has(answer.taskId));
@@ -148,35 +155,46 @@ export class AssessmentService {
       throw new AssessmentValidationError("Cần trả lời đầy đủ đúng các bài tập trong phiên hiện tại.");
     }
 
-    const evaluation = await this.provider.evaluate({
-      roleTitle: session.roleTitle,
-      seniority: session.seniority,
-      tasks: session.tasks.map((task) => ({
-        id: task.id,
-        title: task.title,
-        prompt: task.prompt,
-        expectedEvidence: task.expectedEvidence,
-        rubric: AssessmentRubricSchema.parse(task.rubric),
-      })),
-      submissions: parsed.answers,
-    });
+    try {
+      return await this.repository.completeSubmission(
+        {
+          userId,
+          sessionId: parsed.sessionId,
+          submissions: parsed.answers,
+        },
+        async () => {
+          const evaluation = await this.provider.evaluate({
+            roleTitle: session.roleTitle,
+            seniority: session.seniority,
+            tasks: session.tasks.map((task) => ({
+              id: task.id,
+              title: task.title,
+              prompt: task.prompt,
+              expectedEvidence: task.expectedEvidence,
+              rubric: AssessmentRubricSchema.parse(task.rubric),
+            })),
+            submissions: parsed.answers,
+          });
 
-    return this.repository.saveSubmissionsAndResult({
-      userId,
-      sessionId: parsed.sessionId,
-      submissions: parsed.answers,
-      result: {
-        advisoryScore: evaluation.advisoryScore,
-        rubricBreakdown: evaluation.rubricBreakdown as Prisma.InputJsonValue,
-        strengths: evaluation.strengths,
-        gaps: evaluation.gaps,
-        evidence: evaluation.evidence as Prisma.InputJsonValue,
-        limitations: evaluation.limitations,
-        reportSummary: evaluation.reportSummary,
-        evaluatorModel: evaluation.evaluatorModel,
-        promptVersion: evaluation.promptVersion,
-      },
-    });
+          return {
+            advisoryScore: evaluation.advisoryScore,
+            rubricBreakdown: evaluation.rubricBreakdown as Prisma.InputJsonValue,
+            strengths: evaluation.strengths,
+            gaps: evaluation.gaps,
+            evidence: evaluation.evidence as Prisma.InputJsonValue,
+            limitations: evaluation.limitations,
+            reportSummary: evaluation.reportSummary,
+            evaluatorModel: evaluation.evaluatorModel,
+            promptVersion: evaluation.promptVersion,
+          };
+        }
+      );
+    } catch (error) {
+      if (error instanceof AssessmentSessionStateError) {
+        throw new AssessmentValidationError("Phiên đánh giá này đã được nộp hoặc không còn nhận bài.");
+      }
+      throw error;
+    }
   }
 }
 

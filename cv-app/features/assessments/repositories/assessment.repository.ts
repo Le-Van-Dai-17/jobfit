@@ -1,6 +1,25 @@
 import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@prisma/client";
 
+export class AssessmentSessionStateError extends Error {
+  constructor() {
+    super("Assessment session is not accepting submissions.");
+    this.name = "AssessmentSessionStateError";
+  }
+}
+
+type AssessmentResultInput = {
+  advisoryScore: number;
+  rubricBreakdown: Prisma.InputJsonValue;
+  strengths: string[];
+  gaps: string[];
+  evidence: Prisma.InputJsonValue;
+  limitations: string[];
+  reportSummary: string;
+  evaluatorModel: string;
+  promptVersion: string;
+};
+
 export class AssessmentRepository {
   async listResumeVersionsForUser(userId: string) {
     return prisma.resumeVersion.findMany({
@@ -74,28 +93,26 @@ export class AssessmentRepository {
     });
   }
 
-  async saveSubmissionsAndResult(input: {
+  async completeSubmission(input: {
     userId: string;
     sessionId: string;
     submissions: Array<{ taskId: string; answerText: string }>;
-    result: {
-      advisoryScore: number;
-      rubricBreakdown: Prisma.InputJsonValue;
-      strengths: string[];
-      gaps: string[];
-      evidence: Prisma.InputJsonValue;
-      limitations: string[];
-      reportSummary: string;
-      evaluatorModel: string;
-      promptVersion: string;
-    };
-  }) {
+  }, evaluate: () => Promise<AssessmentResultInput>) {
     return prisma.$transaction(async (tx) => {
+      const claimed = await tx.assessmentSession.updateMany({
+        where: { id: input.sessionId, userId: input.userId, status: "TASKS_GENERATED" },
+        data: { status: "SUBMITTED" },
+      });
+
+      if (claimed.count !== 1) {
+        throw new AssessmentSessionStateError();
+      }
+
+      const result = await evaluate();
+
       for (const submission of input.submissions) {
-        await tx.assessmentSubmission.upsert({
-          where: { sessionId_taskId: { sessionId: input.sessionId, taskId: submission.taskId } },
-          update: { answerText: submission.answerText },
-          create: {
+        await tx.assessmentSubmission.create({
+          data: {
             sessionId: input.sessionId,
             taskId: submission.taskId,
             userId: input.userId,
@@ -104,23 +121,21 @@ export class AssessmentRepository {
         });
       }
 
-      await tx.assessmentResult.upsert({
-        where: { sessionId: input.sessionId },
-        update: input.result,
-        create: {
+      await tx.assessmentResult.create({
+        data: {
           sessionId: input.sessionId,
           userId: input.userId,
-          ...input.result,
+          ...result,
         },
       });
 
       const updated = await tx.assessmentSession.updateMany({
-        where: { id: input.sessionId, userId: input.userId },
+        where: { id: input.sessionId, userId: input.userId, status: "SUBMITTED" },
         data: { status: "EVALUATED", completedAt: new Date() },
       });
 
       if (updated.count !== 1) {
-        throw new Error("Assessment session ownership changed before saving the result.");
+        throw new AssessmentSessionStateError();
       }
 
       const session = await tx.assessmentSession.findFirst({

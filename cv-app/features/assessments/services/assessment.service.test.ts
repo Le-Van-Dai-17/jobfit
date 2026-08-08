@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AssessmentEvaluationProvider } from "../providers/assessment.provider";
-import type { AssessmentRepository } from "../repositories/assessment.repository";
+import { AssessmentSessionStateError, type AssessmentRepository } from "../repositories/assessment.repository";
 import { AssessmentOwnershipError, AssessmentValidationError, AssessmentService } from "./assessment.service";
 
 function createRepositoryMock() {
@@ -13,7 +13,7 @@ function createRepositoryMock() {
     findJob: vi.fn(),
     createSession: vi.fn(),
     findSessionForUser: vi.fn(),
-    saveSubmissionsAndResult: vi.fn(),
+    completeSubmission: vi.fn(),
   } satisfies Record<keyof AssessmentRepository, ReturnType<typeof vi.fn>>;
 }
 
@@ -85,6 +85,7 @@ describe("AssessmentService", () => {
   it("rejects submissions that do not match the tasks in the owned session", async () => {
     repository.findSessionForUser.mockResolvedValue({
       id: "session-1",
+      status: "TASKS_GENERATED",
       roleTitle: "Backend Engineer",
       seniority: "MID",
       tasks: [{ id: "task-1", title: "Task", prompt: "Prompt", expectedEvidence: [], rubric: [] }],
@@ -98,12 +99,13 @@ describe("AssessmentService", () => {
     ).rejects.toBeInstanceOf(AssessmentValidationError);
 
     expect(provider.evaluate).not.toHaveBeenCalled();
-    expect(repository.saveSubmissionsAndResult).not.toHaveBeenCalled();
+    expect(repository.completeSubmission).not.toHaveBeenCalled();
   });
 
   it("rejects duplicated task answers that omit a required task", async () => {
     repository.findSessionForUser.mockResolvedValue({
       id: "session-1",
+      status: "TASKS_GENERATED",
       roleTitle: "Backend Engineer",
       seniority: "MID",
       tasks: [
@@ -123,6 +125,49 @@ describe("AssessmentService", () => {
     ).rejects.toBeInstanceOf(AssessmentValidationError);
 
     expect(provider.evaluate).not.toHaveBeenCalled();
-    expect(repository.saveSubmissionsAndResult).not.toHaveBeenCalled();
+    expect(repository.completeSubmission).not.toHaveBeenCalled();
+  });
+
+  it("rejects an already evaluated session before invoking the evaluator", async () => {
+    repository.findSessionForUser.mockResolvedValue({
+      id: "session-1",
+      status: "EVALUATED",
+      roleTitle: "Backend Engineer",
+      seniority: "MID",
+      tasks: [{ id: "task-1", title: "Task", prompt: "Prompt", expectedEvidence: [], rubric: [] }],
+    });
+
+    await expect(
+      service.submitAndEvaluate("user-1", {
+        sessionId: "session-1",
+        answers: [{ taskId: "task-1", answerText: "x".repeat(140) }],
+      })
+    ).rejects.toThrow("Phiên đánh giá này đã được nộp");
+
+    expect(provider.evaluate).not.toHaveBeenCalled();
+    expect(repository.completeSubmission).not.toHaveBeenCalled();
+  });
+
+  it("returns a friendly validation error when a concurrent request already claimed the session", async () => {
+    repository.findSessionForUser.mockResolvedValue({
+      id: "session-1",
+      status: "TASKS_GENERATED",
+      roleTitle: "Backend Engineer",
+      seniority: "MID",
+      tasks: [{ id: "task-1", title: "Task", prompt: "Prompt", expectedEvidence: [], rubric: [] }],
+    });
+    repository.completeSubmission.mockRejectedValue(new AssessmentSessionStateError());
+
+    await expect(
+      service.submitAndEvaluate("user-1", {
+        sessionId: "session-1",
+        answers: [{ taskId: "task-1", answerText: "x".repeat(140) }],
+      })
+    ).rejects.toMatchObject({
+      constructor: AssessmentValidationError,
+      message: "Phiên đánh giá này đã được nộp hoặc không còn nhận bài.",
+    });
+
+    expect(provider.evaluate).not.toHaveBeenCalled();
   });
 });

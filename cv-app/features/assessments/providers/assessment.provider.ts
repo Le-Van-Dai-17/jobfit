@@ -34,20 +34,31 @@ const criterionKeywords: Record<string, string[]> = {
   risk: ["rủi ro", "security", "privacy", "failure", "timeout", "rate limit"],
 };
 
-function scoreCriterion(answer: string, criterion: AssessmentRubricItem) {
-  const normalized = answer.toLowerCase();
-  const keywords = criterionKeywords[criterion.id] ?? criterion.evidenceHints;
-  const matched = keywords.filter((keyword) => normalized.includes(keyword.toLowerCase()));
-  const lengthBonus = answer.length >= 500 ? 1 : 0;
-  return Math.min(criterion.maxScore, Math.max(0, matched.length + lengthBonus));
+function normalizedWords(value: string) {
+  return ` ${value.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()} `;
 }
 
-function extractEvidence(answer: string) {
+function matchesKeyword(value: string, keyword: string) {
+  return normalizedWords(value).includes(normalizedWords(keyword));
+}
+
+function scoreCriterion(answer: string, criterion: AssessmentRubricItem) {
+  const keywords = [...new Set([...(criterionKeywords[criterion.id] ?? []), ...criterion.evidenceHints])];
   const sentences = answer
     .split(/[.!?\n]/)
     .map((part) => part.trim())
-    .filter((part) => part.length > 30);
-  return sentences.slice(0, 2);
+    .filter(Boolean);
+  const evidence = sentences.filter((sentence) =>
+    keywords.some((keyword) => matchesKeyword(sentence, keyword))
+  );
+  const matchedKeywords = keywords.filter((keyword) =>
+    evidence.some((sentence) => matchesKeyword(sentence, keyword))
+  );
+
+  return {
+    score: Math.min(criterion.maxScore, matchedKeywords.length),
+    evidence,
+  };
 }
 
 export class DeterministicAssessmentProvider implements AssessmentEvaluationProvider {
@@ -67,15 +78,15 @@ export class DeterministicAssessmentProvider implements AssessmentEvaluationProv
         taskId: task.id,
         taskTitle: task.title,
         scores: task.rubric.map((criterion) => {
-          const score = scoreCriterion(answer, criterion);
+          const scored = scoreCriterion(answer, criterion);
           return {
             criterionId: criterion.id,
             label: criterion.label,
-            score,
+            score: scored.score,
             maxScore: criterion.maxScore,
-            evidence: score > 0 ? extractEvidence(answer) : [],
+            evidence: scored.evidence,
             gap:
-              score >= criterion.maxScore - 1
+              scored.score >= criterion.maxScore - 1
                 ? undefined
                 : `Cần nêu rõ hơn về ${criterion.label.toLowerCase()}.`,
           };
@@ -102,20 +113,22 @@ export class DeterministicAssessmentProvider implements AssessmentEvaluationProv
       strengths:
         strongCriteria.length > 0
           ? [...new Set(strongCriteria)].slice(0, 4).map((label) => `Thể hiện tốt: ${label}.`)
-          : ["Câu trả lời có đủ độ dài tối thiểu để bắt đầu đánh giá bằng chứng."],
+          : ["Chưa có tiêu chí nào đạt ngưỡng thể hiện tốt theo heuristic từ khóa."],
       gaps:
         weakCriteria.length > 0
           ? [...new Set(weakCriteria)].slice(0, 4).map((label) => `Cần bổ sung bằng chứng cho: ${label}.`)
           : ["Chưa phát hiện khoảng trống lớn trong rubric định lượng."],
-      evidence: input.tasks.flatMap((task) =>
-        extractEvidence(submissionsByTask.get(task.id) ?? "").slice(0, 1).map((quote) => ({
-          taskId: task.id,
-          quote,
-          rationale: "Đoạn này được dùng làm bằng chứng trực tiếp từ câu trả lời của ứng viên.",
-        }))
+      evidence: rubricBreakdown.flatMap((task) =>
+        task.scores.flatMap((criterion) =>
+          criterion.evidence.map((quote) => ({
+            taskId: task.taskId,
+            quote,
+            rationale: `Câu này khớp tiêu chí "${criterion.label}" (${criterion.criterionId}) theo heuristic từ khóa và được dùng trực tiếp để chấm tiêu chí đó.`,
+          }))
+        )
       ),
       limitations: [
-        "Điểm số là tư vấn, dựa trên câu trả lời văn bản và rubric lưu trong hệ thống.",
+        "Điểm số là tư vấn (advisory), dùng heuristic keyword-based để đối chiếu câu trả lời văn bản với rubric; không đánh giá được chất lượng ngữ nghĩa sâu.",
         "Đánh giá này không xác minh được mã nguồn, lịch sử commit, hoặc môi trường chạy thực tế.",
         "Không dùng kết quả như chứng chỉ năng lực độc lập; nhà tuyển dụng nên phỏng vấn bổ sung.",
       ],

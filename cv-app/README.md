@@ -28,7 +28,7 @@ cd cv-app
 npm ci
 cp .env.example .env
 npm run db:generate
-npm run db:push
+npx prisma migrate deploy
 npm run db:seed
 npm run dev
 ```
@@ -36,6 +36,19 @@ npm run dev
 Use npm only. Do not add another lockfile.
 
 For local demo auth, the credentials provider accepts any email with password `123456`. Real persistence requires PostgreSQL connection strings in `.env`. Live AI features require `GEMINI_API_KEY`; leave it empty for local/CI paths that should not call external AI.
+
+### Database migrations
+
+`20260809000000_baseline` is a complete baseline from an empty PostgreSQL database to the current schema. New databases should use `npx prisma migrate deploy`; the migration creates the core `User`, `ResumeVersion`, and `Job` tables before adding assessment foreign keys.
+
+For an existing database that was previously created with `prisma db push`, **do not run the baseline blindly**. First back up the database and confirm that its tables, columns, indexes, constraints, and enums match `prisma/schema.prisma` (review a schema diff with the responsible operator). Only after confirming equivalence, record the baseline without executing its SQL:
+
+```bash
+npx prisma migrate resolve --applied 20260809000000_baseline
+npx prisma migrate deploy
+```
+
+`migrate resolve --applied` only updates Prisma migration history; it does not validate or repair the existing schema. If the schema differs, reconcile it with a reviewed migration instead of marking the baseline as applied.
 
 ## Verification
 
