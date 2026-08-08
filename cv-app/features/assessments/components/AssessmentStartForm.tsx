@@ -4,10 +4,8 @@ import { useActionState } from "react";
 import { ClipboardCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
-import {
-  createAssessmentSessionAction,
-  initialAssessmentActionState,
-} from "../actions/assessment.actions";
+import { createAssessmentSessionAction } from "../actions/assessment.actions";
+import { initialAssessmentActionState } from "../actions/assessment.action-state";
 
 type ResumeOption = {
   id: string;

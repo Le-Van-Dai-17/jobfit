@@ -5,7 +5,8 @@ import { Send } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
-import { initialAssessmentActionState, submitAssessmentAction } from "../actions/assessment.actions";
+import { submitAssessmentAction } from "../actions/assessment.actions";
+import { initialAssessmentActionState } from "../actions/assessment.action-state";
 
 type Task = {
   id: string;

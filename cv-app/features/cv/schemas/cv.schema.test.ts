@@ -47,6 +47,17 @@ describe("CV schemas", () => {
     expect(CvSchema.safeParse(validCv).success).toBe(true);
   });
 
+  it("normalizes legacy education payloads and defaults missing skills", () => {
+    const result = CvSchema.parse({
+      personalInfo: validCv.personalInfo,
+      experiences: validCv.experiences,
+      education: validCv.educations,
+    });
+
+    expect(result.educations).toEqual(validCv.educations);
+    expect(result.skills).toEqual([]);
+  });
+
   it("allows an empty optional phone value from the editor form", () => {
     const result = PersonalInfoSchema.safeParse({
       fullName: "Nguyen Van A",

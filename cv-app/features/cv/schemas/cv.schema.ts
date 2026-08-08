@@ -35,12 +35,26 @@ export const SkillSchema = z.object({
   level: z.number().min(1).max(5).optional(),
 });
 
-export const CvSchema = z.object({
+const CvPayloadSchema = z.object({
   personalInfo: PersonalInfoSchema,
   experiences: z.array(ExperienceSchema),
   educations: z.array(EducationSchema),
   skills: z.array(SkillSchema),
 });
+
+export const CvSchema = z.preprocess((value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+
+  const payload = value as Record<string, unknown>;
+  return {
+    ...payload,
+    experiences: payload.experiences ?? [],
+    educations: payload.educations ?? payload.education ?? [],
+    skills: payload.skills ?? [],
+  };
+}, CvPayloadSchema);
 
 export type CvData = z.infer<typeof CvSchema>;
 export type ExperienceData = z.infer<typeof ExperienceSchema>;

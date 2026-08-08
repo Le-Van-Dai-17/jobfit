@@ -22,7 +22,7 @@ export class ResumeService {
         summary: "",
       },
       experiences: [],
-      education: [],
+      educations: [],
       skills: [],
     };
 

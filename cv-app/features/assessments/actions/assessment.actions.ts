@@ -11,14 +11,7 @@ import {
   assessmentService,
 } from "../services/assessment.service";
 import { AssessmentStartSchema } from "../schemas/assessment.schema";
-
-export type AssessmentActionState = {
-  status: "idle" | "error";
-  message?: string;
-  fieldErrors?: Record<string, string[] | undefined>;
-};
-
-export const initialAssessmentActionState: AssessmentActionState = { status: "idle" };
+import type { AssessmentActionState } from "./assessment.action-state";
 
 function formValue(formData: FormData, name: string) {
   const value = formData.get(name);

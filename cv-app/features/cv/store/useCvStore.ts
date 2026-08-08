@@ -1,12 +1,16 @@
 import { create } from "zustand";
 import { CvData, ExperienceData, EducationData, SkillData } from "../schemas/cv.schema";
 
+type LegacyCvData = Partial<CvData> & {
+  education?: CvData["educations"];
+};
+
 interface CvStoreState {
   cvData: CvData;
   isDirty: boolean;
   
   // Actions
-  setCvData: (data: CvData) => void;
+  setCvData: (data: LegacyCvData) => void;
   updatePersonalInfo: (data: Partial<CvData["personalInfo"]>) => void;
   
   // Array Operations
@@ -38,11 +42,23 @@ const defaultCvData: CvData = {
   skills: [],
 };
 
+export function normalizeCvData(data: LegacyCvData): CvData {
+  return {
+    personalInfo: {
+      ...defaultCvData.personalInfo,
+      ...(data.personalInfo ?? {}),
+    },
+    experiences: data.experiences ?? [],
+    educations: data.educations ?? data.education ?? [],
+    skills: data.skills ?? [],
+  };
+}
+
 export const useCvStore = create<CvStoreState>((set) => ({
   cvData: defaultCvData,
   isDirty: false,
 
-  setCvData: (data) => set({ cvData: data, isDirty: false }),
+  setCvData: (data) => set({ cvData: normalizeCvData(data), isDirty: false }),
   
   updatePersonalInfo: (data) => 
     set((state) => ({ 

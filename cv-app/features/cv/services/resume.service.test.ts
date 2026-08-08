@@ -43,7 +43,7 @@ describe("ResumeService", () => {
           summary: "",
         },
         experiences: [],
-        education: [],
+        educations: [],
         skills: [],
       }
     );

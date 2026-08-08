@@ -82,8 +82,8 @@ export function AssessmentReport({ result }: { result: Result }) {
       <div className="rounded-lg border border-border-light bg-surface-white p-4">
         <h3 className="font-bold text-foreground">Bằng chứng sử dụng</h3>
         <ul className="mt-3 space-y-3">
-          {parsed.evidence.map((item) => (
-            <li key={`${item.taskId}-${item.quote}`} className="rounded-md bg-surface-low p-3 text-sm">
+          {parsed.evidence.map((item, index) => (
+            <li key={`${item.taskId}-${item.quote}-${index}`} className="rounded-md bg-surface-low p-3 text-sm">
               <p className="text-foreground">&quot;{item.quote}&quot;</p>
               <p className="mt-1 text-text-muted">{item.rationale}</p>
             </li>
