@@ -17,8 +17,8 @@ export class JobRepository {
    * Find a specific job by ID
    */
   async findById(id: string) {
-    return prisma.job.findUnique({
-      where: { id },
+    return prisma.job.findFirst({
+      where: { id, isArchived: false },
     });
   }
 

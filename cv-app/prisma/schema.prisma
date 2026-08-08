@@ -19,7 +19,8 @@ model User {
   image         String?
   
   // Custom Lumina Fields
-  role          UserRole  @default(USER)
+  role          UserRole  @default(CANDIDATE)
+  passwordHash  String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime? // Soft delete
@@ -33,13 +34,55 @@ model User {
   savedJobs          SavedJob[]
   interviewSessions  InterviewSession[]
   assessmentSessions AssessmentSession[]
+  assessmentSubmissions AssessmentSubmission[]
+  assessmentResults AssessmentResult[]
   aiRuns             AiRun[]
   fileAssets         FileAsset[]
+  companyMemberships CompanyMembership[]
 }
 
 enum UserRole {
-  USER
+  CANDIDATE
+  RECRUITER
   ADMIN
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  website     String?
+  description String?  @db.Text
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  memberships CompanyMembership[]
+  jobs        Job[]
+
+  @@index([slug])
+}
+
+model CompanyMembership {
+  id        String                @id @default(cuid())
+  userId    String
+  companyId String
+  role      CompanyMembershipRole @default(RECRUITER)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
+  @@unique([userId])
+  @@index([userId])
+  @@index([companyId])
+}
+
+enum CompanyMembershipRole {
+  OWNER
+  RECRUITER
 }
 
 model Account {
@@ -199,6 +242,7 @@ model ResumeVersion {
   matchAnalyses  MatchAnalysis[]
   assessmentSessions AssessmentSession[]
 
+  @@unique([resumeId, version])
   @@index([resumeId])
 }
 
@@ -207,6 +251,7 @@ model ResumeVersion {
 // -----------------------------------------------------------------------------
 model Job {
   id             String   @id @default(cuid())
+  companyId      String?
   title          String
   company        String
   location       String?
@@ -222,11 +267,14 @@ model Job {
   updatedAt      DateTime @updatedAt
   isArchived     Boolean  @default(false)
 
+  ownerCompany   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
   savedBy        SavedJob[]
   applications   Application[]
   matchAnalyses  MatchAnalysis[]
   interviewSessions InterviewSession[]
   assessmentSessions AssessmentSession[]
+
+  @@index([companyId])
 }
 
 // -----------------------------------------------------------------------------
@@ -237,6 +285,7 @@ model AssessmentSession {
   userId          String
   resumeVersionId String
   jobId           String
+  applicationId   String?
   status          AssessmentStatus @default(TASKS_GENERATED)
   roleTitle       String
   seniority       AssessmentSeniority
@@ -249,6 +298,7 @@ model AssessmentSession {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   resumeVersion   ResumeVersion @relation(fields: [resumeVersionId], references: [id], onDelete: Restrict)
   job             Job      @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  application     Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
   tasks           AssessmentTask[]
   submissions     AssessmentSubmission[]
   result          AssessmentResult?
@@ -256,6 +306,7 @@ model AssessmentSession {
   @@index([userId])
   @@index([resumeVersionId])
   @@index([jobId])
+  @@index([applicationId])
 }
 
 enum AssessmentStatus {
@@ -311,6 +362,7 @@ model AssessmentSubmission {
 
   session     AssessmentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   task        AssessmentTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, taskId])
   @@index([userId])
@@ -334,6 +386,7 @@ model AssessmentResult {
   createdAt   DateTime @default(now())
 
   session     AssessmentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -377,10 +430,12 @@ model Application {
   job             Job      @relation(fields: [jobId], references: [id], onDelete: Restrict)
   resumeVersion   ResumeVersion? @relation(fields: [resumeVersionId], references: [id], onDelete: SetNull)
   events          ApplicationEvent[]
+  assessmentSessions AssessmentSession[]
 
   @@index([userId])
   @@index([jobId])
   @@index([resumeVersionId])
+  @@unique([userId, jobId])
 }
 
 enum ApplicationStatus {
@@ -398,10 +453,15 @@ model ApplicationEvent {
   type          ApplicationEventType
   date          DateTime @default(now())
   notes         String?  @db.Text
+  actorUserId   String?
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus?
 
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@index([applicationId])
+  @@index([actorUserId])
+  @@index([fromStatus, toStatus])
 }
 
 enum ApplicationEventType {

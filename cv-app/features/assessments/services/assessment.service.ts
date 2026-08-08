@@ -104,7 +104,7 @@ export class AssessmentService {
     return { resumeVersions, jobs, sessions };
   }
 
-  async createSession(userId: string, input: { resumeVersionId: string; jobId: string }) {
+  async createSession(userId: string, input: { resumeVersionId: string; jobId: string; applicationId?: string | null }) {
     const [resumeVersion, job] = await Promise.all([
       this.repository.findResumeVersionForUser(userId, input.resumeVersionId),
       this.repository.findJob(input.jobId),
@@ -116,6 +116,12 @@ export class AssessmentService {
     if (!job) {
       throw new AssessmentValidationError("JD không tồn tại hoặc đã bị lưu trữ.");
     }
+    if (input.applicationId) {
+      const application = await this.repository.findApplicationContext(userId, input.applicationId);
+      if (!application || application.jobId !== input.jobId || application.resumeVersionId !== input.resumeVersionId) {
+        throw new AssessmentOwnershipError("Application khong khop voi ung vien, JD va CV da chon.");
+      }
+    }
 
     const seniority = inferSeniority(job.title, `${job.description ?? ""}\n${job.requirements ?? ""}`);
     const tasks = buildTasks(job).map((task) => ({
@@ -123,15 +129,23 @@ export class AssessmentService {
       rubric: task.rubric as Prisma.InputJsonValue,
     }));
 
-    return this.repository.createSession({
+    try {
+      return await this.repository.createSession({
       userId,
       resumeVersionId: input.resumeVersionId,
       jobId: input.jobId,
+      applicationId: input.applicationId,
       roleTitle: job.title,
       seniority,
       summary: `Bộ bài tập được sinh từ JD ${job.title} tại ${job.company}, dùng CV "${resumeVersion.resume.title}" làm ngữ cảnh ứng viên.`,
       tasks,
-    });
+      });
+    } catch (error) {
+      if (error instanceof AssessmentSessionStateError) {
+        throw new AssessmentOwnershipError("Application khong khop voi ung vien, JD va CV da chon.");
+      }
+      throw error;
+    }
   }
 
   async getSession(userId: string, sessionId: string) {

@@ -2,6 +2,10 @@ import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
+import { PrismaAuthUserRepository } from "@/features/auth/repositories/auth.repository";
+import { normalizePrincipal } from "@/features/auth/services/session-authorization";
+import { AuthService, InvalidCredentialsError } from "@/features/auth/services/auth.service";
+import { getDashboardPathForRole, getRouteDecision } from "@/features/auth/services/role-redirects";
 
 export default {
   providers: [
@@ -18,10 +22,19 @@ export default {
         const password = credentials?.password as string | undefined;
         if (!email || !password) return null;
 
-        // Dev/Demo: accept any email with password "123456"
-        // In production, replace this with a proper bcrypt hash check
-        if (password === "123456") {
-          return { id: email, email, name: email.split("@")[0] };
+        const authService = new AuthService(new PrismaAuthUserRepository());
+        try {
+          const user = await authService.authenticate(email, password);
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
+        } catch (error) {
+          if (!(error instanceof InvalidCredentialsError)) {
+            throw error;
+          }
         }
 
         return null;
@@ -33,18 +46,26 @@ export default {
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
+      const user = normalizePrincipal(auth?.user);
+      const isLoggedIn = !!user;
       const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
-      const isPublicRoute = nextUrl.pathname === "/" || nextUrl.pathname === "/login";
 
       if (isApiAuthRoute) return true;
 
-      if (!isLoggedIn && !isPublicRoute) {
-        return false;
+      const decision = getRouteDecision({
+        pathname: nextUrl.pathname,
+        user,
+      });
+
+      if ("redirectTo" in decision) {
+        if (!isLoggedIn && decision.redirectTo === "/login") {
+          return false;
+        }
+        return Response.redirect(new URL(decision.redirectTo, nextUrl));
       }
 
-      if (isLoggedIn && nextUrl.pathname === "/login") {
-        return Response.redirect(new URL("/", nextUrl));
+      if (isLoggedIn && nextUrl.pathname === "/") {
+        return Response.redirect(new URL(getDashboardPathForRole(user.role), nextUrl));
       }
 
       return true;

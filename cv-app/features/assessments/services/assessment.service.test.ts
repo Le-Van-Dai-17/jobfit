@@ -11,6 +11,7 @@ function createRepositoryMock() {
     listSessionsForUser: vi.fn(),
     findResumeVersionForUser: vi.fn(),
     findJob: vi.fn(),
+    findApplicationContext: vi.fn(),
     createSession: vi.fn(),
     findSessionForUser: vi.fn(),
     completeSubmission: vi.fn(),

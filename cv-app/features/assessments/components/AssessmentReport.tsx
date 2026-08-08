@@ -42,16 +42,16 @@ export function AssessmentReport({ result }: { result: Result }) {
         <div className="rounded-lg border border-border-light bg-surface-white p-4">
           <h3 className="font-bold text-foreground">Điểm mạnh</h3>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-foreground">
-            {result.strengths.map((item) => (
-              <li key={item}>{item}</li>
+            {result.strengths.map((item, index) => (
+              <li key={`strength-${index}-${item}`}>{item}</li>
             ))}
           </ul>
         </div>
         <div className="rounded-lg border border-border-light bg-surface-white p-4">
           <h3 className="font-bold text-foreground">Khoảng trống</h3>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-foreground">
-            {result.gaps.map((item) => (
-              <li key={item}>{item}</li>
+            {result.gaps.map((item, index) => (
+              <li key={`gap-${index}-${item}`}>{item}</li>
             ))}
           </ul>
         </div>
@@ -94,8 +94,8 @@ export function AssessmentReport({ result }: { result: Result }) {
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
         <h3 className="font-bold text-amber-900">Giới hạn</h3>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-amber-900">
-          {result.limitations.map((item) => (
-            <li key={item}>{item}</li>
+          {result.limitations.map((item, index) => (
+            <li key={`limitation-${index}-${item}`}>{item}</li>
           ))}
         </ul>
       </div>

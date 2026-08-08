@@ -36,8 +36,10 @@ describe("AssessmentRepository", () => {
 
   it("atomically claims only a generated session before creating immutable submissions and result", async () => {
     const tx = {
+      application: { findFirst: vi.fn() },
       assessmentSubmission: { create: vi.fn() },
       assessmentResult: { create: vi.fn() },
+      assessmentTask: { count: vi.fn().mockResolvedValue(1) },
       assessmentSession: {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findFirst: vi.fn().mockResolvedValue({ id: "session-1", userId: "user-1" }),
@@ -69,6 +71,60 @@ describe("AssessmentRepository", () => {
       where: { id: "session-1", userId: "user-1", status: "SUBMITTED" },
       data: { status: "EVALUATED", completedAt: expect.any(Date) },
     });
+    expect(tx.application.findFirst).not.toHaveBeenCalled();
+    expect("update" in tx.assessmentSession).toBe(false);
+  });
+
+  it("creates a session only after transactionally matching application, CV version, job, and active user", async () => {
+    const tx = {
+      resumeVersion: { findFirst: vi.fn().mockResolvedValue({ id: "version-1" }) },
+      job: { findFirst: vi.fn().mockResolvedValue({ id: "job-1" }) },
+      application: { findFirst: vi.fn().mockResolvedValue({ id: "app-1" }) },
+      assessmentSession: { create: vi.fn().mockResolvedValue({ id: "session-1" }) },
+    };
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback) =>
+      (callback as TransactionCallback)(tx as unknown as Parameters<TransactionCallback>[0])
+    );
+
+    const repository = new AssessmentRepository();
+    await expect(
+      repository.createSession({
+        userId: "user-1",
+        resumeVersionId: "version-1",
+        jobId: "job-1",
+        applicationId: "app-1",
+        roleTitle: "Engineer",
+        seniority: "MID",
+        summary: "summary",
+        tasks: [],
+      })
+    ).resolves.toEqual({ id: "session-1" });
+
+    expect(tx.resumeVersion.findFirst).toHaveBeenCalledWith({
+      where: { id: "version-1", resume: { userId: "user-1", deletedAt: null, user: { deletedAt: null } } },
+      select: { id: true },
+    });
+    expect(tx.application.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: "app-1",
+        userId: "user-1",
+        jobId: "job-1",
+        resumeVersionId: "version-1",
+        deletedAt: null,
+        user: { deletedAt: null },
+      },
+      select: { id: true },
+    });
+    expect(tx.assessmentSession.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: "user-1",
+          resumeVersionId: "version-1",
+          jobId: "job-1",
+          applicationId: "app-1",
+        }),
+      })
+    );
   });
 
   it("rejects a stale claim without writing submissions or replacing a result", async () => {
@@ -76,6 +132,7 @@ describe("AssessmentRepository", () => {
     const tx = {
       assessmentSubmission: { create: vi.fn() },
       assessmentResult: { create: vi.fn() },
+      assessmentTask: { count: vi.fn() },
       assessmentSession: {
         updateMany: vi.fn().mockResolvedValue({ count: 0 }),
         findFirst: vi.fn(),
@@ -101,6 +158,7 @@ describe("AssessmentRepository", () => {
     const makeTx = () => ({
       assessmentSubmission: { create: vi.fn() },
       assessmentResult: { create: vi.fn(async ({ data }) => createdResults.push(data)) },
+      assessmentTask: { count: vi.fn().mockResolvedValue(1) },
       assessmentSession: {
         updateMany: vi.fn(async ({ where, data }) => {
           if (where.status && status !== where.status) return { count: 0 };

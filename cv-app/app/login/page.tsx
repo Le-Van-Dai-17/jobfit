@@ -1,5 +1,6 @@
 import LoginClient from "@/features/auth/LoginClient";
 import { auth } from "@/auth";
+import { getDashboardPathForRole } from "@/features/auth/services/role-redirects";
 import { redirect } from "next/navigation";
 
 export default async function LoginPage() {
@@ -7,7 +8,7 @@ export default async function LoginPage() {
 
   // Redirect to dashboard if already authenticated
   if (session?.user) {
-    redirect("/");
+    redirect(getDashboardPathForRole(session.user.role));
   }
 
   return <LoginClient />;

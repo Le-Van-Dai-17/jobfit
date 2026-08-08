@@ -25,11 +25,13 @@ export function AssessmentStartForm({
   jobs,
   selectedResumeVersionId,
   selectedJobId,
+  applicationId,
 }: {
   resumeVersions: ResumeOption[];
   jobs: JobOption[];
   selectedResumeVersionId?: string;
   selectedJobId?: string;
+  applicationId?: string;
 }) {
   const [state, formAction, pending] = useActionState(
     createAssessmentSessionAction,
@@ -39,6 +41,7 @@ export function AssessmentStartForm({
 
   return (
     <form action={formAction} className="grid gap-4 rounded-lg border border-border-light bg-surface-white p-4 md:grid-cols-[1fr_1fr_auto]">
+      {applicationId && <input type="hidden" name="applicationId" value={applicationId} />}
       <div className="space-y-2">
         <label htmlFor="resumeVersionId" className="text-sm font-semibold text-foreground">
           Phiên bản CV

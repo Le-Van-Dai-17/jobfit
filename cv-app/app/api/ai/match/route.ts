@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { analyzeResumeMatch } from "@/lib/ai/gemini";
 import { prisma } from "@/lib/db/prisma";
+import { requireActiveRole } from "@/features/auth/services/session-authorization";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
+    const principal = await requireActiveRole(session?.user, "CANDIDATE");
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (!principal) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await req.json();
     const { jobDescription, resumeId } = body;
@@ -20,8 +23,8 @@ export async function POST(req: NextRequest) {
     // Fetch the specific resume or the user's primary one if not specified
     const resume = await prisma.resume.findFirst({
       where: resumeId 
-        ? { id: resumeId, userId: session.user.id }
-        : { userId: session.user.id, isPrimary: true },
+        ? { id: resumeId, userId: principal.id, deletedAt: null }
+        : { userId: principal.id, isPrimary: true, deletedAt: null },
       include: {
         versions: {
           orderBy: { version: "desc" },

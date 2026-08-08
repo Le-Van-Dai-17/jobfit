@@ -15,6 +15,16 @@
 | `/interview` | `app/interview/page.tsx` | Partial | AI question/evaluation routes exist; persistence and consent handling are incomplete. |
 | `/tracker` | `app/tracker/page.tsx` | Partial/mock | Application API/model exists; Kanban state still needs full persistence. |
 | `/profile` | `app/profile/page.tsx` | Mock | Profile model exists; page is primarily demo presentation. |
+| `/recruiter` | `app/recruiter/page.tsx` | Implemented | Recruiter dashboard counts scoped to authenticated company membership; recruiters without membership are redirected to onboarding. |
+| `/recruiter/jobs` | `app/recruiter/jobs/page.tsx` | Implemented | Lists company-owned jobs/JDs and supports publish/archive actions. |
+| `/recruiter/jobs/new` | `app/recruiter/jobs/new/page.tsx` | Implemented | Creates company-owned draft jobs through server-side Zod validation. |
+| `/recruiter/jobs/[jobId]` | `app/recruiter/jobs/[jobId]/page.tsx` | Implemented | Company-scoped job detail; cross-company access returns not found. |
+| `/recruiter/candidates` | `app/recruiter/candidates/page.tsx` | Implemented | Candidate pipeline lists only applications to company-owned jobs and supports status filtering. |
+| `/recruiter/candidates/[applicationId]` | `app/recruiter/candidates/[applicationId]/page.tsx` | Implemented | Company-scoped application detail and audited recruiter status transitions. |
+| `/recruiter/assessments` | `app/recruiter/assessments/page.tsx` | Implemented | Lists employer-safe assessment reports available through company-owned applications. |
+| `/recruiter/assessments/[applicationId]` | `app/recruiter/assessments/[applicationId]/page.tsx` | Implemented | Employer-safe report detail; denied access fails closed without existence leakage. |
+| `/recruiter/company` | `app/recruiter/company/page.tsx` | Implemented | Shows the authenticated recruiter's company membership details. |
+| `/recruiter/company/onboarding` | `app/recruiter/company/onboarding/page.tsx` | Implemented | Creates recruiter company membership for recruiters without a company. |
 
 ## API And Server Routes
 
@@ -47,5 +57,4 @@ ResumeVersion + Job
 
 ## Not Yet Routed
 
-- Employer company access/sharing for assessment reports is not implemented yet; reports are candidate-visible and employer-safe in content.
-- Manual JD creation/import is not yet implemented as a dedicated route; current JD selection depends on active `Job` rows or demo job UI.
+- External employer sharing links are not implemented; recruiter report access requires authenticated company membership.

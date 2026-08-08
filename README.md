@@ -132,8 +132,11 @@ AUTH_GITHUB_SECRET=""
 **4. Khởi tạo Database:**
 ```bash
 npx prisma generate
-npx prisma db push
+npx prisma migrate deploy
+npx prisma db seed
 ```
+
+Không dùng `prisma db push` cho database có dữ liệu thật. Với database trống, `migrate deploy` chạy toàn bộ migration history. Với database đã từng tạo bằng `db push`, hãy backup, so sánh schema với baseline, chỉ `migrate resolve --applied` cho baseline sau khi xác nhận schema tương đương, rồi mới chạy `migrate deploy`.
 
 **5. Chạy môi trường Development:**
 ```bash
@@ -146,9 +149,15 @@ npm run dev
 
 ## 🔒 Đăng nhập môi trường Dev/Demo
 
-Để test nhanh mà không cần cấu hình Google/GitHub OAuth, hệ thống cung cấp sẵn tính năng đăng nhập bằng Email tĩnh (Credentials Provider).
-- **Email:** `demo@cvkada.com`
-- **Password:** `123456`
+Đăng nhập credentials dùng tài khoản đã đăng ký trong database. Fallback demo chỉ hoạt động ngoài production khi bật rõ trong `.env`:
+
+```env
+AUTH_ENABLE_DEV_DEMO_LOGIN="true"
+AUTH_DEV_DEMO_EMAIL="demo@cvkada.local"
+AUTH_DEV_DEMO_PASSWORD="your-local-demo-password"
+```
+
+Fallback này chỉ chấp nhận đúng email/mật khẩu đã cấu hình, không phải bất kỳ email với `123456`.
 
 ---
 

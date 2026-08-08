@@ -3,7 +3,12 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Seeding database...");
+  if (process.env.NODE_ENV === "production" || process.env.SEED_DEMO_DATA !== "true") {
+    console.log("Demo seed skipped. Set SEED_DEMO_DATA=true in a non-production environment to opt in.");
+    return;
+  }
+
+  console.log("Seeding explicit local demo data...");
 
   // 1. Create a demo user
   const user = await prisma.user.upsert({
@@ -12,7 +17,7 @@ async function main() {
     create: {
       email: "demo@lumina.ai",
       name: "Vũ Nguyễn",
-      role: "USER",
+      role: "CANDIDATE",
     },
   });
 

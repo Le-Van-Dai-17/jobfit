@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resumeRepository } from "../repositories/resume.repository";
-import { ResumeService } from "./resume.service";
+import { ResumeService, ResumeValidationError } from "./resume.service";
 
 vi.mock("../repositories/resume.repository", () => ({
   resumeRepository: {
@@ -47,6 +47,25 @@ describe("ResumeService", () => {
         skills: [],
       }
     );
+  });
+
+  it("trims a candidate-provided title before persistence", async () => {
+    mockedResumeRepository.create.mockResolvedValue({ id: "resume-1" } as never);
+
+    await new ResumeService().createNewResume("user-1", "  CV Backend  ");
+
+    expect(mockedResumeRepository.create).toHaveBeenCalledWith(
+      "user-1",
+      "CV Backend",
+      expect.any(Object)
+    );
+  });
+
+  it("rejects an invalid candidate-provided title before persistence", async () => {
+    await expect(new ResumeService().createNewResume("user-1", " ")).rejects.toBeInstanceOf(
+      ResumeValidationError
+    );
+    expect(mockedResumeRepository.create).not.toHaveBeenCalled();
   });
 
   it("uses the soft-delete repository path for deletion", async () => {

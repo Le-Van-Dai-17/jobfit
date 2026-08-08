@@ -29,28 +29,62 @@ npm ci
 cp .env.example .env
 npm run db:generate
 npx prisma migrate deploy
-npm run db:seed
 npm run dev
 ```
 
 Use npm only. Do not add another lockfile.
 
-For local demo auth, the credentials provider accepts any email with password `123456`. Real persistence requires PostgreSQL connection strings in `.env`. Live AI features require `GEMINI_API_KEY`; leave it empty for local/CI paths that should not call external AI.
+Registered database users are the only credentials-provider identities. Real persistence requires PostgreSQL connection strings in `.env`. Live AI features require `GEMINI_API_KEY`; leave it empty for local/CI paths that should not call external AI.
+
+### Optional local demo data
+
+The default setup never inserts sample candidates, CVs, or jobs. To opt in on a disposable **non-production** database only:
+
+```bash
+SEED_DEMO_DATA=true npm run db:seed
+```
+
+The seed refuses to run when `NODE_ENV=production`. Never enable it against recruitment data used for real applications or assessments.
 
 ### Database migrations
 
-Migration history is intentionally split into two steps:
+Migration history currently has four ordered steps:
 
-1. `20260808000000_baseline` creates the pre-assessment core schema (`User`, `ResumeVersion`, `Job`, and the other existing models).
-2. `20260809000000_add_assessments` adds the assessment enums, tables, indexes, and foreign keys.
+1. `20260808000000_baseline` creates the pre-assessment core schema.
+2. `20260809000000_add_assessments` adds the assessment domain.
+3. `20260809010000_registration_rbac_company_foundation` adds credential hashes, migrates the historical `USER` role to `CANDIDATE`, and adds companies/memberships.
+4. `20260809020000_recruiter_vertical_slice` adds recruiter ownership links, uniqueness constraints, and PostgreSQL assessment-consistency triggers.
 
-A new empty database should run both migrations with:
+The last two migrations (`20260809010000` and `20260809020000`) are **unreleased and pending**: they have not been deployed to the user database. Review and deploy them together in order; do not mark either as applied manually and do not use `prisma db push`.
 
-```bash
-npx prisma migrate deploy
+Before deployment, take a restorable PostgreSQL backup and run these read-only duplicate preflight queries against the target database:
+
+```sql
+SELECT "userId", "jobId", COUNT(*) AS duplicate_count
+FROM "Application"
+GROUP BY "userId", "jobId"
+HAVING COUNT(*) > 1;
+
+SELECT "resumeId", "version", COUNT(*) AS duplicate_count
+FROM "ResumeVersion"
+GROUP BY "resumeId", "version"
+HAVING COUNT(*) > 1;
 ```
 
-For an existing database previously created with `prisma db push`, **do not deploy the core baseline blindly**. Back up the database, then compare its schema with the pre-assessment schema represented by commit `4830063`. Only after confirming that the existing core tables, columns, indexes, constraints, and enums are equivalent, record the core baseline as already applied and deploy the assessment migration:
+Both queries must return zero rows. If either returns rows, stop and resolve each duplicate explicitly according to product/data-owner intent, take a fresh backup, and rerun the queries. Migration `20260809020000` repeats these checks in PostgreSQL `DO` blocks and raises a clear exception before each unique index; it never deduplicates, renumbers, or deletes data automatically.
+
+Recommended production procedure:
+
+1. Enter a maintenance window or otherwise stop concurrent application/application-version writes.
+2. Record `npx prisma migrate status` and create/test a restorable backup (for example, a provider snapshot plus `pg_dump`).
+3. Run the two preflight queries above on the exact target database; stop on any row.
+4. Restore the backup into a staging database and run `npx prisma migrate deploy` there first, followed by the application smoke tests.
+5. On the production database, run `npx prisma migrate deploy` once. Do not run migrations individually, edit `_prisma_migrations`, or use `migrate resolve --applied` for these pending migrations.
+6. Verify with `npx prisma migrate status`, application health checks, and a focused registration/recruiter/assessment smoke. Retain the backup until verification is complete.
+
+A new empty database can run the complete history with `npx prisma migrate deploy`.
+
+For an existing database previously created with `prisma db push`, **do not deploy the core baseline blindly**. Back up the database, then compare its schema with the pre-assessment schema represented by commit `4830063`. Only after confirming that the existing core tables, columns, indexes, constraints, and enums are equivalent, record the core baseline as already applied; then run the duplicate preflight and staged deployment procedure above:
 
 ```bash
 npx prisma migrate resolve --applied 20260808000000_baseline
@@ -58,7 +92,7 @@ npx prisma migrate deploy
 npx prisma migrate status
 ```
 
-`migrate resolve --applied` only updates Prisma migration history; it does not validate or repair the existing schema. If the core schema differs, create and review a reconciliation migration before marking the baseline as applied.
+`migrate resolve --applied` only updates Prisma migration history; it does not validate or repair the existing schema. If the core schema differs, create and review a reconciliation migration before marking the baseline as applied. Never resolve the two unreleased pending migrations as applied without actually executing their SQL.
 
 ## Verification
 

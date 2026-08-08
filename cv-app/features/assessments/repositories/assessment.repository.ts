@@ -49,26 +49,65 @@ export class AssessmentRepository {
     });
   }
 
+  async findApplicationContext(userId: string, applicationId: string) {
+    return prisma.application.findFirst({
+      where: { id: applicationId, userId, deletedAt: null, user: { deletedAt: null } },
+      select: { id: true, userId: true, jobId: true, resumeVersionId: true },
+    });
+  }
+
   async createSession(input: {
     userId: string;
     resumeVersionId: string;
     jobId: string;
+    applicationId?: string | null;
     roleTitle: string;
     seniority: Prisma.AssessmentSessionCreateInput["seniority"];
     summary: string;
     tasks: Prisma.AssessmentTaskCreateWithoutSessionInput[];
   }) {
-    return prisma.assessmentSession.create({
-      data: {
-        userId: input.userId,
-        resumeVersionId: input.resumeVersionId,
-        jobId: input.jobId,
-        roleTitle: input.roleTitle,
-        seniority: input.seniority,
-        summary: input.summary,
-        tasks: { create: input.tasks },
-      },
-      include: { tasks: { orderBy: { orderIndex: "asc" } }, result: true, job: true, resumeVersion: { include: { resume: true } } },
+    return prisma.$transaction(async (tx) => {
+      const [resumeVersion, job, application] = await Promise.all([
+        tx.resumeVersion.findFirst({
+          where: { id: input.resumeVersionId, resume: { userId: input.userId, deletedAt: null, user: { deletedAt: null } } },
+          select: { id: true },
+        }),
+        tx.job.findFirst({
+          where: { id: input.jobId, isArchived: false },
+          select: { id: true },
+        }),
+        input.applicationId
+          ? tx.application.findFirst({
+              where: {
+                id: input.applicationId,
+                userId: input.userId,
+                jobId: input.jobId,
+                resumeVersionId: input.resumeVersionId,
+                deletedAt: null,
+                user: { deletedAt: null },
+              },
+              select: { id: true },
+            })
+          : Promise.resolve(null),
+      ]);
+
+      if (!resumeVersion || !job || (input.applicationId && !application)) {
+        throw new AssessmentSessionStateError();
+      }
+
+      return tx.assessmentSession.create({
+        data: {
+          userId: input.userId,
+          resumeVersionId: input.resumeVersionId,
+          jobId: input.jobId,
+          applicationId: input.applicationId,
+          roleTitle: input.roleTitle,
+          seniority: input.seniority,
+          summary: input.summary,
+          tasks: { create: input.tasks },
+        },
+        include: { tasks: { orderBy: { orderIndex: "asc" } }, result: true, job: true, resumeVersion: { include: { resume: true } } },
+      });
     });
   }
 
@@ -105,6 +144,16 @@ export class AssessmentRepository {
       });
 
       if (claimed.count !== 1) {
+        throw new AssessmentSessionStateError();
+      }
+
+      const taskCount = await tx.assessmentTask.count({
+        where: {
+          sessionId: input.sessionId,
+          id: { in: input.submissions.map((submission) => submission.taskId) },
+        },
+      });
+      if (taskCount !== input.submissions.length) {
         throw new AssessmentSessionStateError();
       }
 

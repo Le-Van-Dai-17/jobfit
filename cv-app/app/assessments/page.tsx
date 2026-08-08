@@ -5,18 +5,19 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AssessmentStartForm } from "@/features/assessments/components/AssessmentStartForm";
 import { assessmentService } from "@/features/assessments/services/assessment.service";
+import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 
 export default async function AssessmentsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ resumeVersionId?: string; jobId?: string }>;
+  searchParams?: Promise<{ resumeVersionId?: string; jobId?: string; applicationId?: string }>;
 }) {
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
+  const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "CANDIDATE" });
+  if (roleRedirect) redirect(roleRedirect);
+  const user = session!.user;
 
-  const { resumeVersions, jobs, sessions } = await assessmentService.getStartOptions(session.user.id);
+  const { resumeVersions, jobs, sessions } = await assessmentService.getStartOptions(user.id);
   const params = await searchParams;
   const selectedResumeVersionId = resumeVersions.some((version) => version.id === params?.resumeVersionId)
     ? params?.resumeVersionId
@@ -70,6 +71,7 @@ export default async function AssessmentsPage({
         jobs={jobs}
         selectedResumeVersionId={selectedResumeVersionId}
         selectedJobId={selectedJobId}
+        applicationId={params?.applicationId}
       />
 
       <section className="rounded-lg border border-border-light bg-surface-white p-4">

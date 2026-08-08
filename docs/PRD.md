@@ -46,7 +46,7 @@ The live code is no longer a UI-only prototype. It currently contains:
 
 ## Mock Or Demo Paths
 
-- Credentials auth accepts any email with password `123456` for local/demo use.
+- Credentials auth supports registered database users. A local-only demo fallback can be enabled with `AUTH_ENABLE_DEV_DEMO_LOGIN=true`, but only for the exact configured demo email/password and never in production.
 - Some dashboard, profile, tracker, jobs, and interview UI state remains mock/demo data.
 - Gemini uses a dummy fallback key only to keep builds from failing; live AI calls still require `GEMINI_API_KEY`.
 

@@ -1,37 +1,29 @@
-import MyCvClient from "@/features/my-cv/my-cvClient";
-import { auth } from "@/auth";
-import { resumeService } from "@/features/cv/services/resume.service";
+import type { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { Prisma } from "@prisma/client";
+import { auth } from "@/auth";
+import { getDashboardPathForRole } from "@/features/auth/services/role-redirects";
+import { requireActiveRole } from "@/features/auth/services/session-authorization";
+import { resumeService } from "@/features/cv/services/resume.service";
+import { CreateResumeForm } from "@/features/my-cv/CreateResumeForm";
+import MyCvClient from "@/features/my-cv/my-cvClient";
 
 export default async function MyCvPage() {
   const session = await auth();
-  
-  if (!session?.user?.id) {
-    redirect("/login");
+  if (!session?.user?.id) redirect("/login");
+
+  const principal = await requireActiveRole(session.user, "CANDIDATE");
+  if (!principal) {
+    redirect(session.user.role === "CANDIDATE" ? "/login" : getDashboardPathForRole(session.user.role));
   }
 
-  // Fetch user's primary resume
-  const resumes = await resumeService.getUserResumes(session.user.id);
-  
-  let resume = resumes[0];
-  let initialData = null;
+  const resumes = await resumeService.getUserResumes(principal.id);
+  const resume = resumes[0];
+  if (!resume) return <CreateResumeForm />;
 
-  // If no resume exists, create a blank one
-  if (!resume) {
-    resume = await resumeService.createNewResume(session.user.id, "Frontend Developer CV - 2024");
-  }
-
-  // Extract the JSON content from the latest version
   const latestVersion = resume.versions?.[0];
-  if (latestVersion && latestVersion.content) {
-    initialData = latestVersion.content as Prisma.JsonObject;
-  }
+  const initialData = latestVersion?.content && typeof latestVersion.content === "object" && !Array.isArray(latestVersion.content)
+    ? latestVersion.content as Prisma.JsonObject
+    : null;
 
-  return (
-    <MyCvClient 
-      initialResumeId={resume.id}
-      initialData={initialData}
-    />
-  );
+  return <MyCvClient initialResumeId={resume.id} initialTitle={resume.title} initialData={initialData} />;
 }

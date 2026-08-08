@@ -12,14 +12,14 @@ import { CvData } from "@/features/cv/schemas/cv.schema";
 
 interface MyCvClientProps {
   initialResumeId?: string;
+  initialTitle: string;
   initialData?: Partial<CvData> | null;
 }
 
-export default function MyCvClient({ initialResumeId, initialData }: MyCvClientProps) {
+export default function MyCvClient({ initialResumeId, initialTitle, initialData }: MyCvClientProps) {
   const { setCvData, cvData, isDirty, resetDirty } = useCvStore();
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load initial data (mocking for now if none provided)
   useEffect(() => {
     if (initialData) {
       setCvData(initialData as CvData);
@@ -62,7 +62,7 @@ export default function MyCvClient({ initialResumeId, initialData }: MyCvClientP
           <div className="h-4 w-px bg-border-light" />
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <FileText className="h-4 w-4 text-primary" />
-            <span>Frontend Developer CV - 2024</span>
+            <span>{initialTitle}</span>
           </div>
         </div>
         

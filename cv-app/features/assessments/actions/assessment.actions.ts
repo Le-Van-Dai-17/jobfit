@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 
 import { auth } from "@/auth";
+import { requireActiveRole } from "@/features/auth/services/session-authorization";
 import {
   AssessmentOwnershipError,
   AssessmentValidationError,
@@ -40,8 +41,12 @@ export async function createAssessmentSessionAction(
   formData: FormData
 ): Promise<AssessmentActionState> {
   const session = await auth();
+  const principal = await requireActiveRole(session?.user, "CANDIDATE");
   if (!session?.user?.id) {
     return { status: "error", message: "Bạn cần đăng nhập để tạo bài đánh giá." };
+  }
+  if (!principal) {
+    return { status: "error", message: "Chỉ tài khoản ứng viên đang hoạt động mới có thể tạo bài đánh giá." };
   }
 
   let createdSessionId: string | null = null;
@@ -49,8 +54,9 @@ export async function createAssessmentSessionAction(
     const input = AssessmentStartSchema.parse({
       resumeVersionId: formValue(formData, "resumeVersionId"),
       jobId: formValue(formData, "jobId"),
+      applicationId: formValue(formData, "applicationId") || null,
     });
-    const created = await assessmentService.createSession(session.user.id, input);
+    const created = await assessmentService.createSession(principal.id, input);
     createdSessionId = created.id;
   } catch (error) {
     return toActionError(error);
@@ -65,8 +71,12 @@ export async function submitAssessmentAction(
   formData: FormData
 ): Promise<AssessmentActionState> {
   const session = await auth();
+  const principal = await requireActiveRole(session?.user, "CANDIDATE");
   if (!session?.user?.id) {
     return { status: "error", message: "Bạn cần đăng nhập để nộp bài đánh giá." };
+  }
+  if (!principal) {
+    return { status: "error", message: "Chỉ tài khoản ứng viên đang hoạt động mới có thể nộp bài đánh giá." };
   }
 
   const sessionId = formValue(formData, "sessionId");
@@ -77,7 +87,7 @@ export async function submitAssessmentAction(
   }));
 
   try {
-    await assessmentService.submitAndEvaluate(session.user.id, { sessionId, answers });
+    await assessmentService.submitAndEvaluate(principal.id, { sessionId, answers });
   } catch (error) {
     return toActionError(error);
   }

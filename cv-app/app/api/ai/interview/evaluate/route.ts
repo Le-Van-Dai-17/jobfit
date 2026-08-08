@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { evaluateInterviewAnswer } from "@/lib/ai/gemini";
+import { requireActiveRole } from "@/features/auth/services/session-authorization";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
+    const principal = await requireActiveRole(session?.user, "CANDIDATE");
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (!principal) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await req.json();
     const { questionText, expectedKeywords, answerText } = body;

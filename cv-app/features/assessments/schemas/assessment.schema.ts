@@ -3,6 +3,7 @@ import { z } from "zod";
 export const AssessmentStartSchema = z.object({
   resumeVersionId: z.string().min(1, "Vui lòng chọn phiên bản CV"),
   jobId: z.string().min(1, "Vui lòng chọn JD"),
+  applicationId: z.string().optional().nullable(),
 });
 
 export const AssessmentSubmissionSchema = z.object({

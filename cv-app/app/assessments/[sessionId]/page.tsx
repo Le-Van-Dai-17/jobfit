@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { AssessmentReport } from "@/features/assessments/components/AssessmentReport";
 import { AssessmentSubmissionForm } from "@/features/assessments/components/AssessmentSubmissionForm";
 import { AssessmentOwnershipError, assessmentService } from "@/features/assessments/services/assessment.service";
+import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 
 export default async function AssessmentSessionPage({
   params,
@@ -13,14 +14,14 @@ export default async function AssessmentSessionPage({
   params: Promise<{ sessionId: string }>;
 }) {
   const authSession = await auth();
-  if (!authSession?.user?.id) {
-    redirect("/login");
-  }
+  const roleRedirect = getRequiredRoleRedirect({ user: authSession?.user, requiredRole: "CANDIDATE" });
+  if (roleRedirect) redirect(roleRedirect);
+  const user = authSession!.user;
 
   const { sessionId } = await params;
   let session;
   try {
-    session = await assessmentService.getSession(authSession.user.id, sessionId);
+    session = await assessmentService.getSession(user.id, sessionId);
   } catch (error) {
     if (error instanceof AssessmentOwnershipError) {
       return (
