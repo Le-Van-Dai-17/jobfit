@@ -10,6 +10,8 @@
 | `/job-optimization` | `app/job-optimization/page.tsx` | Partial | Calls AI optimization route when authenticated and configured. |
 | `/job-match` | `app/job-match/page.tsx` | Partial | Calls AI match route; structured persistence is not complete. |
 | `/jobs` | `app/jobs/page.tsx` | Partial/mock | Job repository exists; screen still contains demo/client behavior. |
+| `/assessments` | `app/assessments/page.tsx` | Implemented | Candidate selects user-owned CV version and JD, creates realistic engineering tasks, and sees recent sessions. |
+| `/assessments/[sessionId]` | `app/assessments/[sessionId]/page.tsx` | Implemented | Candidate submits text solutions and sees persisted advisory rubric/evidence report. |
 | `/interview` | `app/interview/page.tsx` | Partial | AI question/evaluation routes exist; persistence and consent handling are incomplete. |
 | `/tracker` | `app/tracker/page.tsx` | Partial/mock | Application API/model exists; Kanban state still needs full persistence. |
 | `/profile` | `app/profile/page.tsx` | Mock | Profile model exists; page is primarily demo presentation. |
@@ -34,13 +36,15 @@ User
   -> SavedJob -> Job
   -> Application -> Job + optional ResumeVersion
   -> InterviewSession -> Job? -> InterviewQuestion -> InterviewAnswer
+  -> AssessmentSession -> AssessmentTask / AssessmentSubmission / AssessmentResult
   -> AiRun
   -> FileAsset
 
 ResumeVersion + Job
   -> MatchAnalysis
+  -> AssessmentSession
 ```
 
 ## Not Yet Routed
 
-- Assessment session, engineering task, submission, rubric result, and employer-safe assessment report routes are not implemented yet. They are the Milestone 1 vertical slice.
+- Employer company access/sharing for assessment reports is not implemented yet; reports are candidate-visible and employer-safe in content.
