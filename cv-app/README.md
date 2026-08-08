@@ -39,16 +39,26 @@ For local demo auth, the credentials provider accepts any email with password `1
 
 ### Database migrations
 
-`20260809000000_baseline` is a complete baseline from an empty PostgreSQL database to the current schema. New databases should use `npx prisma migrate deploy`; the migration creates the core `User`, `ResumeVersion`, and `Job` tables before adding assessment foreign keys.
+Migration history is intentionally split into two steps:
 
-For an existing database that was previously created with `prisma db push`, **do not run the baseline blindly**. First back up the database and confirm that its tables, columns, indexes, constraints, and enums match `prisma/schema.prisma` (review a schema diff with the responsible operator). Only after confirming equivalence, record the baseline without executing its SQL:
+1. `20260808000000_baseline` creates the pre-assessment core schema (`User`, `ResumeVersion`, `Job`, and the other existing models).
+2. `20260809000000_add_assessments` adds the assessment enums, tables, indexes, and foreign keys.
+
+A new empty database should run both migrations with:
 
 ```bash
-npx prisma migrate resolve --applied 20260809000000_baseline
 npx prisma migrate deploy
 ```
 
-`migrate resolve --applied` only updates Prisma migration history; it does not validate or repair the existing schema. If the schema differs, reconcile it with a reviewed migration instead of marking the baseline as applied.
+For an existing database previously created with `prisma db push`, **do not deploy the core baseline blindly**. Back up the database, then compare its schema with the pre-assessment schema represented by commit `4830063`. Only after confirming that the existing core tables, columns, indexes, constraints, and enums are equivalent, record the core baseline as already applied and deploy the assessment migration:
+
+```bash
+npx prisma migrate resolve --applied 20260808000000_baseline
+npx prisma migrate deploy
+npx prisma migrate status
+```
+
+`migrate resolve --applied` only updates Prisma migration history; it does not validate or repair the existing schema. If the core schema differs, create and review a reconciliation migration before marking the baseline as applied.
 
 ## Verification
 
