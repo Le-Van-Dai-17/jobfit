@@ -7,11 +7,11 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- BEGIN:product-rules -->
 ## Product Rules
 
-- **Mục tiêu sản phẩm:** Lumina AI là nền tảng giúp người dùng quản lý CV, tối ưu hồ sơ theo JD, phân tích job match, và theo dõi ứng tuyển.
+- **Mục tiêu sản phẩm:** CV_KADA là MVP tuyển dụng xoay quanh vòng lặp `CV -> realistic engineering tasks -> evidence-based assessment results for employers`; CV, jobs, matching, optimization, tracker, and interview modules support that loop.
 - **Đối tượng người dùng:** Người tìm việc (Việt Nam), kỹ sư công nghệ.
 - **Luồng chính:** Tạo/Quản lý CV → Tối ưu theo JD → Phân tích match → Ứng tuyển → Theo dõi → Phỏng vấn thử.
-- **Dữ liệu:** Hiện tại dùng mock data. Khi có backend, dữ liệu CV và jobs phải đồng bộ.
-- **AI Features:** ATS scoring, keyword extraction, job match %, rephrase suggestion — tất cả đều là AI-powered.
+- **Dữ liệu:** Prisma/PostgreSQL, Auth.js, repositories/services, and API routes exist. Some UI surfaces still use mock/demo state; document that status instead of reverting to UI-only assumptions.
+- **AI Features:** ATS scoring, keyword extraction, job match %, rephrase suggestion, and interview features use Gemini-backed routes when credentials are present. CI/tests must keep mock/local paths and avoid live provider calls.
 <!-- END:product-rules -->
 
 <!-- BEGIN:architecture-rules -->
@@ -21,7 +21,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **Routing:** Server Components mặc định trong `app/` directory. Chỉ dùng `"use client"` ở component thực sự cần state, event handler hoặc browser API.
 - **Components:** Component dùng chung đặt trong `components/`, phân loại theo domain (layout/, dashboard/).
 - **State management:** Dùng React `useState` hiện tại. Khi mở rộng, ưu tiên React Context hoặc Zustand.
-- **API layer:** Chưa có — khi thêm, tạo `lib/api/` và gọi từ server actions hoặc client components.
+- **API layer:** Route handlers and server actions exist. Preserve `UI -> action/controller -> service -> repository/provider`.
 - **Design tokens:** Định nghĩa trong `DESIGN.md`. Theme CSS variables trong `app/globals.css`. Không hardcode giá trị thiết kế.
 - **Package manager:** Chỉ dùng **npm**. Không tạo pnpm-lock.yaml, yarn.lock.
 - **Ngôn ngữ UI:** Tiếng Việt (vi).
@@ -57,7 +57,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **Lint:** `npm run lint` không có lỗi.
 - **Build:** `npm run build` phải thành công.
 - **Pre-commit:** Chạy `npm run check` (lint + typecheck + build) trước mỗi commit.
-- **Testing framework:** Chưa có — khi thêm, dùng Vitest + React Testing Library.
+- **Testing framework:** Vitest is configured. Add focused unit tests for changed deterministic schema/service logic.
 <!-- END:testing-requirements -->
 
 <!-- BEGIN:commands -->
@@ -69,7 +69,7 @@ npm run build    # Build production
 npm run start    # Start production server
 npm run lint     # ESLint
 npm run typecheck # TypeScript check (tsc --noEmit)
-npm run check    # Lint + typecheck + build
+npm run check    # Lint + typecheck + unit tests + build
 ```
 <!-- END:commands -->
 

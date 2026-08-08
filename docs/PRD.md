@@ -1,63 +1,63 @@
-# Product Requirements Document — Lumina AI
+# Product Requirements Document - CV_KADA
 
-## Tổng quan sản phẩm
+## Product North Star
 
-Lumina AI là nền tảng web giúp người tìm việc (kỹ sư công nghệ tại Việt Nam) quản lý CV, tối ưu hồ sơ theo mô tả công việc, phân tích mức độ phù hợp, theo dõi ứng tuyển, và luyện phỏng vấn với AI.
+CV_KADA is a recruiting MVP for Vietnamese IT candidates and employers. The focused loop is:
 
-## Mục tiêu
+```text
+CV -> realistic engineering tasks -> evidence-based assessment results for employers
+```
 
-- Cung cấp công cụ tạo và quản lý CV trực quan.
-- Sử dụng AI để phân tích CV, đề xuất tối ưu từ khóa theo JD.
-- Đánh giá mức độ phù hợp (match %) giữa CV và công việc.
-- Hỗ trợ theo dõi quy trình ứng tuyển dạng Kanban.
-- Mô phỏng phỏng vấn AI với phản hồi thời gian thực.
+CV management, jobs, matching, optimization, tracker, and interview practice are supporting flows. The product must not become a certification marketplace, social network, generic LMS, or broad engineering identity platform.
 
-## Các trang sản phẩm
+## Current Repository Baseline
 
-### 1. Dashboard (`/`)
-Trang tổng quan với hero banner, thống kê AI (ATS score 88%, jobs, applications, interview score, response rate), danh sách việc làm đề xuất, và timeline hoạt động.
+The live code is no longer a UI-only prototype. It currently contains:
 
-### 2. Quản lý CV (`/my-cv`)
-Trang soạn thảo CV với 3 tab: Personal Info, Experience, Skills. Form nhập liệu kết hợp với preview CV dạng resume sheet bên cạnh.
+- Next.js 16 App Router, React 19, TypeScript, Tailwind CSS, Framer Motion, Lucide React.
+- Auth.js configuration with Google, GitHub, and local demo credentials providers.
+- Prisma/PostgreSQL schema covering users, profiles, resumes, resume versions, jobs, saved jobs, applications, interview sessions, AI runs, and file assets.
+- Repository and service layers for resumes and jobs.
+- Server actions/routes for CV saving, applications, auth, AI match, AI optimization, and AI interview generation/evaluation.
+- Gemini-backed AI helper functions with structured response schemas from the provider SDK.
+- UI routes for dashboard, CV editor, jobs, job match, optimization, tracker, interview, profile, and login.
+- Vitest configuration and baseline schema/service unit tests.
 
-### 3. Tối ưu CV theo Job (`/job-optimization`)
-Cho phép paste mô tả công việc (JD). AI phân tích và hiển thị:
-- ATS score prediction hiện tại (96/100) và mức cải thiện (+14%).
-- Missing keywords cần thêm.
-- Matched keywords đã có.
-- Gợi ý viết lại bullet points (AI rephrase).
+## Implemented
 
-### 4. Phân tích Job Match (`/job-match`)
-So sánh CV với JD, hiển thị overall match (92.5%) và breakdown theo:
-- Hard Skills match (95%)
-- Experience match (90%)
-- Education match (88%)
-Kèm phân tích strengths và competitive advantages.
+- Auth route and protected app routing via Auth.js.
+- Local demo credentials login path for development.
+- Prisma schema and generated client integration.
+- Resume repository/service and CV save action.
+- Job repository/service and saved job support.
+- Application API route.
+- Gemini route handlers for match, optimization, and interview workflows.
+- Vietnamese-first UI screens for the existing support flows.
+- Baseline scripts: lint, typecheck, unit tests, build, and combined check.
 
-### 5. Tìm việc làm phù hợp (`/jobs`)
-Trang tìm kiếm việc làm với ô tìm kiếm, bộ lọc, danh sách kết quả kèm AI match score, bookmark và apply.
+## Partial
 
-### 6. Phỏng vấn mô phỏng AI (`/interview`)
-Giao diện phỏng vấn với AI avatar/video, microphone recording, phản hồi real-time với accuracy và clarity progress bars, điều hướng câu hỏi.
+- AI provider boundary exists as a helper module, but responses are not yet consistently validated with Zod after provider return.
+- AI run auditing is modeled in Prisma but not consistently written by routes.
+- Ownership checks exist in several route queries, but shared ownership helper coverage is incomplete.
+- Resume versioning exists in the schema; UI/editor persistence is still limited.
+- Jobs and tracker have backend models and some repository/API support, but several screens still rely on mock or client-side state.
+- Interview practice has AI routes and UI, but persistence, consent, retention, and employer-safe reporting are incomplete.
 
-### 7. Theo dõi ứng tuyển (`/tracker`)
-Kanban board với 4 cột: Applied → Interview → Offer → Rejected. Thẻ ứng tuyển có thể di chuyển giữa các cột.
+## Mock Or Demo Paths
 
-### 8. Hồ sơ nghề nghiệp (`/profile`)
-Trang hồ sơ cá nhân với avatar, verified badge, skill matrix (progress bars), và certificates.
+- Credentials auth accepts any email with password `123456` for local/demo use.
+- Some dashboard, profile, tracker, jobs, and interview UI state remains mock/demo data.
+- Gemini uses a dummy fallback key only to keep builds from failing; live AI calls still require `GEMINI_API_KEY`.
 
-## Trạng thái hiện tại
+## Blockers And External Credentials
 
-**Prototype UI với mock data.** Toàn bộ dữ liệu đang được hardcode trong các client component. Chưa có backend, API, authentication, database.
+- `DATABASE_URL` and `DIRECT_URL` are required for real PostgreSQL/Supabase persistence and Prisma migration workflows.
+- `AUTH_SECRET` is required for local and deployed Auth.js sessions.
+- Google/GitHub OAuth require provider IDs and secrets when those sign-in paths are used.
+- `GEMINI_API_KEY` is required for live AI match, optimization, and interview calls.
+- Supabase Storage is documented in ADR-003 but no storage adapter is implemented yet.
 
-## Công nghệ
+## Milestone 1 Target
 
-| Công nghệ | Mục đích |
-|-----------|----------|
-| Next.js 16 | Framework, routing |
-| React 19 | UI components |
-| TypeScript 5 | Ngôn ngữ |
-| Tailwind CSS 4 | Styling |
-| Framer Motion | Animation |
-| Lucide React | Icons |
-| ESLint 9 | Code quality |
+The next product slice should add assessment sessions tied to a selected CV version and job/JD, deterministic engineering tasks, candidate submissions, rubric-based evaluation, structured evidence, advisory scores, candidate feedback, and employer-safe reports.
