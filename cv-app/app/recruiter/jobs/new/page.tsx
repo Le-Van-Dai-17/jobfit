@@ -10,7 +10,10 @@ export default async function NewRecruiterJobPage() {
 
   return (
     <div className="max-w-3xl space-y-5">
-      <h1 className="text-2xl font-bold">Tao vi tri tuyen dung</h1>
+      <div>
+        <p className="text-sm font-semibold text-primary">JD mới</p>
+        <h1 className="mt-1 text-2xl font-bold text-foreground">Tạo vị trí tuyển dụng</h1>
+      </div>
       <RecruiterJobForm />
     </div>
   );

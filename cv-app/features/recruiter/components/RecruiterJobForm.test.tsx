@@ -18,11 +18,11 @@ vi.mock("react", async () => {
 
 describe("RecruiterJobForm", () => {
   it("renders server validation errors from action state", () => {
-    vi.mocked(useActionState).mockReturnValue([{ error: "Tieu de qua ngan." }, vi.fn(), false]);
+    vi.mocked(useActionState).mockReturnValue([{ error: "Tiêu đề quá ngắn." }, vi.fn(), false]);
 
     render(<RecruiterJobForm />);
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Tieu de qua ngan.");
+    expect(screen.getByRole("alert")).toHaveTextContent("Tiêu đề quá ngắn.");
   });
 
   it("disables submission while the action is pending", () => {
@@ -30,6 +30,6 @@ describe("RecruiterJobForm", () => {
 
     render(<RecruiterJobForm />);
 
-    expect(screen.getByRole("button", { name: /dang luu/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Đang lưu/i })).toBeDisabled();
   });
 });

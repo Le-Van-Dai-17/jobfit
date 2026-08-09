@@ -1,7 +1,8 @@
+import { redirect } from "next/navigation";
+
 import { auth } from "@/auth";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 import { PrismaCompanyRepository } from "@/features/companies/repositories/company.repository";
-import { redirect } from "next/navigation";
 
 export default async function RecruiterCompanyPage() {
   const session = await auth();
@@ -17,18 +18,23 @@ export default async function RecruiterCompanyPage() {
   const company = membership.company as { name: string; slug: string; website: string | null; location: string | null };
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-foreground">{company.name}</h1>
-      <dl className="grid gap-4 rounded-2xl border border-border-light bg-white p-5 text-sm sm:grid-cols-2">
-        <div>
+    <div className="space-y-5">
+      <section className="rounded-xl border border-border-light bg-surface-white p-5 shadow-sm">
+        <p className="text-sm font-semibold text-primary">Công ty</p>
+        <h1 className="mt-1 text-2xl font-bold text-foreground">{company.name}</h1>
+        <p className="mt-2 text-sm text-text-muted">Thông tin công ty đang gắn với tài khoản nhà tuyển dụng hiện tại.</p>
+      </section>
+
+      <dl className="grid gap-4 rounded-xl border border-border-light bg-surface-white p-5 text-sm shadow-sm sm:grid-cols-2">
+        <div className="rounded-lg bg-surface-low p-3">
           <dt className="font-semibold text-text-muted">Slug</dt>
           <dd className="mt-1 text-foreground">{company.slug}</dd>
         </div>
-        <div>
+        <div className="rounded-lg bg-surface-low p-3">
           <dt className="font-semibold text-text-muted">Địa điểm</dt>
           <dd className="mt-1 text-foreground">{company.location ?? "Chưa cập nhật"}</dd>
         </div>
-        <div>
+        <div className="rounded-lg bg-surface-low p-3">
           <dt className="font-semibold text-text-muted">Website</dt>
           <dd className="mt-1 text-foreground">{company.website ?? "Chưa cập nhật"}</dd>
         </div>
