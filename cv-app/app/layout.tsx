@@ -5,6 +5,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { auth } from "@/auth";
 import { PrismaCompanyRepository } from "@/features/companies/repositories/company.repository";
+import { createResumeAction } from "@/features/my-cv/actions/create-resume";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -32,6 +33,12 @@ export default async function RootLayout({
     companyName = membership?.company.name ?? null;
   }
 
+  async function createResumeFromHeader(formData: FormData) {
+    "use server";
+
+    await createResumeAction({}, formData);
+  }
+
   return (
     <html lang="vi" className={`h-full antialiased ${inter.variable}`}>
       <body className="bg-background text-foreground flex min-h-screen font-sans">
@@ -39,7 +46,7 @@ export default async function RootLayout({
           <SidebarProvider>
             <Sidebar user={session.user} companyName={companyName} />
             <div className="flex-1 flex flex-col min-w-0">
-              <Header role={session.user.role} />
+              <Header role={session.user.role} createResume={createResumeFromHeader} />
               <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto">{children}</main>
             </div>
           </SidebarProvider>

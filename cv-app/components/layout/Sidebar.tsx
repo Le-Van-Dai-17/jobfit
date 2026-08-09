@@ -5,6 +5,7 @@ import { LogOut, Sparkles, X } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { useSidebar } from "./SidebarContext";
@@ -30,19 +31,55 @@ function getInitials(name: string) {
 export default function Sidebar({ user, companyName }: { user: SidebarUser; companyName?: string | null }) {
   const pathname = usePathname();
   const { isOpen, setIsOpen } = useSidebar();
+  const asideRef = useRef<HTMLElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const navItems = getNavItemsForRole(user.role);
   const displayName = user.name || user.email || "Người dùng";
+
+  useEffect(() => {
+    if (!window.matchMedia) return;
+    const media = window.matchMedia("(max-width: 767px)");
+    const sync = () => setIsMobile(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile || !isOpen) return;
+    const firstLink = asideRef.current?.querySelector<HTMLAnchorElement>("a[href]");
+    firstLink?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        document.getElementById("mobile-menu-button")?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isMobile, isOpen, setIsOpen]);
+
+  function closeDrawer() {
+    setIsOpen(false);
+    if (isMobile) document.getElementById("mobile-menu-button")?.focus();
+  }
 
   return (
     <>
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm md:hidden"
-          onClick={() => setIsOpen(false)}
+          onClick={closeDrawer}
         />
       )}
 
       <aside
+        aria-hidden={isMobile && !isOpen ? true : undefined}
+        aria-modal={isMobile && isOpen ? true : undefined}
+        id="app-sidebar"
+        inert={isMobile && !isOpen ? true : undefined}
+        ref={asideRef}
+        role={isMobile ? "dialog" : undefined}
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-surface-white border-r border-border-light shadow-xl transition-transform duration-300 md:static md:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -63,7 +100,7 @@ export default function Sidebar({ user, companyName }: { user: SidebarUser; comp
           <button
             aria-label="Đóng menu"
             className="rounded-lg p-2 text-text-muted hover:bg-surface-low md:hidden"
-            onClick={() => setIsOpen(false)}
+            onClick={closeDrawer}
           >
             <X className="h-5 w-5" />
           </button>
@@ -80,7 +117,8 @@ export default function Sidebar({ user, companyName }: { user: SidebarUser; comp
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setIsOpen(false)}
+                aria-current={isActive ? "page" : undefined}
+                onClick={closeDrawer}
                 className={cn(
                   "group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive

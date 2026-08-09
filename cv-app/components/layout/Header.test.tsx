@@ -4,23 +4,23 @@ import { describe, expect, it, vi } from "vitest";
 import Header from "./Header";
 
 vi.mock("./SidebarContext", () => ({
-  useSidebar: () => ({ toggle: vi.fn() }),
+  useSidebar: () => ({ isOpen: false, toggle: vi.fn() }),
 }));
 
 describe("Header role actions", () => {
-  it("preserves the candidate CV action with the approved neutral styling", () => {
-    render(<Header role="CANDIDATE" />);
+  it("creates a candidate CV through a form action with the approved neutral styling", () => {
+    render(<Header role="CANDIDATE" createResume={vi.fn()} />);
 
-    const action = screen.getByRole("link", { name: /Tạo CV mới/i });
-    expect(action).toHaveAttribute("href", "/my-cv");
+    const action = screen.getByRole("button", { name: /Tao CV moi/i });
+    expect(action.closest("form")).toBeInTheDocument();
     expect(action).toHaveClass("bg-slate-100", "text-slate-900", "font-bold");
   });
 
   it("does not expose the candidate CV action to recruiters or admins", () => {
-    const { rerender } = render(<Header role="RECRUITER" />);
-    expect(screen.queryByRole("link", { name: /Tạo CV mới/i })).not.toBeInTheDocument();
+    const { rerender } = render(<Header role="RECRUITER" createResume={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: /Tao CV moi/i })).not.toBeInTheDocument();
 
-    rerender(<Header role="ADMIN" />);
-    expect(screen.queryByRole("link", { name: /Tạo CV mới/i })).not.toBeInTheDocument();
+    rerender(<Header role="ADMIN" createResume={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: /Tao CV moi/i })).not.toBeInTheDocument();
   });
 });
