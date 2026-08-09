@@ -1,13 +1,19 @@
-import { jobRepository } from "../repositories/job.repository";
+import { jobRepository, type JobRepository } from "../repositories/job.repository";
 
 export class JobService {
+  constructor(private readonly repository: JobRepository = jobRepository) {}
+
   /**
    * Get job listings for the dashboard
    */
   async getRecommendedJobs() {
     // In the future, this will connect to the AI matching engine.
     // For now, return all active jobs.
-    return jobRepository.findActiveJobs();
+    return this.repository.findActiveJobs();
+  }
+
+  async getCandidateFeed(userId: string) {
+    return this.repository.findActiveJobsForCandidate(userId);
   }
 
   /**
@@ -15,7 +21,7 @@ export class JobService {
    */
   async toggleSaveJob(userId: string, jobId: string) {
     // Assuming we want to just save it for now
-    return jobRepository.saveJob(userId, jobId);
+    return this.repository.saveJob(userId, jobId);
   }
 }
 

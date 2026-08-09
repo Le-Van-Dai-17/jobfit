@@ -13,6 +13,27 @@ export class JobRepository {
     });
   }
 
+  async findActiveJobsForCandidate(userId: string) {
+    return prisma.job.findMany({
+      where: {
+        isArchived: false,
+      },
+      include: {
+        savedBy: { where: { userId } },
+        applications: {
+          where: { userId, deletedAt: null },
+          include: { assessmentSessions: { orderBy: { updatedAt: "desc" }, take: 1 } },
+        },
+        assessmentSessions: {
+          where: { userId },
+          orderBy: { updatedAt: "desc" },
+          take: 1,
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   /**
    * Find a specific job by ID
    */

@@ -262,6 +262,7 @@ model Job {
   url            String?
   externalId     String?  // For imported jobs
   source         String?  // "LINKEDIN", "MANUAL", "SYSTEM"
+  deadline       DateTime?
   
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
