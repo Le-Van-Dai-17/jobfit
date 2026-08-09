@@ -2,21 +2,27 @@
 
 ## Source and audited scope
 
-- Private Stitch project: `CV_KADA Job Feed`
+- Private Stitch project: `CV_KADA Job Feed`.
 - URL: https://stitch.withgoogle.com/projects/5567340400182043103
+- **Authoritative downloaded UX/UI artifact:** `D:\Downloads\stitch_cv_kada_job_feed.zip`.
+- **Safe extracted source:** `D:\WebCV-stitch-export-audit-20260809\stitch_cv_kada_job_feed`.
+- SHA-256: `33270a4d0e5c29548958b27cfc901208acd4e18eae97d4333dc23cbfd488c870`.
+- Verified inventory: 33 `code.html`, 34 `screen.png`, and one `professional_career_hub/DESIGN.md`.
 - Stitch audit: `TOTAL=33; AUTH=4; CANDIDATE=14; RECRUITER=14; DESKTOP_MOBILE_PAIRS=complete; DUPLICATES=0; CRITICAL_MISSING=none`.
-- 32 product screens (16 desktop/mobile pairs) plus one design-system reference.
-- Native project-download did not create a local artifact. Do not paste generated code blindly; use the inspected canvas and this brief as visual/product reference.
+- 32 product screens (16 desktop/mobile pairs) plus logo/design-system references.
+- The downloaded `DESIGN.md`, corresponding desktop/mobile `code.html`, and `screen.png` are the mandatory visual/UX source of truth. The earlier canvas-only interpretation is superseded where it differs from the downloaded artifact.
+- Translate static HTML/Tailwind-CDN markup into repo-native Next.js/React/Tailwind components. Do not copy demo data, inline scripts, CDN runtime, or client-trusted identity from the export.
 
-## Visual direction
+## Visual direction from downloaded Stitch export
 
-- Compact Vietnamese IT recruiting experience; social/news-feed information hierarchy without copied branding.
-- White cards on `#f8f9ff`, subtle borders/shadows, 12–16px radii, Inter, 4px rhythm.
-- Existing design tokens remain authoritative: indigo `#4648d4`, violet `#6b38d4`, sky `#00628d`.
-- No giant hero, fake metrics, glassmorphism, ornamental gradients, or standalone-tool navigation.
-- Desktop: sticky top bar, role-aware left navigation, workspace, optional contextual right rail.
-- Mobile: compact top bar, single column and role-aware drawer/bottom navigation.
-- Semantic landmarks, visible focus, labels and WCAG AA contrast.
+- Corporate / Modern professional career hub: clear, trustworthy, efficient and content-first.
+- Use **Be Vietnam Pro** and preserve Vietnamese diacritics.
+- Primary Deep Blue `#1A56DB` for primary actions/active navigation; token-level primary includes `#003FB1` with container `#1A56DB` as specified by downloaded `DESIGN.md`.
+- Success Green `#059669` for positive states; light background `#F8F9FF`; white cards; primary text `#121C28`; secondary text `#434654`; outline variant `#C3C5D7`.
+- Follow downloaded shape/spacing system: 8px standard radius, 16px large sections, 4px rhythm, desktop container 1280px, desktop margin 40px, mobile margin 16px.
+- Use subtle ambient shadows and tonal layers from `DESIGN.md`; no unrelated purple/indigo gradients or glassmorphism unless explicitly present in the matching exported screen.
+- Desktop and mobile behavior must match each exported screen pair while remaining role-aware and responsive.
+- Semantic landmarks, visible focus, labels, keyboard behavior and WCAG AA contrast remain mandatory.
 
 ## Shared Auth — desktop/mobile
 
