@@ -13,15 +13,17 @@ const initialState: RecruiterActionState = {};
 export function ApplicationTransitionForm({
   applicationId,
   nextStatuses,
+  compact = false,
 }: {
   applicationId: string;
   nextStatuses: ApplicationStatus[];
+  compact?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(transitionRecruiterApplicationAction, initialState);
   const disabled = pending || nextStatuses.length === 0;
 
   return (
-    <form action={formAction} className="flex flex-wrap items-end gap-3 rounded-xl border border-border-light bg-white p-4">
+    <form action={formAction} className={compact ? "space-y-2 rounded-lg border border-border-light bg-white p-3" : "flex flex-wrap items-end gap-3 rounded-xl border border-border-light bg-white p-4"}>
       <input name="applicationId" type="hidden" value={applicationId} />
       {state.error ? (
         <p role="alert" className="basis-full rounded-xl border border-error/30 bg-error-container px-3 py-2 text-sm text-error">
@@ -29,7 +31,7 @@ export function ApplicationTransitionForm({
         </p>
       ) : null}
       <label className="text-sm font-medium">
-        Trang thai
+        Trạng thái
         <select name="status" disabled={disabled} className="mt-1 block rounded-xl border border-border-light px-3 py-2">
           {nextStatuses.map((status) => (
             <option key={status} value={status}>
@@ -39,12 +41,13 @@ export function ApplicationTransitionForm({
         </select>
       </label>
       <label className="min-w-64 flex-1 text-sm font-medium">
-        Ghi chu
+        Ghi chú
         <input name="notes" disabled={disabled} className="mt-1 w-full rounded-xl border border-border-light px-3 py-2" />
       </label>
       <button disabled={disabled} className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
-        {pending ? "Dang cap nhat" : "Cap nhat"}
+        {pending ? "Đang cập nhật" : "Cập nhật"}
       </button>
+      {nextStatuses.length === 0 ? <p className="text-xs text-text-muted">Trạng thái hiện tại không còn bước chuyển hợp lệ.</p> : null}
     </form>
   );
 }

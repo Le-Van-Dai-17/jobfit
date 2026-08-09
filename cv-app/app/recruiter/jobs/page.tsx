@@ -6,19 +6,38 @@ import { auth } from "@/auth";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 import { archiveRecruiterJobAction, publishRecruiterJobAction } from "@/features/recruiter/actions/recruiter.actions";
 import { RecruiterJobStatusForm } from "@/features/recruiter/components/RecruiterJobStatusForm";
+import { parseRecruiterJobFilters } from "@/features/recruiter/services/recruiter-query";
 import { RecruiterAccessError, recruiterService } from "@/features/recruiter/services/recruiter.service";
 
-type JobRow = { id: string; title: string; company: string; location: string | null; isArchived: boolean };
+type JobRow = {
+  id: string;
+  title: string;
+  company: string;
+  location: string | null;
+  isArchived: boolean;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+};
 
-export default async function RecruiterJobsPage() {
+const statusLabels: Record<JobRow["status"], string> = {
+  DRAFT: "Bản nháp",
+  PUBLISHED: "Đang mở",
+  ARCHIVED: "Đã lưu trữ",
+};
+
+export default async function RecruiterJobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[]; status?: string | string[] }>;
+}) {
   const session = await auth();
   const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "RECRUITER" });
   if (roleRedirect) redirect(roleRedirect);
   const user = session!.user;
+  const filters = parseRecruiterJobFilters(await searchParams);
 
   let jobs: JobRow[];
   try {
-    jobs = (await recruiterService.listJobs(user.id)) as JobRow[];
+    jobs = (await recruiterService.listJobs(user.id, filters)) as JobRow[];
   } catch (error) {
     if (error instanceof RecruiterAccessError) redirect("/recruiter/company/onboarding");
     throw error;
@@ -40,9 +59,37 @@ export default async function RecruiterJobsPage() {
         </Link>
       </div>
 
+      <form action="/recruiter/jobs" className="grid gap-3 rounded-xl border border-border-light bg-white p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_220px_auto]">
+        <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+          <span>Tìm kiếm</span>
+          <input
+            className="h-11 w-full rounded-lg border border-outline-variant px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            name="q"
+            placeholder="Tên vị trí, địa điểm, mô tả"
+            defaultValue={filters.search ?? ""}
+          />
+        </label>
+        <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+          <span>Trạng thái</span>
+          <select
+            className="h-11 w-full rounded-lg border border-outline-variant bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            name="status"
+            defaultValue={filters.status ?? ""}
+          >
+            <option value="">Tất cả</option>
+            <option value="DRAFT">Bản nháp</option>
+            <option value="PUBLISHED">Đang mở</option>
+            <option value="ARCHIVED">Đã lưu trữ</option>
+          </select>
+        </label>
+        <button className="h-11 self-end rounded-lg bg-primary px-4 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          Lọc
+        </button>
+      </form>
+
       {jobs.length === 0 ? (
         <section className="rounded-xl border border-border-light bg-surface-white p-6 text-sm text-text-muted shadow-sm">
-          Chưa có vị trí tuyển dụng. Tạo JD đầu tiên để bắt đầu nhận ứng viên và báo cáo đánh giá.
+          Chưa có vị trí tuyển dụng phù hợp với bộ lọc hiện tại.
         </section>
       ) : (
         <div className="grid gap-3">
@@ -57,7 +104,7 @@ export default async function RecruiterJobsPage() {
                   {job.title}
                 </Link>
                 <span className="rounded-full bg-surface-low px-3 py-1 text-xs font-semibold text-primary">
-                  {job.isArchived ? "Đã lưu trữ" : "Đang mở"}
+                  {statusLabels[job.status]}
                 </span>
               </div>
               <p className="mt-2 text-sm text-text-muted">

@@ -4,6 +4,7 @@ import type {
 } from "@prisma/client";
 import { z } from "zod";
 import { recruiterRepository } from "../repositories/recruiter.repository";
+import type { RecruiterApplicationSort } from "./recruiter-query";
 
 export class RecruiterAccessError extends Error {}
 export class RecruiterValidationError extends Error {
@@ -11,7 +12,18 @@ export class RecruiterValidationError extends Error {
 }
 export class RecruiterStateTransitionError extends Error {}
 
-type Membership = { companyId: string; role: CompanyMembershipRole; company: { name: string } };
+type Membership = {
+  companyId: string;
+  role: CompanyMembershipRole;
+  company: {
+    name: string;
+    website?: string | null;
+    description?: string | null;
+    location?: string | null;
+    industry?: string | null;
+    size?: string | null;
+  };
+};
 export type RecruiterJobInput = {
   title?: string; location?: string | null; type?: string | null; salaryRange?: string | null;
   description?: string | null; requirements?: string | null; url?: string | null; deadline?: string | Date | null;
@@ -30,17 +42,18 @@ type JobWrite = {
 };
 export type RecruiterRepository = {
   findMembership(userId: string): Promise<Membership | null>;
-  getDashboardCounts(companyId: string): Promise<{ jobs: number; activeJobs: number; archivedJobs: number; applications: number; assessmentReports: number; awaitingReview: number; awaitingAssessment: number }>;
+  getDashboardCounts(companyId: string): Promise<{ jobs: number; activeJobs: number; archivedJobs: number; applications: number; assessmentReports: number; awaitingReview: number; awaitingAssessment: number; pipeline: { APPLIED: number; INTERVIEWING: number; OFFER: number; REJECTED: number } }>;
   listRecentApplications(companyId: string, take: number): Promise<unknown[]>;
   createJob(companyId: string, input: JobWrite): Promise<unknown>;
-  listJobs(companyId: string): Promise<unknown[]>;
+  listJobs(companyId: string, filters?: { search?: string; status?: JobStatus }): Promise<unknown[]>;
   findJobForCompany(companyId: string, jobId: string): Promise<({ id: string; status: JobStatus; isArchived: boolean } & Record<string, unknown>) | null>;
   setJobArchived(companyId: string, jobId: string, isArchived: boolean): Promise<unknown>;
   setJobStatus(companyId: string, jobId: string, expectedStatus: JobStatus, status: JobStatus): Promise<unknown>;
   updateJob(companyId: string, jobId: string, input: JobWrite): Promise<unknown>;
-  listApplications(companyId: string, status?: ApplicationStatus): Promise<unknown[]>;
+  listApplications(companyId: string, filters?: { status?: ApplicationStatus; search?: string; jobId?: string; sort?: RecruiterApplicationSort }): Promise<unknown[]>;
   findApplicationForCompany(companyId: string, applicationId: string): Promise<{ id: string; status: ApplicationStatus } | null>;
-  updateApplicationStatusWithEvent(companyId: string, applicationId: string, actorUserId: string, expectedStatus: ApplicationStatus, nextStatus: ApplicationStatus, notes?: string): Promise<{ application: unknown; event: { applicationId: string; type: ApplicationEventType; notes: string | null } }>;
+  updateApplicationStatusWithEvent(companyId: string, applicationId: string, actorUserId: string, expectedStatus: ApplicationStatus, nextStatus: ApplicationStatus, notes?: string): Promise<{ application: unknown; event: { applicationId: string; type: ApplicationEventType; notes: string | null } } | null>;
+  listEmployerAssessmentReports(companyId: string): Promise<unknown[]>;
   findEmployerAssessmentReport(companyId: string, applicationId: string): Promise<unknown | null>;
 };
 
@@ -84,7 +97,16 @@ const JobInputSchema = z.object({
   }
 });
 
-const ListApplicationsSchema = z.object({ status: z.enum(["DRAFT","APPLIED","INTERVIEWING","OFFER","REJECTED","WITHDRAWN"]).optional() });
+const ListApplicationsSchema = z.object({
+  status: z.enum(["DRAFT","APPLIED","INTERVIEWING","OFFER","REJECTED","WITHDRAWN"]).optional(),
+  search: z.string().trim().max(160).optional().transform((value) => value || undefined),
+  jobId: z.string().trim().max(160).optional().transform((value) => value || undefined),
+  sort: z.enum(["recent", "oldest"]).optional().default("recent"),
+});
+const ListJobsSchema = z.object({
+  search: z.string().trim().max(160).optional().transform((value) => value || undefined),
+  status: z.enum(["DRAFT","PUBLISHED","ARCHIVED"]).optional(),
+});
 const allowedTransitions: Record<ApplicationStatus, ApplicationStatus[]> = {
   DRAFT: ["APPLIED", "WITHDRAWN"], APPLIED: ["INTERVIEWING", "REJECTED", "WITHDRAWN"],
   INTERVIEWING: ["OFFER", "REJECTED", "WITHDRAWN"], OFFER: ["REJECTED", "WITHDRAWN"], REJECTED: [], WITHDRAWN: [],
@@ -92,12 +114,11 @@ const allowedTransitions: Record<ApplicationStatus, ApplicationStatus[]> = {
 export function getAllowedApplicationTransitions(status: ApplicationStatus) { return allowedTransitions[status] ?? []; }
 function emptyToNull(value: string | null | undefined) { return value && value.length > 0 ? value : null; }
 function legacyType(employmentType: EmploymentType | null, workMode: WorkMode | null, fallback: string | null) {
-  return fallback ?? ([employmentType, workMode].filter(Boolean).join(" · ") || null);
+  return [employmentType, workMode].filter(Boolean).join(" · ") || fallback;
 }
 function legacySalary(min: number | null, max: number | null, currency: string, negotiable: boolean, fallback: string | null) {
-  if (fallback) return fallback;
   if (negotiable) return "Thỏa thuận";
-  if (min === null && max === null) return null;
+  if (min === null && max === null) return fallback;
   return `${min?.toLocaleString("vi-VN") ?? "?"} – ${max?.toLocaleString("vi-VN") ?? "?"} ${currency}`;
 }
 
@@ -123,13 +144,37 @@ export class RecruiterService {
   async getDashboard(userId: string) {
     const membership = await this.requireMembership(userId);
     const [counts, recentApplications] = await Promise.all([this.repository.getDashboardCounts(membership.companyId), this.repository.listRecentApplications(membership.companyId, 5)]);
-    return { companyId: membership.companyId, counts, recentApplications };
+    const hasCompanyProfile = Boolean(
+      membership.company.name &&
+        membership.company.website &&
+        membership.company.description &&
+        membership.company.location &&
+        membership.company.industry &&
+        membership.company.size
+    );
+    return {
+      companyId: membership.companyId,
+      counts,
+      onboardingChecklist: [
+        { key: "companyProfile", label: "Hoàn thiện hồ sơ công ty", completed: hasCompanyProfile },
+        { key: "firstJob", label: "Tạo JD đầu tiên", completed: counts.jobs > 0 },
+        { key: "publishedJob", label: "Đăng vị trí đang mở", completed: counts.activeJobs > 0 },
+        { key: "candidatePipeline", label: "Có ứng viên trong pipeline", completed: counts.applications > 0 },
+        { key: "assessmentEvidence", label: "Có báo cáo đánh giá bằng chứng", completed: counts.assessmentReports > 0 },
+      ],
+      recentApplications,
+    };
   }
   async createJob(userId: string, input: RecruiterJobInput) {
     const membership = await this.requireMembership(userId);
     return this.repository.createJob(membership.companyId, this.parseJob(input, membership.company.name));
   }
-  async listJobs(userId: string) { const m = await this.requireMembership(userId); return this.repository.listJobs(m.companyId); }
+  async listJobs(userId: string, filters: { search?: string; status?: JobStatus } = {}) {
+    const m = await this.requireMembership(userId);
+    const parsed = ListJobsSchema.safeParse(filters);
+    if (!parsed.success) throw new RecruiterValidationError(parsed.error.issues);
+    return this.repository.listJobs(m.companyId, parsed.data);
+  }
   async getJob(userId: string, jobId: string) {
     const m = await this.requireMembership(userId); const job = await this.repository.findJobForCompany(m.companyId, jobId);
     if (!job) throw new RecruiterAccessError("Resource is not available."); return job;
@@ -150,9 +195,9 @@ export class RecruiterService {
     const job = await this.repository.updateJob(m.companyId, jobId, this.parseJob(input, m.company.name));
     if (!job) throw new RecruiterAccessError("Resource is not available."); return job;
   }
-  async listApplications(userId: string, filters: { status?: ApplicationStatus } = {}) {
+  async listApplications(userId: string, filters: { status?: ApplicationStatus; search?: string; jobId?: string; sort?: RecruiterApplicationSort } = {}) {
     const m = await this.requireMembership(userId); const parsed = ListApplicationsSchema.safeParse(filters);
-    if (!parsed.success) throw new RecruiterValidationError(parsed.error.issues); return this.repository.listApplications(m.companyId, parsed.data.status);
+    if (!parsed.success) throw new RecruiterValidationError(parsed.error.issues); return this.repository.listApplications(m.companyId, parsed.data);
   }
   async getApplication(userId: string, applicationId: string) {
     const m = await this.requireMembership(userId); const application = await this.repository.findApplicationForCompany(m.companyId, applicationId);
@@ -162,7 +207,13 @@ export class RecruiterService {
     const m = await this.requireMembership(userId); const app = await this.repository.findApplicationForCompany(m.companyId, applicationId);
     if (!app) throw new RecruiterAccessError("Resource is not available.");
     if (!allowedTransitions[app.status].includes(nextStatus)) throw new RecruiterStateTransitionError("Application status transition is not allowed.");
-    return this.repository.updateApplicationStatusWithEvent(m.companyId, applicationId, userId, app.status, nextStatus, notes);
+    const result = await this.repository.updateApplicationStatusWithEvent(m.companyId, applicationId, userId, app.status, nextStatus, notes);
+    if (!result) throw new RecruiterStateTransitionError("Application status changed concurrently.");
+    return result;
+  }
+  async listAssessmentReports(userId: string) {
+    const m = await this.requireMembership(userId);
+    return this.repository.listEmployerAssessmentReports(m.companyId);
   }
   async getAssessmentReport(userId: string, applicationId: string) {
     const m = await this.requireMembership(userId); const report = await this.repository.findEmployerAssessmentReport(m.companyId, applicationId);

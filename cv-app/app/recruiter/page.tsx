@@ -1,6 +1,7 @@
+import { BriefcaseBusiness, CheckCircle2, ClipboardCheck, FileSearch, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BriefcaseBusiness, ClipboardCheck, FileSearch, Users } from "lucide-react";
+
 import { auth } from "@/auth";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 import { RecruiterAccessError, recruiterService } from "@/features/recruiter/services/recruiter.service";
@@ -11,6 +12,7 @@ type RecentApplication = {
   user: { name: string | null; email: string | null };
   job: { title: string };
 };
+type ChecklistItem = { key: string; label: string; completed: boolean };
 
 const statusLabels: Record<string, string> = {
   DRAFT: "Bản nháp",
@@ -42,6 +44,13 @@ export default async function RecruiterDashboardPage() {
     { label: "Báo cáo đánh giá", value: dashboard.counts.assessmentReports, icon: ClipboardCheck },
   ];
   const recentApplications = dashboard.recentApplications as RecentApplication[];
+  const checklist = dashboard.onboardingChecklist as ChecklistItem[];
+  const funnel = [
+    ["Đã ứng tuyển", dashboard.counts.pipeline.APPLIED],
+    ["Đang phỏng vấn", dashboard.counts.pipeline.INTERVIEWING],
+    ["Đề nghị nhận việc", dashboard.counts.pipeline.OFFER],
+    ["Đã từ chối", dashboard.counts.pipeline.REJECTED],
+  ] as const;
 
   return (
     <div className="space-y-5">
@@ -78,20 +87,50 @@ export default async function RecruiterDashboardPage() {
       <section className="rounded-2xl border border-border-light bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
+            <h2 className="font-semibold text-foreground">Phễu tuyển dụng</h2>
+            <p className="mt-1 text-sm text-text-muted">Số lượng hồ sơ thực tế theo từng trạng thái trong công ty.</p>
+          </div>
+          <Link className="text-sm font-semibold text-primary" href="/recruiter/candidates">Mở pipeline</Link>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {funnel.map(([label, value]) => (
+            <div key={label} className="rounded-xl bg-surface-low p-4">
+              <p className="text-sm text-text-muted">{label}</p>
+              <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-border-light bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="font-semibold text-foreground">Checklist khởi tạo</h2>
+            <p className="mt-1 text-sm text-text-muted">Chỉ dựa trên dữ liệu công ty, JD, pipeline và báo cáo đã lưu.</p>
+          </div>
+          <Link className="text-sm font-semibold text-primary" href="/recruiter/company">Công ty</Link>
+        </div>
+        <ul className="mt-4 grid gap-2 md:grid-cols-2">
+          {checklist.map((item) => (
+            <li key={item.key} className="flex items-center gap-3 rounded-lg bg-surface-low p-3 text-sm">
+              <CheckCircle2 className={item.completed ? "h-5 w-5 text-primary" : "h-5 w-5 text-text-muted"} />
+              <span className={item.completed ? "font-semibold text-foreground" : "text-text-muted"}>{item.label}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="rounded-2xl border border-border-light bg-white p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
             <h2 className="font-semibold text-foreground">Ứng viên gần đây</h2>
             <p className="mt-1 text-sm text-text-muted">Các đơn mới nhất trong pipeline công ty.</p>
           </div>
-          <Link className="text-sm font-semibold text-primary" href="/recruiter/candidates">
-            Xem tất cả
-          </Link>
+          <Link className="text-sm font-semibold text-primary" href="/recruiter/candidates">Xem tất cả</Link>
         </div>
         <div className="mt-4 space-y-3">
           {recentApplications.map((application) => (
-            <Link
-              key={application.id}
-              className="block rounded-xl border border-border-light p-3 hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              href={`/recruiter/candidates/${application.id}`}
-            >
+            <Link key={application.id} className="block rounded-xl border border-border-light p-3 hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" href={`/recruiter/candidates/${application.id}`}>
               <div className="flex flex-wrap justify-between gap-2">
                 <span className="font-medium">{application.user.name ?? application.user.email ?? "Ứng viên"}</span>
                 <span className="rounded-full bg-surface-low px-3 py-1 text-xs font-semibold text-foreground">

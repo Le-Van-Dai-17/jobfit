@@ -1,3 +1,4 @@
+import type { UserRole } from "@prisma/client";
 import {
   Briefcase,
   Building2,
@@ -8,7 +9,6 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
-import type { UserRole } from "@prisma/client";
 
 export type AppNavItem = {
   name: string;

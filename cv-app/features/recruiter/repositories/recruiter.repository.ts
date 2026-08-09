@@ -1,17 +1,31 @@
 import { prisma } from "@/lib/db/prisma";
-import type { ApplicationStatus, JobStatus } from "@prisma/client";
+import type { ApplicationStatus, JobStatus, Prisma } from "@prisma/client";
+import type { RecruiterApplicationSort } from "../services/recruiter-query";
 import type { RecruiterRepository as RecruiterRepositoryContract } from "../services/recruiter.service";
 
 export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
   async findMembership(userId: string) {
     return prisma.companyMembership.findFirst({
       where: { userId, user: { deletedAt: null } },
-      select: { companyId: true, role: true, company: { select: { name: true } } },
+      select: {
+        companyId: true,
+        role: true,
+        company: {
+          select: {
+            name: true,
+            website: true,
+            description: true,
+            location: true,
+            industry: true,
+            size: true,
+          },
+        },
+      },
     });
   }
 
   async getDashboardCounts(companyId: string) {
-    const [jobs, activeJobs, archivedJobs, applications, assessmentReports, awaitingReview, awaitingAssessment] = await Promise.all([
+    const [jobs, activeJobs, archivedJobs, applications, assessmentReports, awaitingReview, awaitingAssessment, interviewing, offers, rejected] = await Promise.all([
       prisma.job.count({ where: { companyId } }),
       prisma.job.count({ where: { companyId, status: "PUBLISHED", isArchived: false } }),
       prisma.job.count({ where: { companyId, status: "ARCHIVED", isArchived: true } }),
@@ -29,8 +43,14 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
           assessmentSessions: { some: { status: { in: ["TASKS_GENERATED", "SUBMITTED"] } } },
         },
       }),
+      prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, status: "INTERVIEWING", job: { companyId } } }),
+      prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, status: "OFFER", job: { companyId } } }),
+      prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, status: "REJECTED", job: { companyId } } }),
     ]);
-    return { jobs, activeJobs, archivedJobs, applications, assessmentReports, awaitingReview, awaitingAssessment };
+    return {
+      jobs, activeJobs, archivedJobs, applications, assessmentReports, awaitingReview, awaitingAssessment,
+      pipeline: { APPLIED: awaitingReview, INTERVIEWING: interviewing, OFFER: offers, REJECTED: rejected },
+    };
   }
 
   listRecentApplications(companyId: string, take: number) {
@@ -51,9 +71,23 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
     });
   }
 
-  listJobs(companyId: string) {
+  listJobs(companyId: string, filters?: { search?: string; status?: JobStatus }) {
+    const where: Prisma.JobWhereInput = {
+      companyId,
+      ...(filters?.status ? { status: filters.status } : {}),
+      ...(filters?.search
+        ? {
+            OR: [
+              { title: { contains: filters.search, mode: "insensitive" } },
+              { location: { contains: filters.search, mode: "insensitive" } },
+              { description: { contains: filters.search, mode: "insensitive" } },
+              { requirements: { contains: filters.search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    };
     return prisma.job.findMany({
-      where: { companyId },
+      where,
       include: { _count: { select: { applications: true, assessmentSessions: true } } },
       orderBy: { updatedAt: "desc" },
     });
@@ -93,16 +127,35 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
     return this.findJobForCompany(companyId, jobId);
   }
 
-  listApplications(companyId: string, status?: ApplicationStatus) {
+  listApplications(companyId: string, filters?: { status?: ApplicationStatus; search?: string; jobId?: string; sort?: RecruiterApplicationSort }) {
+    const where: Prisma.ApplicationWhereInput = {
+      deletedAt: null,
+      ...(filters?.status ? { status: filters.status } : {}),
+      user: {
+        deletedAt: null,
+        ...(filters?.search
+          ? {
+              OR: [
+                { name: { contains: filters.search, mode: "insensitive" } },
+                { email: { contains: filters.search, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
+      job: {
+        companyId,
+        ...(filters?.jobId ? { id: filters.jobId } : {}),
+      },
+    };
     return prisma.application.findMany({
-      where: { deletedAt: null, status, user: { deletedAt: null }, job: { companyId } },
+      where,
       include: {
         user: { select: { id: true, name: true, email: true } },
         job: true,
         resumeVersion: { include: { resume: true } },
         assessmentSessions: { include: { result: true }, orderBy: { updatedAt: "desc" } },
       },
-      orderBy: { updatedAt: "desc" },
+      orderBy: filters?.sort === "oldest" ? { updatedAt: "asc" } : { updatedAt: "desc" },
     });
   }
 
@@ -133,7 +186,7 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
         data: { status: nextStatus },
       });
       if (updated.count !== 1) {
-        throw new Error("Application status update failed.");
+        return null;
       }
       const [application, event] = await Promise.all([
         tx.application.findFirstOrThrow({ where: { id: applicationId, job: { companyId } }, include: { job: true } }),
@@ -149,6 +202,37 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
         }),
       ]);
       return { application, event };
+    });
+  }
+
+  listEmployerAssessmentReports(companyId: string) {
+    return prisma.assessmentResult.findMany({
+      where: {
+        session: {
+          status: "EVALUATED",
+          application: { deletedAt: null, user: { deletedAt: null }, job: { companyId } },
+        },
+      },
+      select: {
+        id: true,
+        advisoryScore: true,
+        createdAt: true,
+        reportSummary: true,
+        session: {
+          select: {
+            applicationId: true,
+            roleTitle: true,
+            application: {
+              select: {
+                id: true,
+                user: { select: { name: true, email: true } },
+                job: { select: { title: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
     });
   }
 

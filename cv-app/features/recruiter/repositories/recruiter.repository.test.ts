@@ -36,6 +36,16 @@ describe("PrismaRecruiterRepository dashboard queries", () => {
     });
   });
 
+  it("counts each persisted pipeline stage within the active company", async () => {
+    await new PrismaRecruiterRepository().getDashboardCounts("company-a");
+
+    for (const status of ["APPLIED", "INTERVIEWING", "OFFER", "REJECTED"] as const) {
+      expect(prisma.application.count).toHaveBeenCalledWith({
+        where: { deletedAt: null, user: { deletedAt: null }, status, job: { companyId: "company-a" } },
+      });
+    }
+  });
+
   it("sorts recent applications by applied time then creation time", async () => {
     await new PrismaRecruiterRepository().listRecentApplications("company-a", 5);
 

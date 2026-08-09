@@ -11,7 +11,20 @@ import {
 function makeRepository(overrides: Partial<RecruiterRepository> = {}): RecruiterRepository {
   return {
     findMembership: async (userId) =>
-      userId === "recruiter-a" ? { companyId: "company-a", role: "OWNER", company: { name: "Acme" } } : null,
+      userId === "recruiter-a"
+        ? {
+            companyId: "company-a",
+            role: "OWNER",
+            company: {
+              name: "Acme",
+              website: "https://acme.test",
+              description: "Builds developer tools.",
+              location: "TP. Hồ Chí Minh",
+              industry: "SOFTWARE",
+              size: "SIZE_10_49",
+            },
+          }
+        : null,
     getDashboardCounts: async (companyId) => ({
       jobs: companyId === "company-a" ? 2 : 0,
       activeJobs: 1,
@@ -20,6 +33,7 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
       assessmentReports: 1,
       awaitingReview: 1,
       awaitingAssessment: 1,
+      pipeline: { APPLIED: 1, INTERVIEWING: 1, OFFER: 0, REJECTED: 0 },
     }),
     createJob: async (companyId, input) => ({
       id: "job-new",
@@ -59,12 +73,12 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
     }),
     updateJob: async (companyId, jobId, input) =>
       companyId === "company-a" && jobId === "job-a" ? { id: jobId, companyId, ...input } : null,
-    listApplications: async (companyId, status) => {
+    listApplications: async (companyId, filters) => {
       const rows = [
         { id: "app-a", status: "APPLIED" as ApplicationStatus, job: { id: "job-a", companyId } },
         { id: "app-b", status: "INTERVIEWING" as ApplicationStatus, job: { id: "job-a", companyId } },
       ];
-      return status ? rows.filter((row) => row.status === status) : rows;
+      return filters?.status ? rows.filter((row) => row.status === filters.status) : rows;
     },
     findApplicationForCompany: async (companyId, applicationId) =>
       companyId === "company-a" && applicationId === "app-a"
@@ -74,6 +88,13 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
       application: { id: applicationId, status: nextStatus },
       event: { applicationId, type: "STATUS_CHANGE", notes: notes ?? null },
     }),
+    listEmployerAssessmentReports: async (companyId) => [
+      {
+        id: "result-a",
+        advisoryScore: 82,
+        session: { applicationId: "app-a", application: { id: "app-a", job: { companyId } } },
+      },
+    ],
     findEmployerAssessmentReport: async (companyId, applicationId) =>
       companyId === "company-a" && applicationId === "app-a"
         ? {
@@ -96,6 +117,13 @@ describe("RecruiterService", () => {
     await expect(service.getDashboard("recruiter-a")).resolves.toMatchObject({
       companyId: "company-a",
       counts: { jobs: 2, applications: 2, assessmentReports: 1 },
+      onboardingChecklist: [
+        { key: "companyProfile", completed: true },
+        { key: "firstJob", completed: true },
+        { key: "publishedJob", completed: true },
+        { key: "candidatePipeline", completed: true },
+        { key: "assessmentEvidence", completed: true },
+      ],
       recentApplications: [{ id: "app-a", status: "APPLIED" }],
     });
   });
@@ -215,6 +243,53 @@ describe("RecruiterService", () => {
     await expect(service.listApplications("recruiter-a", { status: "INTERVIEWING" })).resolves.toHaveLength(1);
   });
 
+  it("forwards candidate search, job, status, and sort filters to the company-scoped repository", async () => {
+    let receivedFilters: unknown;
+    const service = new RecruiterService(makeRepository({
+      listApplications: async (_companyId, filters) => {
+        receivedFilters = filters;
+        return [];
+      },
+    }));
+
+    await service.listApplications("recruiter-a", {
+      search: " Nguyen ",
+      status: "APPLIED",
+      jobId: "job-a",
+      sort: "oldest",
+    });
+
+    expect(receivedFilters).toEqual({
+      search: "Nguyen",
+      status: "APPLIED",
+      jobId: "job-a",
+      sort: "oldest",
+    });
+  });
+
+  it("filters company-owned jobs by persisted search text and lifecycle status", async () => {
+    const seen: unknown[] = [];
+    const service = new RecruiterService(makeRepository({
+      listJobs: async (_companyId, filters) => {
+        seen.push(filters);
+        return [{ id: "job-a", title: "Frontend", status: filters?.status }];
+      },
+    }));
+
+    await expect(service.listJobs("recruiter-a", { search: " frontend ", status: "PUBLISHED" })).resolves.toHaveLength(1);
+    expect(seen).toEqual([{ search: "frontend", status: "PUBLISHED" }]);
+  });
+
+  it("maps a stale repository CAS result to a recruiter lifecycle conflict", async () => {
+    const service = new RecruiterService(makeRepository({
+      updateApplicationStatusWithEvent: async () => null,
+    }));
+
+    await expect(service.transitionApplication("recruiter-a", "app-a", "INTERVIEWING")).rejects.toBeInstanceOf(
+      RecruiterStateTransitionError
+    );
+  });
+
   it("allows recruiter status transitions and creates an audit event atomically", async () => {
     const service = new RecruiterService(makeRepository());
 
@@ -245,6 +320,19 @@ describe("RecruiterService", () => {
     );
   });
 
+  it("lists employer-safe assessment reports through the recruiter company membership", async () => {
+    let scopedCompanyId: string | undefined;
+    const service = new RecruiterService(makeRepository({
+      listEmployerAssessmentReports: async (companyId) => {
+        scopedCompanyId = companyId;
+        return [{ id: "result-a" }];
+      },
+    }));
+
+    await expect(service.listAssessmentReports("recruiter-a")).resolves.toEqual([{ id: "result-a" }]);
+    expect(scopedCompanyId).toBe("company-a");
+  });
+
   it("normalizes and persists structured Stitch JD fields", async () => {
     const service = new RecruiterService(makeRepository());
     await expect(service.createJob("recruiter-a", {
@@ -271,6 +359,33 @@ describe("RecruiterService", () => {
       salaryCurrency: "VND",
       salaryNegotiable: false,
       skills: ["React", "TypeScript"],
+    });
+  });
+
+  it("preserves legacy type and salary values while an old JD has no structured fields", async () => {
+    let written: unknown;
+    const service = new RecruiterService(makeRepository({
+      updateJob: async (_companyId, _jobId, input) => {
+        written = input;
+        return input;
+      },
+    }));
+
+    await service.updateJob("recruiter-a", "job-a", {
+      title: "Legacy Backend Engineer",
+      description: "Mô tả công việc legacy vẫn hợp lệ để chỉnh sửa an toàn.",
+      requirements: "Node.js, PostgreSQL và kiểm thử tự động.",
+      type: "Full-time · Tại văn phòng",
+      salaryRange: "25–40 triệu VND",
+    });
+
+    expect(written).toMatchObject({
+      type: "Full-time · Tại văn phòng",
+      salaryRange: "25–40 triệu VND",
+      employmentType: null,
+      workMode: null,
+      salaryMin: null,
+      salaryMax: null,
     });
   });
 
