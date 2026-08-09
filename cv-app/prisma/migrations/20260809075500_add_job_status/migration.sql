@@ -1,0 +1,5 @@
+CREATE TYPE "JobStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+
+ALTER TABLE "Job" ADD COLUMN "status" "JobStatus" NOT NULL DEFAULT 'PUBLISHED';
+
+UPDATE "Job" SET "status" = CASE WHEN "isArchived" THEN 'ARCHIVED'::"JobStatus" ELSE 'PUBLISHED'::"JobStatus" END;

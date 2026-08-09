@@ -85,6 +85,30 @@ export async function archiveRecruiterJobAction(
   return {};
 }
 
+export async function updateRecruiterJobAction(
+  _state: RecruiterActionState,
+  formData: FormData
+): Promise<RecruiterActionState> {
+  const userId = await requireRecruiterId();
+  const jobId = value(formData, "jobId");
+  try {
+    await recruiterService.updateJob(userId, jobId, {
+      title: value(formData, "title"),
+      location: value(formData, "location"),
+      type: value(formData, "type"),
+      salaryRange: value(formData, "salaryRange"),
+      description: value(formData, "description"),
+      requirements: value(formData, "requirements"),
+      url: value(formData, "url"),
+    });
+  } catch (error) {
+    return { error: mapError(error) };
+  }
+  revalidatePath("/recruiter/jobs");
+  revalidatePath(`/recruiter/jobs/${jobId}`);
+  return {};
+}
+
 export async function transitionRecruiterApplicationAction(
   _state: RecruiterActionState,
   formData: FormData

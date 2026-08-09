@@ -50,6 +50,15 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
       title: "Frontend",
       isArchived,
     }),
+    setJobStatus: async (_companyId, jobId, status) => ({
+      id: jobId,
+      companyId: "company-a",
+      title: "Frontend",
+      status,
+      isArchived: status !== "PUBLISHED",
+    }),
+    updateJob: async (companyId, jobId, input) =>
+      companyId === "company-a" && jobId === "job-a" ? { id: jobId, companyId, ...input } : null,
     listApplications: async (companyId, status) => {
       const rows = [
         { id: "app-a", status: "APPLIED" as ApplicationStatus, job: { id: "job-a", companyId } },
@@ -159,6 +168,38 @@ describe("RecruiterService", () => {
     const service = new RecruiterService(makeRepository());
 
     await expect(service.getJob("recruiter-a", "job-other")).rejects.toBeInstanceOf(RecruiterAccessError);
+  });
+
+  it("updates only company-owned jobs with validated JD content", async () => {
+    const service = new RecruiterService(makeRepository());
+
+    await expect(
+      service.updateJob("recruiter-a", "job-a", {
+        title: "Frontend Lead",
+        location: "Remote",
+        type: "Full-time",
+        description: "Own the candidate application and assessment experience end to end.",
+        requirements: "React, TypeScript, accessibility, testing.",
+      })
+    ).resolves.toMatchObject({ id: "job-a", companyId: "company-a", title: "Frontend Lead", company: "Acme" });
+  });
+
+  it("persists draft, published and archived JD lifecycle states", async () => {
+    const service = new RecruiterService(makeRepository());
+
+    await expect(service.createJob("recruiter-a", {
+      title: "Backend Engineer",
+      description: "Build reliable recruiter services with strict authorization boundaries.",
+      requirements: "Node.js, PostgreSQL, tests.",
+    })).resolves.toMatchObject({ isArchived: true });
+    await expect(service.publishJob("recruiter-a", "job-a")).resolves.toMatchObject({
+      status: "PUBLISHED",
+      isArchived: false,
+    });
+    await expect(service.archiveJob("recruiter-a", "job-a")).resolves.toMatchObject({
+      status: "ARCHIVED",
+      isArchived: true,
+    });
   });
 
   it("filters applications to company-owned jobs by status", async () => {

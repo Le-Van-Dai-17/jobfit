@@ -1,4 +1,4 @@
-import type { ApplicationEventType, ApplicationStatus, CompanyMembershipRole } from "@prisma/client";
+import type { ApplicationEventType, ApplicationStatus, CompanyMembershipRole, JobStatus } from "@prisma/client";
 import { z } from "zod";
 import { recruiterRepository } from "../repositories/recruiter.repository";
 
@@ -38,6 +38,8 @@ export type RecruiterRepository = {
   listJobs(companyId: string): Promise<unknown[]>;
   findJobForCompany(companyId: string, jobId: string): Promise<unknown | null>;
   setJobArchived(companyId: string, jobId: string, isArchived: boolean): Promise<unknown>;
+  setJobStatus(companyId: string, jobId: string, status: JobStatus): Promise<unknown>;
+  updateJob(companyId: string, jobId: string, input: Required<RecruiterJobInput> & { company: string }): Promise<unknown>;
   listApplications(companyId: string, status?: ApplicationStatus): Promise<unknown[]>;
   findApplicationForCompany(
     companyId: string,
@@ -121,14 +123,26 @@ export class RecruiterService {
 
   async publishJob(userId: string, jobId: string) {
     const membership = await this.requireMembership(userId);
-    const job = await this.repository.setJobArchived(membership.companyId, jobId, false);
+    const job = await this.repository.setJobStatus(membership.companyId, jobId, "PUBLISHED");
     if (!job) throw new RecruiterAccessError("Resource is not available.");
     return job;
   }
 
   async archiveJob(userId: string, jobId: string) {
     const membership = await this.requireMembership(userId);
-    const job = await this.repository.setJobArchived(membership.companyId, jobId, true);
+    const job = await this.repository.setJobStatus(membership.companyId, jobId, "ARCHIVED");
+    if (!job) throw new RecruiterAccessError("Resource is not available.");
+    return job;
+  }
+
+  async updateJob(userId: string, jobId: string, input: RecruiterJobInput) {
+    const membership = await this.requireMembership(userId);
+    const parsed = JobInputSchema.safeParse(input);
+    if (!parsed.success) throw new RecruiterValidationError(parsed.error.issues);
+    const job = await this.repository.updateJob(membership.companyId, jobId, {
+      ...parsed.data,
+      company: membership.company.name,
+    });
     if (!job) throw new RecruiterAccessError("Resource is not available.");
     return job;
   }

@@ -263,6 +263,7 @@ model Job {
   externalId     String?  // For imported jobs
   source         String?  // "LINKEDIN", "MANUAL", "SYSTEM"
   deadline       DateTime?
+  status         JobStatus @default(PUBLISHED)
   
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -411,6 +412,12 @@ enum SavedJobStatus {
   BOOKMARKED
   APPLYING
   APPLIED
+  ARCHIVED
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
   ARCHIVED
 }
 

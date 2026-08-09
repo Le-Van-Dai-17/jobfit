@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 import { archiveRecruiterJobAction, publishRecruiterJobAction } from "@/features/recruiter/actions/recruiter.actions";
+import { RecruiterJobEditForm } from "@/features/recruiter/components/RecruiterJobEditForm";
 import { RecruiterJobStatusForm } from "@/features/recruiter/components/RecruiterJobStatusForm";
 import { RecruiterAccessError, recruiterService } from "@/features/recruiter/services/recruiter.service";
 
@@ -14,7 +15,10 @@ type JobDetail = {
   type: string | null;
   description: string | null;
   requirements: string | null;
+  salaryRange: string | null;
+  url: string | null;
   isArchived: boolean;
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
 };
 
 export default async function RecruiterJobDetailPage({ params }: { params: Promise<{ jobId: string }> }) {
@@ -69,6 +73,7 @@ export default async function RecruiterJobDetailPage({ params }: { params: Promi
           {job.requirements ?? "Chưa có yêu cầu."}
         </p>
       </section>
+      <RecruiterJobEditForm job={job} />
     </div>
   );
 }
