@@ -22,6 +22,8 @@ export default async function RecruiterCompanyPage() {
     website: string | null;
     description: string | null;
     location: string | null;
+    industry: import("@prisma/client").CompanyIndustry | null;
+    size: import("@prisma/client").CompanySize | null;
   };
 
   return (

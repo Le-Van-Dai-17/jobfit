@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import type { ApplicationStatus, JobStatus } from "@prisma/client";
-import type { RecruiterJobInput, RecruiterRepository as RecruiterRepositoryContract } from "../services/recruiter.service";
+import type { RecruiterRepository as RecruiterRepositoryContract } from "../services/recruiter.service";
 
 export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
   async findMembership(userId: string) {
@@ -13,8 +13,8 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
   async getDashboardCounts(companyId: string) {
     const [jobs, activeJobs, archivedJobs, applications, assessmentReports, awaitingReview, awaitingAssessment] = await Promise.all([
       prisma.job.count({ where: { companyId } }),
-      prisma.job.count({ where: { companyId, isArchived: false } }),
-      prisma.job.count({ where: { companyId, isArchived: true } }),
+      prisma.job.count({ where: { companyId, status: "PUBLISHED", isArchived: false } }),
+      prisma.job.count({ where: { companyId, status: "ARCHIVED", isArchived: true } }),
       prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, job: { companyId } } }),
       prisma.assessmentResult.count({
         where: { session: { application: { deletedAt: null, user: { deletedAt: null }, job: { companyId } } } },
@@ -45,7 +45,7 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
     });
   }
 
-  createJob(companyId: string, input: Required<RecruiterJobInput> & { company: string }) {
+  createJob(companyId: string, input: Parameters<RecruiterRepositoryContract["createJob"]>[1]) {
     return prisma.job.create({
       data: { ...input, companyId, source: "MANUAL", isArchived: true, status: "DRAFT" },
     });
@@ -75,18 +75,18 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
     return this.findJobForCompany(companyId, jobId);
   }
 
-  async setJobStatus(companyId: string, jobId: string, status: JobStatus) {
+  async setJobStatus(companyId: string, jobId: string, expectedStatus: JobStatus, status: JobStatus) {
     const updated = await prisma.job.updateMany({
-      where: { id: jobId, companyId },
+      where: { id: jobId, companyId, status: expectedStatus },
       data: { status, isArchived: status !== "PUBLISHED" },
     });
     if (updated.count !== 1) return null;
     return this.findJobForCompany(companyId, jobId);
   }
 
-  async updateJob(companyId: string, jobId: string, input: Required<RecruiterJobInput> & { company: string }) {
+  async updateJob(companyId: string, jobId: string, input: Parameters<RecruiterRepositoryContract["updateJob"]>[2]) {
     const updated = await prisma.job.updateMany({
-      where: { id: jobId, companyId },
+      where: { id: jobId, companyId, status: { not: "ARCHIVED" } },
       data: input,
     });
     if (updated.count !== 1) return null;

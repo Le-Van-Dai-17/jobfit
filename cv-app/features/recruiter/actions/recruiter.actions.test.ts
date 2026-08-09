@@ -43,7 +43,7 @@ describe("recruiter application actions", () => {
     formData.set("jobId", "job-a");
 
     await expect(archiveRecruiterJobAction({}, formData)).resolves.toEqual({
-      error: "Khong tim thay du lieu phu hop voi cong ty cua ban.",
+      error: "Không tìm thấy dữ liệu phù hợp với công ty của bạn.",
     });
   });
 
@@ -53,7 +53,7 @@ describe("recruiter application actions", () => {
     formData.set("status", "OFFER");
 
     await expect(transitionRecruiterApplicationAction({}, formData)).resolves.toEqual({
-      error: "Trang thai ung tuyen khong the chuyen theo cach nay.",
+      error: "Không thể chuyển sang trạng thái này.",
     });
   });
 });

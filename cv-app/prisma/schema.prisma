@@ -54,6 +54,8 @@ model Company {
   website     String?
   description String?  @db.Text
   location    String?
+  industry    CompanyIndustry?
+  size        CompanySize?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -61,6 +63,27 @@ model Company {
   jobs        Job[]
 
   @@index([slug])
+}
+
+enum CompanyIndustry {
+  INFORMATION_TECHNOLOGY
+  SOFTWARE
+  FINANCE_BANKING
+  ECOMMERCE
+  EDUCATION
+  HEALTHCARE
+  MANUFACTURING
+  PROFESSIONAL_SERVICES
+  OTHER
+}
+
+enum CompanySize {
+  SIZE_1_9
+  SIZE_10_49
+  SIZE_50_99
+  SIZE_100_499
+  SIZE_500_999
+  SIZE_1000_PLUS
 }
 
 model CompanyMembership {
@@ -255,8 +278,18 @@ model Job {
   title          String
   company        String
   location       String?
-  type           String?  // Full-time, Part-time, Remote
-  salaryRange    String?
+  type           String?  // Legacy display field retained for compatibility
+  salaryRange    String?  // Legacy display field retained for compatibility
+  department     JobDepartment?
+  employmentType EmploymentType?
+  workMode       WorkMode?
+  experienceLevel ExperienceLevel?
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryCurrency String?  @default("VND")
+  salaryNegotiable Boolean @default(false)
+  skills         String[] @default([])
+  benefits       String?  @db.Text
   description    String?  @db.Text
   requirements   String?  @db.Text
   url            String?
@@ -277,6 +310,42 @@ model Job {
   assessmentSessions AssessmentSession[]
 
   @@index([companyId])
+}
+
+enum JobDepartment {
+  ENGINEERING
+  PRODUCT
+  DESIGN
+  DATA
+  MARKETING
+  SALES
+  OPERATIONS
+  HUMAN_RESOURCES
+  FINANCE
+  OTHER
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  TEMPORARY
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum ExperienceLevel {
+  INTERN
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+  MANAGER
 }
 
 // -----------------------------------------------------------------------------

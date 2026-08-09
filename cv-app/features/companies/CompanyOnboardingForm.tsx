@@ -46,6 +46,21 @@ export function CompanyOnboardingForm() {
         <Input name="location" disabled={pending} placeholder="TP. Hồ Chí Minh" />
       </label>
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+          <span>Ngành nghề</span>
+          <select name="industry" disabled={pending} className="h-12 w-full rounded-lg border border-outline-variant bg-white px-3 focus-visible:ring-2 focus-visible:ring-primary">
+            <option value="">Chưa cập nhật</option><option value="INFORMATION_TECHNOLOGY">Công nghệ thông tin</option><option value="SOFTWARE">Phần mềm</option><option value="OTHER">Khác</option>
+          </select>
+        </label>
+        <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+          <span>Quy mô công ty</span>
+          <select name="size" disabled={pending} className="h-12 w-full rounded-lg border border-outline-variant bg-white px-3 focus-visible:ring-2 focus-visible:ring-primary">
+            <option value="">Chưa cập nhật</option><option value="SIZE_1_9">1 - 9 nhân viên</option><option value="SIZE_10_49">10 - 49 nhân viên</option><option value="SIZE_50_99">50 - 99 nhân viên</option><option value="SIZE_100_499">100 - 499 nhân viên</option><option value="SIZE_500_999">500 - 999 nhân viên</option><option value="SIZE_1000_PLUS">Từ 1.000 nhân viên</option>
+          </select>
+        </label>
+      </div>
+
       <label className="block space-y-1.5 text-sm font-semibold text-foreground">
         <span>Mô tả</span>
         <Textarea name="description" rows={4} disabled={pending} />

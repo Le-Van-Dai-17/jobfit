@@ -42,7 +42,7 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
     ],
     findJobForCompany: async (companyId, jobId) =>
       companyId === "company-a" && jobId === "job-a"
-        ? { id: "job-a", companyId, title: "Frontend", company: "Acme", isArchived: false }
+        ? { id: "job-a", companyId, title: "Frontend", company: "Acme", status: "DRAFT", isArchived: true }
         : null,
     setJobArchived: async (_companyId, jobId, isArchived) => ({
       id: jobId,
@@ -50,7 +50,7 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
       title: "Frontend",
       isArchived,
     }),
-    setJobStatus: async (_companyId, jobId, status) => ({
+    setJobStatus: async (_companyId, jobId, _expectedStatus, status) => ({
       id: jobId,
       companyId: "company-a",
       title: "Frontend",
@@ -242,6 +242,55 @@ describe("RecruiterService", () => {
     });
     await expect(service.getAssessmentReport("recruiter-a", "app-other")).rejects.toBeInstanceOf(
       RecruiterAccessError
+    );
+  });
+
+  it("normalizes and persists structured Stitch JD fields", async () => {
+    const service = new RecruiterService(makeRepository());
+    await expect(service.createJob("recruiter-a", {
+      title: "Senior Frontend Engineer",
+      description: "Xây dựng trải nghiệm tuyển dụng có khả năng truy cập và kiểm thử tốt.",
+      requirements: "React, TypeScript và kiểm thử tự động.",
+      department: "ENGINEERING",
+      employmentType: "FULL_TIME",
+      workMode: "HYBRID",
+      experienceLevel: "SENIOR",
+      salaryMin: "25000000",
+      salaryMax: "40000000",
+      salaryCurrency: "VND",
+      salaryNegotiable: false,
+      skills: ["React", "TypeScript", "React"],
+      benefits: "Bảo hiểm sức khỏe và ngân sách học tập.",
+    })).resolves.toMatchObject({
+      department: "ENGINEERING",
+      employmentType: "FULL_TIME",
+      workMode: "HYBRID",
+      experienceLevel: "SENIOR",
+      salaryMin: 25000000,
+      salaryMax: 40000000,
+      salaryCurrency: "VND",
+      salaryNegotiable: false,
+      skills: ["React", "TypeScript"],
+    });
+  });
+
+  it("rejects invalid salary bounds before repository writes", async () => {
+    const service = new RecruiterService(makeRepository());
+    await expect(service.createJob("recruiter-a", {
+      title: "Backend Engineer",
+      description: "Xây dựng dịch vụ tuyển dụng an toàn và có khả năng quan sát tốt.",
+      requirements: "Node.js, PostgreSQL và kiểm thử tự động.",
+      salaryMin: "50000000",
+      salaryMax: "20000000",
+    })).rejects.toBeInstanceOf(RecruiterValidationError);
+  });
+
+  it("rejects publishing an archived JD instead of silently reopening it", async () => {
+    const service = new RecruiterService(makeRepository({
+      findJobForCompany: async () => ({ id: "job-a", status: "ARCHIVED", isArchived: true }),
+    }));
+    await expect(service.publishJob("recruiter-a", "job-a")).rejects.toBeInstanceOf(
+      RecruiterStateTransitionError
     );
   });
 });

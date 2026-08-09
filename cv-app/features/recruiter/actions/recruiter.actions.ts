@@ -10,6 +10,7 @@ import {
   RecruiterStateTransitionError,
   RecruiterValidationError,
   recruiterService,
+  type RecruiterJobInput,
 } from "../services/recruiter.service";
 
 export type RecruiterActionState = { error?: string };
@@ -20,10 +21,26 @@ function value(formData: FormData, key: string) {
 }
 
 function mapError(error: unknown) {
-  if (error instanceof RecruiterValidationError) return error.issues[0]?.message ?? "Du lieu khong hop le.";
-  if (error instanceof RecruiterAccessError) return "Khong tim thay du lieu phu hop voi cong ty cua ban.";
-  if (error instanceof RecruiterStateTransitionError) return "Trang thai ung tuyen khong the chuyen theo cach nay.";
-  return "Khong the xu ly yeu cau luc nay.";
+  if (error instanceof RecruiterValidationError) return error.issues[0]?.message ?? "Dữ liệu không hợp lệ.";
+  if (error instanceof RecruiterAccessError) return "Không tìm thấy dữ liệu phù hợp với công ty của bạn.";
+  if (error instanceof RecruiterStateTransitionError) return "Không thể chuyển sang trạng thái này.";
+  return "Không thể xử lý yêu cầu lúc này.";
+}
+
+function jobInput(formData: FormData) {
+  return {
+    title: value(formData, "title"), location: value(formData, "location"),
+    type: value(formData, "type"), salaryRange: value(formData, "salaryRange"),
+    description: value(formData, "description"), requirements: value(formData, "requirements"),
+    benefits: value(formData, "benefits"), url: value(formData, "url"), deadline: value(formData, "deadline"),
+    department: value(formData, "department") as RecruiterJobInput["department"],
+    employmentType: value(formData, "employmentType") as RecruiterJobInput["employmentType"],
+    workMode: value(formData, "workMode") as RecruiterJobInput["workMode"],
+    experienceLevel: value(formData, "experienceLevel") as RecruiterJobInput["experienceLevel"],
+    salaryMin: value(formData, "salaryMin"), salaryMax: value(formData, "salaryMax"),
+    salaryCurrency: value(formData, "salaryCurrency"), salaryNegotiable: formData.get("salaryNegotiable") === "on",
+    skills: value(formData, "skills"),
+  } as const;
 }
 
 async function requireRecruiterId() {
@@ -40,17 +57,9 @@ export async function createRecruiterJobAction(
   const userId = await requireRecruiterId();
   let jobId: string | null = null;
   try {
-    const job = (await recruiterService.createJob(userId, {
-      title: value(formData, "title"),
-      location: value(formData, "location"),
-      type: value(formData, "type"),
-      salaryRange: value(formData, "salaryRange"),
-      description: value(formData, "description"),
-      requirements: value(formData, "requirements"),
-      url: value(formData, "url"),
-      deadline: value(formData, "deadline"),
-    })) as { id: string };
+    const job = (await recruiterService.createJob(userId, jobInput(formData))) as { id: string };
     jobId = job.id;
+    if (value(formData, "intent") === "publish") await recruiterService.publishJob(userId, job.id);
     revalidatePath("/recruiter/jobs");
   } catch (error) {
     return { error: mapError(error) };
@@ -93,16 +102,7 @@ export async function updateRecruiterJobAction(
   const userId = await requireRecruiterId();
   const jobId = value(formData, "jobId");
   try {
-    await recruiterService.updateJob(userId, jobId, {
-      title: value(formData, "title"),
-      location: value(formData, "location"),
-      type: value(formData, "type"),
-      salaryRange: value(formData, "salaryRange"),
-      description: value(formData, "description"),
-      requirements: value(formData, "requirements"),
-      url: value(formData, "url"),
-      deadline: value(formData, "deadline"),
-    });
+    await recruiterService.updateJob(userId, jobId, jobInput(formData));
   } catch (error) {
     return { error: mapError(error) };
   }

@@ -2,6 +2,7 @@ import type { UserRole } from "@prisma/client";
 import type { ReactNode } from "react";
 
 import { CandidateMobileNav } from "./CandidateMobileNav";
+import { RecruiterMobileNav } from "./RecruiterMobileNav";
 import Header from "./Header";
 import Sidebar, { type SidebarUser } from "./Sidebar";
 import { SidebarProvider } from "./SidebarContext";
@@ -15,6 +16,7 @@ export function AppShell({ children, user, companyName, createResume }: { childr
           <Header role={user.role} createResume={createResume} />
           <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 pb-24 lg:px-10 lg:py-8">{children}</main>
           {user.role === "CANDIDATE" ? <CandidateMobileNav /> : null}
+          {user.role === "RECRUITER" ? <RecruiterMobileNav /> : null}
         </div>
       </div>
     </SidebarProvider>

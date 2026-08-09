@@ -32,4 +32,18 @@ describe("RecruiterJobForm", () => {
 
     expect(screen.getByRole("button", { name: /Đang lưu/i })).toBeDisabled();
   });
+
+  it("renders the persisted Stitch JD fields with Vietnamese labels", () => {
+    vi.mocked(useActionState).mockReturnValue([{}, vi.fn(), false]);
+    render(<RecruiterJobForm />);
+
+    expect(screen.getByLabelText("Phòng ban")).toBeInTheDocument();
+    expect(screen.getByLabelText("Loại hình tuyển dụng")).toBeInTheDocument();
+    expect(screen.getByLabelText("Hình thức làm việc")).toBeInTheDocument();
+    expect(screen.getByLabelText("Mức kinh nghiệm")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lương tối thiểu")).toBeInTheDocument();
+    expect(screen.getByLabelText("Lương tối đa")).toBeInTheDocument();
+    expect(screen.getByLabelText("Kỹ năng")).toBeInTheDocument();
+    expect(screen.getByLabelText("Quyền lợi")).toBeInTheDocument();
+  });
 });

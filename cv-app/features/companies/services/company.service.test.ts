@@ -104,4 +104,25 @@ describe("CompanyService", () => {
       location: "Ha Noi",
     });
   });
+
+  it("persists validated industry and size without trusting a client company id", async () => {
+    const repository = createRepository();
+    repository.findMembership.mockResolvedValue({ companyId: "company-from-membership", role: "OWNER" });
+    repository.updateCompany.mockResolvedValue({ id: "company-from-membership" });
+    const service = new CompanyService(repository);
+
+    await service.updateRecruiterCompany("user-1", {
+      name: "Kada Updated",
+      website: "",
+      description: "Tuyển dụng dựa trên bằng chứng.",
+      location: "Hà Nội",
+      industry: "INFORMATION_TECHNOLOGY",
+      size: "SIZE_10_49",
+    });
+
+    expect(repository.updateCompany).toHaveBeenCalledWith("company-from-membership", expect.objectContaining({
+      industry: "INFORMATION_TECHNOLOGY",
+      size: "SIZE_10_49",
+    }));
+  });
 });
