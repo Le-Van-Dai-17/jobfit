@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
+import { filterJobFeed, parseJobFeedFilters } from "@/features/jobs/services/job-feed-filter";
 import { jobService } from "@/features/jobs/services/job.service";
 
 function formatDate(date: Date) {
@@ -16,12 +17,18 @@ function getSkillTags(requirements?: string | null) {
   return commonSkills.filter((skill) => requirements.toLowerCase().includes(skill.toLowerCase())).slice(0, 5);
 }
 
-export default async function JobsPage() {
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string | string[]; mode?: string | string[] }>;
+}) {
   const session = await auth();
   const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "CANDIDATE" });
   if (roleRedirect) redirect(roleRedirect);
 
-  const jobs = await jobService.getRecommendedJobs();
+  const filters = parseJobFeedFilters(await searchParams);
+  const allJobs = await jobService.getRecommendedJobs();
+  const jobs = filterJobFeed(allJobs, filters);
 
   return (
     <div className="space-y-5">
@@ -51,6 +58,8 @@ export default async function JobsPage() {
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
             <input
               className="h-11 w-full rounded-xl border border-border-light bg-white pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              defaultValue={filters.q}
+              name="q"
               placeholder="Tìm Frontend, Backend, DevOps..."
               type="search"
             />
@@ -58,15 +67,17 @@ export default async function JobsPage() {
           <select
             aria-label="Lọc hình thức làm việc"
             className="h-11 rounded-xl border border-border-light bg-white px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            defaultValue={filters.mode}
+            name="mode"
           >
-            <option>Tất cả hình thức</option>
-            <option>Remote</option>
-            <option>Hybrid</option>
-            <option>Onsite</option>
+            <option value="all">Tất cả hình thức</option>
+            <option value="remote">Remote</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="onsite">Onsite</option>
           </select>
           <button
             className="h-11 rounded-xl border border-border-light bg-surface-low px-4 text-sm font-semibold text-foreground"
-            type="button"
+            type="submit"
           >
             Lọc
           </button>
@@ -75,7 +86,9 @@ export default async function JobsPage() {
 
       {jobs.length === 0 ? (
         <div className="rounded-2xl border border-border-light bg-surface-white p-6 text-sm text-text-muted">
-          Chưa có việc làm đang mở. Khi recruiter đăng JD, vị trí phù hợp sẽ xuất hiện tại đây.
+          {allJobs.length === 0
+            ? "Chưa có việc làm đang mở. Khi recruiter đăng JD, vị trí phù hợp sẽ xuất hiện tại đây."
+            : "Không có vị trí nào khớp từ khóa và hình thức làm việc đã chọn."}
         </div>
       ) : (
         <div className="space-y-3">
