@@ -7,6 +7,7 @@ function createRepository() {
     findMembership: vi.fn(),
     findCompanyBySlug: vi.fn(),
     createCompanyWithOwner: vi.fn(),
+    updateCompany: vi.fn(),
   };
 }
 
@@ -79,5 +80,28 @@ describe("CompanyService", () => {
     const service = new CompanyService(repository);
 
     await expect(service.requireMembership("user-1", "company-2")).rejects.toBeInstanceOf(CompanyAccessError);
+  });
+
+  it("updates only the authenticated recruiter's company settings", async () => {
+    const repository = createRepository();
+    repository.findMembership.mockResolvedValue({ companyId: "company-1", role: "OWNER" });
+    repository.updateCompany.mockResolvedValue({ id: "company-1", name: "Kada Updated" });
+    const service = new CompanyService(repository);
+
+    await expect(
+      service.updateRecruiterCompany("user-1", {
+        name: "Kada Updated",
+        website: "https://kada.example",
+        description: "Evidence based hiring",
+        location: "Ha Noi",
+      })
+    ).resolves.toMatchObject({ id: "company-1" });
+
+    expect(repository.updateCompany).toHaveBeenCalledWith("company-1", {
+      name: "Kada Updated",
+      website: "https://kada.example",
+      description: "Evidence based hiring",
+      location: "Ha Noi",
+    });
   });
 });

@@ -43,3 +43,36 @@ export async function onboardCompanyAction(
   revalidatePath("/recruiter");
   redirect("/recruiter");
 }
+
+export async function updateCompanySettingsAction(
+  _previousState: CompanyOnboardingState,
+  formData: FormData
+): Promise<CompanyOnboardingState> {
+  const session = await auth();
+  const principal = await requireActiveRole(session?.user, "RECRUITER");
+  if (!principal) {
+    return { error: "Ban khong co quyen cap nhat cong ty tuyen dung." };
+  }
+
+  const service = new CompanyService(new PrismaCompanyRepository());
+  try {
+    await service.updateRecruiterCompany(principal.id, {
+      name: String(formData.get("name") ?? ""),
+      website: String(formData.get("website") ?? ""),
+      description: String(formData.get("description") ?? ""),
+      location: String(formData.get("location") ?? ""),
+    });
+  } catch (error) {
+    if (error instanceof CompanyValidationError) {
+      return { error: error.issues[0]?.message ?? "Thong tin cong ty khong hop le." };
+    }
+    if (error instanceof CompanyAccessError) {
+      return { error: "Khong the cap nhat cong ty voi tai khoan nay." };
+    }
+    throw error;
+  }
+
+  revalidatePath("/recruiter/company");
+  revalidatePath("/recruiter");
+  return {};
+}

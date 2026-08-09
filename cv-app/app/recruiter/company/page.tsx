@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
+import { CompanySettingsForm } from "@/features/companies/CompanySettingsForm";
 import { PrismaCompanyRepository } from "@/features/companies/repositories/company.repository";
 
 export default async function RecruiterCompanyPage() {
@@ -15,7 +16,13 @@ export default async function RecruiterCompanyPage() {
     redirect("/recruiter/company/onboarding");
   }
 
-  const company = membership.company as { name: string; slug: string; website: string | null; location: string | null };
+  const company = membership.company as {
+    name: string;
+    slug: string;
+    website: string | null;
+    description: string | null;
+    location: string | null;
+  };
 
   return (
     <div className="space-y-5">
@@ -39,6 +46,7 @@ export default async function RecruiterCompanyPage() {
           <dd className="mt-1 text-foreground">{company.website ?? "Chưa cập nhật"}</dd>
         </div>
       </dl>
+      <CompanySettingsForm company={company} />
     </div>
   );
 }

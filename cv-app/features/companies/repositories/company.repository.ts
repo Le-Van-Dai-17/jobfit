@@ -50,4 +50,16 @@ export class PrismaCompanyRepository implements CompanyRepository {
       throw error;
     }
   }
+
+  updateCompany(companyId: string, input: {
+    name: string;
+    website: string | null;
+    description: string | null;
+    location: string | null;
+  }) {
+    return prisma.company.update({
+      where: { id: companyId },
+      data: input,
+    });
+  }
 }

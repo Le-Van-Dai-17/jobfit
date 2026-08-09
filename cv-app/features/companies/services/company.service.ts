@@ -30,6 +30,12 @@ export type CompanyRepository = {
     description: string | null;
     location: string | null;
   }): Promise<unknown>;
+  updateCompany(companyId: string, input: {
+    name: string;
+    website: string | null;
+    description: string | null;
+    location: string | null;
+  }): Promise<unknown>;
 };
 
 export class CompanyValidationError extends Error {
@@ -98,5 +104,22 @@ export class CompanyService {
       throw new CompanyAccessError("Recruiter cannot access this company");
     }
     return membership;
+  }
+
+  async updateRecruiterCompany(userId: string, input: Omit<CompanyOnboardingInput, "slug">) {
+    const parsed = companyOnboardingSchema.omit({ slug: true }).safeParse(input);
+    if (!parsed.success) {
+      throw new CompanyValidationError(parsed.error.issues);
+    }
+    const membership = await this.repository.findMembership(userId);
+    if (!membership) {
+      throw new CompanyAccessError("Recruiter cannot access this company");
+    }
+    return this.repository.updateCompany(membership.companyId, {
+      name: parsed.data.name,
+      website: parsed.data.website,
+      description: parsed.data.description,
+      location: parsed.data.location,
+    });
   }
 }
