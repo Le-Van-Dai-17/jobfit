@@ -157,6 +157,7 @@ describe("AuthService", () => {
     const repository = createRepository();
     const service = new AuthService(repository);
     const passwordHash = await service.hashPassword("Str0ng!Passw0rd");
+    const verifyPassword = vi.spyOn(service, "verifyPassword");
     repository.findUserByEmail.mockResolvedValue({
       id: "deleted-user",
       email: "deleted@example.com",
@@ -169,6 +170,15 @@ describe("AuthService", () => {
     await expect(service.authenticate("deleted@example.com", "Str0ng!Passw0rd")).rejects.toBeInstanceOf(
       InvalidCredentialsError
     );
+
+    expect(verifyPassword).toHaveBeenCalledTimes(1);
+    const dummyHash = verifyPassword.mock.calls[0]?.[1];
+    expect(dummyHash).not.toBe(passwordHash);
+    const [prefix, salt, storedHash] = dummyHash?.split(":") ?? [];
+    expect(prefix).toBe("scrypt");
+    expect(salt).toMatch(/^[0-9a-f]{32}$/);
+    expect(storedHash).toMatch(/^[0-9a-f]{128}$/);
+    expect(Buffer.from(storedHash ?? "", "hex")).toHaveLength(64);
   });
 
   it("rejects oversized login passwords before lookup or expensive verification", async () => {
