@@ -60,5 +60,5 @@ export async function applyToJobAction(
 
   revalidatePath("/applications");
   revalidatePath("/dashboard");
-  redirect(`/applications?applied=${application.id}`);
+  redirect(`/applications/${application.id}?applied=1`);
 }

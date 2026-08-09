@@ -6,7 +6,7 @@ export class ApplicationUniqueConstraintError extends Error {}
 export class ApplicationRepository {
   findActiveJob(jobId: string) {
     return prisma.job.findFirst({
-      where: { id: jobId, isArchived: false },
+      where: { id: jobId, isArchived: false, status: "PUBLISHED" },
     });
   }
 
@@ -42,7 +42,7 @@ export class ApplicationRepository {
               actorUserId: userId,
               fromStatus: "DRAFT",
               toStatus: "APPLIED",
-              notes: "Ung vien da nop don ung tuyen.",
+              notes: "Ứng viên đã nộp đơn ứng tuyển.",
             },
           },
         },

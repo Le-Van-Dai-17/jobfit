@@ -56,17 +56,30 @@ export function AssessmentSubmissionForm({ sessionId, tasks }: { sessionId: stri
             </ul>
           </div>
           <label htmlFor={`answer-${task.id}`} className="mb-2 block text-sm font-semibold text-foreground">
-            Câu trả lời / giải thích giải pháp
+            Giải pháp và bằng chứng
           </label>
           <Textarea
             id={`answer-${task.id}`}
             name={`answer-${task.id}`}
             rows={8}
             minLength={120}
-            maxLength={12000}
+            maxLength={9500}
             required
             disabled={pending}
             placeholder="Mô tả cách bạn phân tích, thiết kế, triển khai, kiểm thử và xử lý rủi ro..."
+          />
+          <label htmlFor={`deployment-${task.id}`} className="mb-2 mt-4 block text-sm font-semibold text-foreground">
+            Kế hoạch triển khai
+          </label>
+          <Textarea
+            id={`deployment-${task.id}`}
+            name={`deployment-${task.id}`}
+            rows={4}
+            minLength={40}
+            maxLength={2000}
+            required
+            disabled={pending}
+            placeholder="Nêu các bước phát hành, quan sát, quay lui và giới hạn của giải pháp."
           />
         </section>
       ))}

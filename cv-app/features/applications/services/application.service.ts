@@ -25,7 +25,7 @@ export class ApplicationService {
   async getForCandidate(userId: string, applicationId: string) {
     const application = await this.repository.findApplicationForUser(userId, applicationId);
     if (!application) {
-      throw new ApplicationOwnershipError("Khong tim thay don ung tuyen.");
+      throw new ApplicationOwnershipError("Không tìm thấy đơn ứng tuyển.");
     }
     return application;
   }

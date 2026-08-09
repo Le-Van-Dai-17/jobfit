@@ -41,6 +41,9 @@ describe("AssessmentReport", () => {
 
     render(<AssessmentReport result={result} />);
 
+    expect(screen.getByText("Báo cáo tư vấn dành cho ứng viên")).toBeInTheDocument();
+    expect(screen.getByText("Điểm tư vấn: 50/100")).toBeInTheDocument();
+    expect(screen.queryByText(/duyệt ứng viên|ghi chú nhà tuyển dụng|phê duyệt/i)).not.toBeInTheDocument();
     expect(screen.getAllByText('"API dùng auth"')).toHaveLength(2);
     expect(consoleError).not.toHaveBeenCalled();
   });

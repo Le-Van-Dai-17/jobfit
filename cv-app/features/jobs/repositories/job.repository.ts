@@ -8,15 +8,31 @@ export class JobRepository {
     return prisma.job.findMany({
       where: {
         isArchived: false,
+        status: "PUBLISHED",
       },
       orderBy: { createdAt: "desc" },
     });
   }
 
-  async findActiveJobsForCandidate(userId: string) {
+  async findActiveJobsForCandidate(userId: string, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite" } = { q: "", mode: "all" }) {
+    const conditions = [];
+    if (filters.q) {
+      conditions.push({
+        OR: [
+          { title: { contains: filters.q, mode: "insensitive" as const } },
+          { company: { contains: filters.q, mode: "insensitive" as const } },
+        ],
+      });
+    }
+    if (filters.mode !== "all") {
+      conditions.push({ type: { contains: filters.mode, mode: "insensitive" as const } });
+    }
+
     return prisma.job.findMany({
       where: {
         isArchived: false,
+        status: "PUBLISHED",
+        ...(conditions.length > 0 ? { AND: conditions } : {}),
       },
       include: {
         savedBy: { where: { userId } },
@@ -34,13 +50,17 @@ export class JobRepository {
     });
   }
 
+  async findPublishedById(id: string) {
+    return prisma.job.findFirst({
+      where: { id, isArchived: false, status: "PUBLISHED" },
+    });
+  }
+
   /**
    * Find a specific job by ID
    */
   async findById(id: string) {
-    return prisma.job.findFirst({
-      where: { id, isArchived: false },
-    });
+    return this.findPublishedById(id);
   }
 
   /**

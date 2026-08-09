@@ -83,7 +83,12 @@ export async function submitAssessmentAction(
   const taskIds = formData.getAll("taskId").filter((value): value is string => typeof value === "string");
   const answers = taskIds.map((taskId) => ({
     taskId,
-    answerText: formValue(formData, `answer-${taskId}`),
+    answerText: [
+      "## Giải pháp và bằng chứng",
+      formValue(formData, `answer-${taskId}`),
+      "## Kế hoạch triển khai",
+      formValue(formData, `deployment-${taskId}`),
+    ].join("\n\n"),
   }));
 
   try {

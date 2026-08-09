@@ -20,6 +20,14 @@ describe("ApplicationRepository", () => {
     vi.clearAllMocks();
   });
 
+  it("resolves an active application target only when the job is published", async () => {
+    (prisma.job.findFirst as Mock).mockResolvedValue({ id: "job-1" });
+    await new ApplicationRepository().findActiveJob("job-1");
+    expect(prisma.job.findFirst).toHaveBeenCalledWith({
+      where: { id: "job-1", isArchived: false, status: "PUBLISHED" },
+    });
+  });
+
   it("creates an applied timeline event with the candidate application", async () => {
     (prisma.application.create as Mock).mockResolvedValue({ id: "application-1" });
 

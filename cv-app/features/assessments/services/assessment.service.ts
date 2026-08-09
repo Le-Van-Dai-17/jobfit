@@ -119,7 +119,7 @@ export class AssessmentService {
     if (input.applicationId) {
       const application = await this.repository.findApplicationContext(userId, input.applicationId);
       if (!application || application.jobId !== input.jobId || application.resumeVersionId !== input.resumeVersionId) {
-        throw new AssessmentOwnershipError("Application khong khop voi ung vien, JD va CV da chon.");
+        throw new AssessmentOwnershipError("Application không khớp với ứng viên, JD và CV đã chọn.");
       }
     }
 
@@ -142,7 +142,7 @@ export class AssessmentService {
       });
     } catch (error) {
       if (error instanceof AssessmentSessionStateError) {
-        throw new AssessmentOwnershipError("Application khong khop voi ung vien, JD va CV da chon.");
+        throw new AssessmentOwnershipError("Application không khớp với ứng viên, JD và CV đã chọn.");
       }
       throw error;
     }

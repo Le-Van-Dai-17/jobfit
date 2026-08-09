@@ -12,14 +12,17 @@ export class JobService {
     return this.repository.findActiveJobs();
   }
 
-  async getCandidateFeed(userId: string) {
-    return this.repository.findActiveJobsForCandidate(userId);
+  async getCandidateFeed(userId: string, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite" }) {
+    return this.repository.findActiveJobsForCandidate(userId, filters);
   }
 
   /**
    * Toggle saving a job for a user
    */
   async toggleSaveJob(userId: string, jobId: string) {
+    const publishedJob = await this.repository.findPublishedById(jobId);
+    if (!publishedJob) throw new Error("Việc làm không còn được công khai.");
+
     const existing = await this.repository.findSavedJob(userId, jobId);
     if (existing) {
       await this.repository.deleteSavedJob(userId, jobId);

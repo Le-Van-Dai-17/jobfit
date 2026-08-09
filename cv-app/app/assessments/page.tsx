@@ -33,8 +33,7 @@ export default async function AssessmentsPage({
           CV + JD thành bài tập kỹ thuật có bằng chứng
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-text-muted">
-          Chọn một phiên bản CV và JD để tạo bài tập thực tế, nộp giải thích giải pháp, rồi nhận báo cáo rubric
-          có thể chia sẻ an toàn với nhà tuyển dụng.
+          Chọn một phiên bản CV và JD để tạo bài tập thực tế, nộp giải pháp cùng kế hoạch triển khai, rồi nhận báo cáo tư vấn theo rubric và bằng chứng.
         </p>
       </section>
 

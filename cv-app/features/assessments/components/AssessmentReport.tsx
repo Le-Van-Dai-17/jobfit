@@ -26,7 +26,7 @@ export function AssessmentReport({ result }: { result: Result }) {
   return (
     <section className="space-y-4">
       <div className="rounded-lg border border-border-light bg-surface-white p-4">
-        <p className="text-xs font-semibold uppercase text-text-muted">Báo cáo an toàn cho nhà tuyển dụng</p>
+        <p className="text-xs font-semibold uppercase text-text-muted">Báo cáo tư vấn dành cho ứng viên</p>
         <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-xl font-bold text-foreground">Điểm tư vấn: {result.advisoryScore}/100</h2>
