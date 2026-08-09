@@ -18,7 +18,7 @@ export type AppNavItem = {
 
 const candidateNavItems: AppNavItem[] = [
   { name: "Tổng quan", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Hồ sơ & CV", href: "/profile", icon: FileText },
+  { name: "Hồ sơ & CV", href: "/my-cv", icon: FileText },
   { name: "Việc làm", href: "/jobs", icon: Briefcase },
   { name: "Ứng tuyển", href: "/applications", icon: ClipboardCheck },
 ];

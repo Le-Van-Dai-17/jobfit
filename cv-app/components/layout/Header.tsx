@@ -13,7 +13,7 @@ export default function Header({ role }: { role: UserRole }) {
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border-light bg-surface-white/90 px-4 backdrop-blur-md md:px-6">
       <div className="flex items-center gap-2 md:hidden">
         <button
-          aria-label="Mo menu"
+          aria-label="Mở menu"
           onClick={toggle}
           className="-ml-2 rounded-lg p-2 text-text-muted transition-colors hover:bg-surface-low hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >

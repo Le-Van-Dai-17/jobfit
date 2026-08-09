@@ -6,9 +6,19 @@ describe("role-aware navigation", () => {
   it("shows only the simplified candidate information architecture", () => {
     expect(getNavItemsForRole("CANDIDATE").map((item) => [item.name, item.href])).toEqual([
       ["Tổng quan", "/dashboard"],
-      ["Hồ sơ & CV", "/profile"],
+      ["Hồ sơ & CV", "/my-cv"],
       ["Việc làm", "/jobs"],
       ["Ứng tuyển", "/applications"],
+    ]);
+  });
+
+  it("shows only the approved recruiter information architecture", () => {
+    expect(getNavItemsForRole("RECRUITER").map((item) => [item.name, item.href])).toEqual([
+      ["Tổng quan", "/recruiter"],
+      ["Vị trí tuyển dụng", "/recruiter/jobs"],
+      ["Ứng viên", "/recruiter/candidates"],
+      ["Đánh giá", "/recruiter/assessments"],
+      ["Công ty", "/recruiter/company"],
     ]);
   });
 
