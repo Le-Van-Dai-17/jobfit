@@ -1,11 +1,14 @@
 "use client";
 
-import { Building2, Eye, EyeOff, UserRound, UserPlus } from "lucide-react";
+import { ArrowRight, Building2, Eye, EyeOff, Info, LockKeyhole, Mail, UserPlus, UserRound } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useActionState, useState } from "react";
 
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { AuthShell } from "./AuthShell";
 import { registerAction } from "./actions/register";
 
 export default function RegisterClient() {
@@ -14,169 +17,73 @@ export default function RegisterClient() {
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
-      <form
-        action={formAction}
-        className="w-full max-w-2xl space-y-5 rounded-xl border border-border-light bg-surface-white p-5 shadow-sm sm:p-8"
-      >
-        <div className="space-y-2 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
-            <UserPlus className="h-6 w-6" />
+    <AuthShell active="register">
+      <Card className="mx-auto w-full max-w-[520px] border-outline-variant/50 p-6 shadow-[0_20px_40px_-15px_rgb(0_0_0/0.1),0_1px_3px_rgb(0_0_0/0.08)] max-sm:border-0 max-sm:bg-transparent max-sm:shadow-none sm:p-10">
+        <form action={formAction} className="space-y-5">
+          <div className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 -rotate-6 items-center justify-center rounded-2xl bg-primary-container text-white shadow-md shadow-primary/20">
+              <UserPlus className="h-8 w-8" aria-hidden="true" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[32px] sm:leading-10">Tạo tài khoản mới</h1>
+            <p className="mt-2 text-sm text-text-muted sm:text-base">Bắt đầu hành trình nghề nghiệp của bạn cùng CV_KADA.</p>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Tạo tài khoản CV_KADA</h1>
-          <p className="mx-auto max-w-md text-sm leading-6 text-text-muted">
-            Chọn đúng vai trò để vào luồng ứng viên hoặc nhà tuyển dụng.
-          </p>
-        </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-1.5 text-sm font-semibold text-foreground">
-            <span>Họ tên</span>
-            <Input name="name" autoComplete="name" disabled={pending} required />
-          </label>
+          <fieldset>
+            <legend className="sr-only">Vai trò</legend>
+            <div className="grid grid-cols-2 gap-1 rounded-lg bg-surface-container p-1.5">
+              <RoleChoice value="CANDIDATE" title="Ứng viên" icon={<UserRound className="h-5 w-5" />} defaultChecked disabled={pending} />
+              <RoleChoice value="RECRUITER" title="Nhà tuyển dụng" icon={<Building2 className="h-5 w-5" />} disabled={pending} />
+            </div>
+          </fieldset>
 
-          <label className="block space-y-1.5 text-sm font-semibold text-foreground">
-            <span>Email</span>
-            <Input name="email" type="email" autoComplete="email" disabled={pending} required />
-          </label>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <PasswordField
-            label="Mật khẩu"
-            name="password"
-            show={showPassword}
-            disabled={pending}
-            onToggle={() => setShowPassword((value) => !value)}
-          />
-          <PasswordField
-            label="Xác nhận mật khẩu"
-            name="passwordConfirmation"
-            show={showConfirmation}
-            disabled={pending}
-            onToggle={() => setShowConfirmation((value) => !value)}
-          />
-        </div>
-
-        <fieldset className="space-y-3">
-          <legend className="text-sm font-semibold text-foreground">Vai trò</legend>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <RoleCard
-              value="CANDIDATE"
-              title="Ứng viên"
-              description="Quản lý CV, ứng tuyển và làm bài đánh giá."
-              icon={<UserRound className="h-5 w-5" />}
-              defaultChecked
-              disabled={pending}
-            />
-            <RoleCard
-              value="RECRUITER"
-              title="Nhà tuyển dụng"
-              description="Đăng vị trí, theo dõi ứng viên và xem báo cáo."
-              icon={<Building2 className="h-5 w-5" />}
-              disabled={pending}
-            />
+          <div className="space-y-3">
+            <Field label="Họ và tên" icon={<UserRound />}><Input name="name" autoComplete="name" placeholder="Họ và tên" disabled={pending} required className="pl-11" /></Field>
+            <Field label="Email" icon={<Mail />}><Input name="email" type="email" autoComplete="email" placeholder="Email đăng nhập" disabled={pending} required className="pl-11" /></Field>
+            <PasswordField label="Mật khẩu" name="password" show={showPassword} disabled={pending} onToggle={() => setShowPassword((value) => !value)} />
+            <PasswordField label="Xác nhận mật khẩu" name="passwordConfirmation" show={showConfirmation} disabled={pending} onToggle={() => setShowConfirmation((value) => !value)} />
           </div>
-        </fieldset>
 
-        {state.error ? (
-          <p role="alert" className="rounded-md bg-error-container p-3 text-sm font-medium text-error">
-            {state.error}
-          </p>
-        ) : null}
+          <div className="flex items-start gap-2 rounded-lg bg-surface-low p-3 text-sm text-text-muted">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+            <p>Mật khẩu phải có ít nhất 12 ký tự, bao gồm chữ hoa, chữ thường và số.</p>
+          </div>
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="flex h-12 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-white outline-none transition-colors hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {pending ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
-        </button>
+          {state.error ? <p role="alert" className="rounded-lg bg-error-container p-3 text-sm font-medium text-error">{state.error}</p> : null}
 
-        <p className="text-center text-sm text-text-muted">
-          Đã có tài khoản?{" "}
-          <Link href="/login" className="font-semibold text-primary outline-none hover:text-primary-hover focus-visible:ring-2 focus-visible:ring-primary">
-            Đăng nhập
-          </Link>
-        </p>
-      </form>
-    </div>
+          <Button type="submit" size="lg" isLoading={pending} className="w-full text-base font-semibold">
+            {pending ? "Đang tạo tài khoản..." : <>Đăng ký tài khoản <ArrowRight className="h-5 w-5" aria-hidden="true" /></>}
+          </Button>
+          <p className="text-center text-sm text-text-muted">Đã có tài khoản?{" "}<Link href="/login" className="rounded-sm font-semibold text-primary hover:text-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Đăng nhập ngay</Link></p>
+        </form>
+      </Card>
+    </AuthShell>
   );
 }
 
-function PasswordField({
-  label,
-  name,
-  show,
-  disabled,
-  onToggle,
-}: {
-  label: string;
-  name: string;
-  show: boolean;
-  disabled: boolean;
-  onToggle: () => void;
-}) {
+function Field({ label, icon, children }: { label: string; icon: ReactNode; children: ReactNode }) {
+  return <label className="block space-y-1 text-sm font-medium text-foreground"><span className="sr-only">{label}</span><span className="relative block"><span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-text-muted [&>svg]:h-5 [&>svg]:w-5" aria-hidden="true">{icon}</span>{children}</span></label>;
+}
+
+function PasswordField({ label, name, show, disabled, onToggle }: { label: string; name: string; show: boolean; disabled: boolean; onToggle: () => void }) {
   return (
-    <label className="block space-y-1.5 text-sm font-semibold text-foreground">
-      <span>{label}</span>
-      <div className="relative">
-        <Input
-          name={name}
-          type={show ? "text" : "password"}
-          autoComplete="new-password"
-          disabled={disabled}
-          required
-          minLength={12}
-          className="pr-11"
-        />
-        <button
-          type="button"
-          aria-label={show ? `Ẩn ${label.toLowerCase()}` : `Hiện ${label.toLowerCase()}`}
-          aria-pressed={show}
-          disabled={disabled}
-          onClick={onToggle}
-          className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-text-muted outline-none hover:bg-surface-low hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    <label className="block space-y-1 text-sm font-medium text-foreground">
+      <span className="sr-only">{label}</span>
+      <span className="relative block">
+        <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-text-muted" aria-hidden="true" />
+        <Input name={name} type={show ? "text" : "password"} autoComplete="new-password" placeholder={label} disabled={disabled} required minLength={12} className="pl-11 pr-12" />
+        <button type="button" aria-label={show ? `Ẩn ${label.toLowerCase()}` : `Hiện ${label.toLowerCase()}`} aria-pressed={show} disabled={disabled} onClick={onToggle} className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50">
+          {show ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
         </button>
-      </div>
+      </span>
     </label>
   );
 }
 
-function RoleCard({
-  value,
-  title,
-  description,
-  icon,
-  defaultChecked = false,
-  disabled,
-}: {
-  value: "CANDIDATE" | "RECRUITER";
-  title: string;
-  description: string;
-  icon: ReactNode;
-  defaultChecked?: boolean;
-  disabled: boolean;
-}) {
+function RoleChoice({ value, title, icon, defaultChecked = false, disabled }: { value: "CANDIDATE" | "RECRUITER"; title: string; icon: ReactNode; defaultChecked?: boolean; disabled: boolean }) {
   return (
-    <label className="group relative flex cursor-pointer gap-3 rounded-xl border border-border-light bg-surface-white p-4 text-sm outline-none transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-low has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary">
-      <input
-        type="radio"
-        name="role"
-        value={value}
-        defaultChecked={defaultChecked}
-        disabled={disabled}
-        className="peer sr-only"
-      />
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-low text-primary group-has-[:checked]:bg-primary group-has-[:checked]:text-white">
-        {icon}
-      </span>
-      <span>
-        <span className="block font-semibold text-foreground">{title}</span>
-        <span className="mt-1 block leading-5 text-text-muted">{description}</span>
-      </span>
+    <label className="relative cursor-pointer rounded-md text-sm font-medium text-text-muted has-[:checked]:bg-surface-white has-[:checked]:text-primary has-[:checked]:shadow-sm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary">
+      <input type="radio" name="role" value={value} defaultChecked={defaultChecked} disabled={disabled} className="peer sr-only" />
+      <span className="flex min-h-10 items-center justify-center gap-2 px-2 py-2">{icon}<span>{title}</span></span>
     </label>
   );
 }

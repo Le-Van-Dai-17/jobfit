@@ -1,31 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
+
 import { auth } from "@/auth";
+import { AppShell } from "@/components/layout/AppShell";
 import { PrismaCompanyRepository } from "@/features/companies/repositories/company.repository";
 import { createResumeAction } from "@/features/my-cv/actions/create-resume";
 
-const inter = Inter({
-  subsets: ["latin", "vietnamese"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-import { SidebarProvider } from "@/components/layout/SidebarContext";
+const beVietnamPro = Be_Vietnam_Pro({ subsets: ["latin", "vietnamese"], variable: "--font-be-vietnam-pro", display: "swap", weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
   title: "CV_KADA - Platform Quản lý CV & Tối ưu Nghề nghiệp Thông minh",
-  description:
-    "Trình tạo CV, tối ưu ATS, phân tích Job Match bằng AI và quản lý quá trình ứng tuyển.",
+  description: "Trình tạo CV, tối ưu ATS, phân tích Job Match bằng AI và quản lý quá trình ứng tuyển.",
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
   let companyName: string | null = null;
   if (session?.user?.role === "RECRUITER") {
@@ -35,24 +24,13 @@ export default async function RootLayout({
 
   async function createResumeFromHeader(formData: FormData) {
     "use server";
-
     await createResumeAction({}, formData);
   }
 
   return (
-    <html lang="vi" className={`h-full antialiased ${inter.variable}`}>
-      <body className="bg-background text-foreground flex min-h-screen font-sans">
-        {session?.user ? (
-          <SidebarProvider>
-            <Sidebar user={session.user} companyName={companyName} />
-            <div className="flex-1 flex flex-col min-w-0">
-              <Header role={session.user.role} createResume={createResumeFromHeader} />
-              <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto">{children}</main>
-            </div>
-          </SidebarProvider>
-        ) : (
-          <main className="min-h-screen w-full">{children}</main>
-        )}
+    <html lang="vi" className={`h-full antialiased ${beVietnamPro.variable}`}>
+      <body className="min-h-screen bg-background font-sans text-foreground">
+        {session?.user ? <AppShell user={session.user} companyName={companyName} createResume={createResumeFromHeader}>{children}</AppShell> : children}
       </body>
     </html>
   );
