@@ -70,21 +70,21 @@ function buildTasks(job: { title: string; company: string; description: string |
   return [
     {
       orderIndex: 1,
-      type: "SYSTEM_DESIGN" as const,
-      title: `Thiết kế luồng ứng viên cho ${job.title}`,
-      prompt: `Dựa trên JD của ${job.company}, hãy mô tả thiết kế kỹ thuật cho một tính năng quan trọng của vai trò ${job.title}. Trình bày API, dữ liệu, kiểm soát quyền truy cập, trade-off, và cách đo chất lượng.`,
-      skills,
+      type: "CODE_REVIEW" as const,
+      title: `Tối ưu hóa mã nguồn (Legacy Code) cho ${job.title}`,
+      prompt: `Hệ thống cũ của ${job.company} đang gặp vấn đề nghiêm trọng về hiệu năng (Bottleneck). API xử lý đôi khi mất tới 2.8s và CPU Database tăng vọt lên 92%.\n\nBên dưới là mã nguồn (Legacy Code) đang chạy trên Production. Hãy đọc hiểu code, nhận diện vấn đề (ví dụ: N+1 query, thuật toán kém tối ưu, vòng lặp vô tận, thiếu caching...) và sửa trực tiếp mã nguồn để hệ thống chạy nhanh và an toàn hơn.`,
+      skills: [...new Set([...skills, "Performance Optimization", "Code Review"])],
       rubric,
-      expectedEvidence: ["Mô tả API hoặc contract", "Ràng buộc dữ liệu và quyền truy cập", "Trade-off rõ ràng", "Cách kiểm thử hoặc đo lường"],
+      expectedEvidence: ["Xác định đúng nguyên nhân gây chậm (Bottleneck)", "Mã nguồn sau khi sửa chạy hiệu quả hơn (Time/Space complexity)", "Đảm bảo tính đúng đắn của dữ liệu", "Bảo mật hoặc xử lý concurrency (nếu có)"],
     },
     {
       orderIndex: 2,
-      type: "IMPLEMENTATION_PLAN" as const,
-      title: "Kế hoạch triển khai an toàn",
-      prompt: `Hãy viết kế hoạch triển khai cho bài toán trên trong môi trường production. Bao gồm migration/schema nếu cần, kiểm thử, rollback, logging/monitoring, và rủi ro bảo mật hoặc dữ liệu cá nhân.`,
-      skills: [...new Set([...skills, "Testing", "CI/CD"])],
+      type: "SYSTEM_DESIGN" as const,
+      title: "Cải tiến Kiến trúc Cơ sở dữ liệu",
+      prompt: `Tiếp tục với bài toán tối ưu trên, giải pháp sửa code là chưa đủ nếu lượng dữ liệu tăng gấp 10 lần trong tương lai. Hãy xem cấu trúc Database hiện tại (bảng schema ở tab Database) và đề xuất các thay đổi về kiến trúc. Bạn có thể đề xuất thêm Index, Caching layer (Redis), Message Queue, hoặc thay đổi kiểu dữ liệu.`,
+      skills: [...new Set([...skills, "System Design", "Database Optimization", "Caching"])],
       rubric,
-      expectedEvidence: ["Các bước triển khai", "Kiểm thử cụ thể", "Rollback hoặc giảm rủi ro", "Giám sát sau phát hành"],
+      expectedEvidence: ["Đề xuất Indexing/Partitioning hợp lý", "Thiết kế Caching hoặc Queue", "Đánh giá Trade-off của thiết kế mới", "Kế hoạch migrate dữ liệu cũ"],
     },
   ] satisfies TaskDraft[];
 }

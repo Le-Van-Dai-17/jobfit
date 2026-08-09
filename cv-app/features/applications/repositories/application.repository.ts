@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
+import type { CvJdMatchResult } from "@/features/job-match/services/cv-jd-match.service";
 
 export class ApplicationUniqueConstraintError extends Error {}
 
@@ -54,6 +55,26 @@ export class ApplicationRepository {
       }
       throw error;
     }
+  }
+
+  async createMatchAnalysis(resumeVersionId: string, jobId: string, result: CvJdMatchResult) {
+    const existing = await prisma.matchAnalysis.findFirst({
+      where: { resumeVersionId, jobId },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existing) return existing;
+
+    return prisma.matchAnalysis.create({
+      data: {
+        resumeVersionId,
+        jobId,
+        overallScore: result.overallScore,
+        keywordMatch: result.keywordMatch,
+        experienceMatch: result.experienceMatch,
+        skillsMatch: result.skillsMatch,
+        details: result.details,
+      },
+    });
   }
 
   listApplicationsForUser(userId: string) {

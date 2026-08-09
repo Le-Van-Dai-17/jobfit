@@ -17,8 +17,8 @@ export function parseApplicationStatusFilter(
   return applicationStatuses.has(value as ApplicationStatus) ? (value as ApplicationStatus) : undefined;
 }
 
-const applicationSorts = new Set(["recent", "oldest"] as const);
-export type RecruiterApplicationSort = "recent" | "oldest";
+const applicationSorts = new Set(["match", "recent", "oldest"] as const);
+export type RecruiterApplicationSort = "match" | "recent" | "oldest";
 
 export function parseRecruiterApplicationFilters(searchParams: {
   q?: string | string[];

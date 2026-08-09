@@ -27,27 +27,14 @@ export default async function RecruiterCompanyPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-xl border border-border-light bg-surface-white p-5 shadow-sm">
-        <p className="text-sm font-semibold text-primary">Công ty</p>
-        <h1 className="mt-1 text-2xl font-bold text-foreground">{company.name}</h1>
-        <p className="mt-2 text-sm text-text-muted">Thông tin công ty đang gắn với tài khoản nhà tuyển dụng hiện tại.</p>
-      </section>
+    <div className="space-y-6 pb-12">
+      <div className="max-w-2xl">
+        <h1 className="text-3xl font-bold text-foreground">Cài đặt công ty</h1>
+        <p className="mt-2 text-base text-text-muted">
+          Cập nhật thông tin công ty của bạn. Thông tin này sẽ hiển thị trên các tin tuyển dụng và hồ sơ công ty.
+        </p>
+      </div>
 
-      <dl className="grid gap-4 rounded-xl border border-border-light bg-surface-white p-5 text-sm shadow-sm sm:grid-cols-2">
-        <div className="rounded-lg bg-surface-low p-3">
-          <dt className="font-semibold text-text-muted">Slug</dt>
-          <dd className="mt-1 text-foreground">{company.slug}</dd>
-        </div>
-        <div className="rounded-lg bg-surface-low p-3">
-          <dt className="font-semibold text-text-muted">Địa điểm</dt>
-          <dd className="mt-1 text-foreground">{company.location ?? "Chưa cập nhật"}</dd>
-        </div>
-        <div className="rounded-lg bg-surface-low p-3">
-          <dt className="font-semibold text-text-muted">Website</dt>
-          <dd className="mt-1 text-foreground">{company.website ?? "Chưa cập nhật"}</dd>
-        </div>
-      </dl>
       <CompanySettingsForm company={company} />
     </div>
   );

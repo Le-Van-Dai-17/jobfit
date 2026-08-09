@@ -1,78 +1,345 @@
 "use client";
 
-import { BriefcaseBusiness } from "lucide-react";
-import { useActionState } from "react";
+import { 
+  Briefcase, 
+  FileText, 
+  MapPin, 
+  Banknote, 
+  Tag, 
+  Send,
+  X,
+  Plus
+} from "lucide-react";
+import { useActionState, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { createRecruiterJobAction, type RecruiterActionState } from "../actions/recruiter.actions";
+import { cn } from "@/lib/utils";
 
 const initialState: RecruiterActionState = {};
-const selectClass = "h-12 w-full rounded-lg border border-outline-variant bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+const selectClass = "h-11 w-full rounded-lg border border-border-light bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]";
 
 export function RecruiterJobForm() {
   const [state, formAction, pending] = useActionState(createRecruiterJobAction, initialState);
+  
+  // Local state for UI mockups
+  const [workMode, setWorkMode] = useState("ONSITE");
+  const [isNegotiable, setIsNegotiable] = useState(true);
+
   return (
-    <form action={formAction} className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
-      <div className="space-y-6">
-        <section className="rounded-2xl border border-outline-variant/60 bg-white p-5 shadow-card md:p-6">
-          <div className="flex items-start gap-3 border-b border-outline-variant/50 pb-5">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-fixed text-primary"><BriefcaseBusiness className="h-5 w-5" /></span>
-            <div><p className="text-sm font-semibold text-primary">Thông tin chung</p><h2 className="text-xl font-bold">Tạo tin tuyển dụng mới</h2></div>
-          </div>
-          {state.error ? <p role="alert" className="mt-4 rounded-lg bg-error-container p-3 text-sm font-medium text-error">{state.error}</p> : null}
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <Field label="Chức danh công việc" name="title" required disabled={pending} className="md:col-span-2" />
-            <Select label="Phòng ban" name="department" disabled={pending} options={departmentOptions} />
-            <Select label="Mức kinh nghiệm" name="experienceLevel" disabled={pending} options={experienceOptions} />
-            <Select label="Loại hình tuyển dụng" name="employmentType" disabled={pending} options={employmentOptions} />
-            <Field label="Địa điểm" name="location" disabled={pending} />
-            <Field label="Hạn ứng tuyển" name="deadline" type="date" disabled={pending} />
-            <Field label="Liên kết JD" name="url" type="url" disabled={pending} className="md:col-span-2" />
-          </div>
-        </section>
-        <section className="space-y-4 rounded-2xl border border-outline-variant/60 bg-white p-5 shadow-card md:p-6">
-          <h2 className="text-xl font-bold">Chi tiết công việc</h2>
-          <Area label="Mô tả công việc" name="description" required disabled={pending} />
-          <Area label="Yêu cầu ứng viên" name="requirements" required disabled={pending} />
-          <Area label="Quyền lợi" name="benefits" disabled={pending} />
-        </section>
-      </div>
-      <aside className="space-y-5">
-        <section className="rounded-2xl bg-surface-container p-5">
-          <Select label="Hình thức làm việc" name="workMode" disabled={pending} options={workModeOptions} />
-        </section>
-        <section className="space-y-4 rounded-2xl bg-surface-container p-5">
-          <h2 className="font-bold">Mức lương</h2>
-          <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="salaryNegotiable" disabled={pending} /> Thỏa thuận</label>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-            <Field label="Lương tối thiểu" name="salaryMin" type="number" disabled={pending} />
-            <Field label="Lương tối đa" name="salaryMax" type="number" disabled={pending} />
-          </div>
-          <Select label="Đơn vị tiền tệ" name="salaryCurrency" disabled={pending} options={[["VND","VND"],["USD","USD"]]} defaultValue="VND" />
-        </section>
-        <section className="rounded-2xl bg-surface-container p-5">
-          <Field label="Kỹ năng" name="skills" disabled={pending} placeholder="React, TypeScript, PostgreSQL" />
-          <p className="mt-2 text-xs text-text-muted">Phân tách các kỹ năng bằng dấu phẩy.</p>
-        </section>
-        <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-          <button name="intent" value="draft" type="submit" disabled={pending} className="h-11 rounded-lg border border-primary px-5 text-sm font-semibold text-primary focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60">{pending ? "Đang lưu..." : "Lưu bản nháp"}</button>
-          <button name="intent" value="publish" type="submit" disabled={pending} className="h-11 rounded-lg bg-primary-container px-5 text-sm font-semibold text-white shadow-card hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60">Đăng tin tuyển dụng</button>
+    <form action={formAction} className="flex flex-col gap-6 w-full pb-12">
+      
+      {/* Header Row */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-border-light pb-6">
+        <div className="max-w-2xl">
+          <h1 className="text-3xl font-bold text-foreground">Tạo Tin Tuyển Dụng Mới</h1>
+          <p className="mt-2 text-sm text-text-muted">
+            Cung cấp thông tin chi tiết về vị trí cần tuyển để thu hút những ứng viên phù hợp nhất. Các trường có dấu <span className="text-red-500">*</span> là bắt buộc.
+          </p>
         </div>
-      </aside>
+        
+        <div className="flex items-center gap-3 shrink-0">
+          <button 
+            name="intent" 
+            value="draft" 
+            type="submit" 
+            disabled={pending} 
+            className="h-11 px-6 text-sm font-semibold text-foreground hover:bg-surface-low rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+          >
+            Lưu Nháp
+          </button>
+          <button 
+            name="intent" 
+            value="publish" 
+            type="submit" 
+            disabled={pending} 
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#0047AB] px-6 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 transition-colors focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:opacity-60"
+          >
+            <Send className="h-4 w-4" />
+            Đăng Tin Tuyển Dụng
+          </button>
+        </div>
+      </div>
+
+      {state.error ? (
+        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
+          {state.error}
+        </p>
+      ) : null}
+
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+        
+        {/* Left Column (Main Form) */}
+        <div className="flex flex-col gap-8">
+          
+          {/* Thông Tin Chung */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-border-light pb-3">
+              <Briefcase className="h-5 w-5 text-[#2563EB]" />
+              <h2 className="text-lg font-bold text-foreground">Thông Tin Chung</h2>
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <Field 
+                label="Chức danh công việc" 
+                name="title" 
+                required 
+                disabled={pending} 
+                placeholder="VD: Senior Frontend Developer"
+                className="md:col-span-2" 
+              />
+              <Select 
+                label="Phòng ban" 
+                name="department" 
+                disabled={pending} 
+                options={departmentOptions} 
+                defaultValue="" 
+              />
+              <Select 
+                label="Kinh nghiệm yêu cầu" 
+                name="experienceLevel" 
+                required
+                disabled={pending} 
+                options={experienceOptions} 
+                defaultValue="" 
+              />
+            </div>
+            {/* Hidden fields that the form action still expects but aren't in the mockup */}
+            <input type="hidden" name="employmentType" value="FULL_TIME" />
+            <input type="hidden" name="deadline" value="" />
+          </section>
+
+          {/* Chi Tiết Công Việc */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-border-light pb-3">
+              <FileText className="h-5 w-5 text-[#2563EB]" />
+              <h2 className="text-lg font-bold text-foreground">Chi Tiết Công Việc</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <Area 
+                label="Mô tả công việc" 
+                name="description" 
+                required 
+                disabled={pending} 
+                placeholder="Mô tả các nhiệm vụ chính, dự án sẽ tham gia..."
+              />
+              <Area 
+                label="Yêu cầu ứng viên" 
+                name="requirements" 
+                required 
+                disabled={pending} 
+                placeholder="Kỹ năng, bằng cấp, thái độ làm việc cần thiết..."
+              />
+              <Area 
+                label="Quyền lợi" 
+                name="benefits" 
+                disabled={pending} 
+                placeholder="Chế độ đãi ngộ, bảo hiểm, văn hóa công ty..."
+              />
+            </div>
+          </section>
+
+        </div>
+
+        {/* Right Column (Sidebar Settings) */}
+        <aside className="space-y-6 sticky top-6">
+          
+          {/* Địa Điểm & Thời Gian */}
+          <section className="rounded-2xl bg-[#F0F7FF] p-6">
+            <div className="flex items-center gap-2 font-bold text-foreground mb-5">
+              <MapPin className="h-5 w-5 text-green-600" />
+              Địa Điểm & Thời Gian
+            </div>
+            
+            <div className="space-y-5">
+              <div>
+                <span className="block text-sm font-semibold text-foreground mb-2">Hình thức làm việc</span>
+                <div className="flex flex-wrap gap-2">
+                  <button 
+                    type="button" 
+                    onClick={() => setWorkMode("ONSITE")}
+                    className={cn(
+                      "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+                      workMode === "ONSITE" ? "bg-[#2563EB] text-white" : "bg-white text-foreground border border-border-light hover:bg-gray-50"
+                    )}
+                  >
+                    Tại văn phòng
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setWorkMode("HYBRID")}
+                    className={cn(
+                      "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+                      workMode === "HYBRID" ? "bg-[#2563EB] text-white" : "bg-white text-foreground border border-border-light hover:bg-gray-50"
+                    )}
+                  >
+                    Hybrid
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setWorkMode("REMOTE")}
+                    className={cn(
+                      "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+                      workMode === "REMOTE" ? "bg-[#2563EB] text-white" : "bg-white text-foreground border border-border-light hover:bg-gray-50"
+                    )}
+                  >
+                    Remote
+                  </button>
+                </div>
+                {/* Hidden input to pass the actual form value */}
+                <input type="hidden" name="workMode" value={workMode} />
+              </div>
+
+              <div>
+                <Select 
+                  label="Thành phố" 
+                  name="location" 
+                  required
+                  disabled={pending} 
+                  options={[["Hà Nội", "Hà Nội"], ["Hồ Chí Minh", "Hồ Chí Minh"], ["Đà Nẵng", "Đà Nẵng"]]} 
+                  defaultValue="Hà Nội"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Mức Lương */}
+          <section className="rounded-2xl bg-[#F0F7FF] p-6">
+            <div className="flex items-center gap-2 font-bold text-foreground mb-4">
+              <Banknote className="h-5 w-5 text-red-700" />
+              Mức Lương
+            </div>
+            
+            <div className="space-y-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  name="salaryNegotiable" 
+                  checked={isNegotiable}
+                  onChange={(e) => setIsNegotiable(e.target.checked)}
+                  disabled={pending} 
+                  className="h-4 w-4 rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB]"
+                />
+                <span className="text-sm font-semibold text-foreground">Thỏa thuận</span>
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+                  <span className="text-xs text-text-muted font-normal">Tối thiểu (VND)</span>
+                  <input 
+                    name="salaryMin" 
+                    type="number" 
+                    disabled={pending || isNegotiable} 
+                    placeholder="e.g. 15000000"
+                    className="h-11 w-full rounded-lg border-none bg-white px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:bg-gray-100 disabled:text-gray-400"
+                  />
+                </label>
+                <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+                  <span className="text-xs text-text-muted font-normal">Tối đa (VND)</span>
+                  <input 
+                    name="salaryMax" 
+                    type="number" 
+                    disabled={pending || isNegotiable} 
+                    placeholder="e.g. 30000000"
+                    className="h-11 w-full rounded-lg border-none bg-white px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] disabled:bg-gray-100 disabled:text-gray-400"
+                  />
+                </label>
+              </div>
+              <input type="hidden" name="salaryCurrency" value="VND" />
+            </div>
+          </section>
+
+          {/* Kỹ Năng (Tags) */}
+          <section className="rounded-2xl bg-[#F0F7FF] p-6">
+            <div className="flex items-center gap-2 font-bold text-foreground mb-4">
+              <Tag className="h-5 w-5 text-blue-400" />
+              Kỹ Năng (Tags)
+            </div>
+            
+            <div className="space-y-4">
+              <div className="relative">
+                <input 
+                  type="text" 
+                  placeholder="Nhập kỹ năng và nhấn Enter..." 
+                  disabled={pending} 
+                  className="h-11 w-full rounded-lg border-none bg-white pl-3 pr-10 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+                />
+                <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-foreground">
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#E2E8F0] px-3 py-1 text-xs font-semibold text-foreground">
+                  React
+                  <button type="button" className="rounded-full p-0.5 hover:bg-gray-300"><X className="h-3 w-3" /></button>
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#E2E8F0] px-3 py-1 text-xs font-semibold text-foreground">
+                  TypeScript
+                  <button type="button" className="rounded-full p-0.5 hover:bg-gray-300"><X className="h-3 w-3" /></button>
+                </span>
+              </div>
+              
+              {/* Hidden input to pass actual form value */}
+              <input type="hidden" name="skills" value="React,TypeScript" />
+            </div>
+          </section>
+
+        </aside>
+      </div>
     </form>
   );
 }
 
 const departmentOptions = [["ENGINEERING","Kỹ thuật"],["PRODUCT","Sản phẩm"],["DESIGN","Thiết kế"],["DATA","Dữ liệu"],["MARKETING","Marketing"],["SALES","Kinh doanh"],["OPERATIONS","Vận hành"],["HUMAN_RESOURCES","Nhân sự"],["FINANCE","Tài chính"],["OTHER","Khác"]];
 const experienceOptions = [["INTERN","Thực tập"],["JUNIOR","Junior"],["MID","Middle"],["SENIOR","Senior"],["LEAD","Lead"],["MANAGER","Quản lý"]];
-const employmentOptions = [["FULL_TIME","Toàn thời gian"],["PART_TIME","Bán thời gian"],["CONTRACT","Hợp đồng"],["INTERNSHIP","Thực tập"],["TEMPORARY","Thời vụ"]];
-const workModeOptions = [["ONSITE","Tại văn phòng"],["HYBRID","Hybrid"],["REMOTE","Từ xa"]];
+
 function Field({ label, name, disabled, required=false, type="text", className="", placeholder }: { label:string; name:string; disabled:boolean; required?:boolean; type?:string; className?:string; placeholder?:string }) {
-  return <label className={`block space-y-1.5 text-sm font-semibold ${className}`}><span>{label}{required ? " *" : ""}</span><Input aria-label={label} name={name} type={type} required={required} disabled={disabled} placeholder={placeholder} /></label>;
+  return (
+    <label className={`block space-y-1.5 text-sm font-semibold text-foreground ${className}`}>
+      <span>{label}{required ? <span className="text-red-500"> *</span> : ""}</span>
+      <input 
+        name={name} 
+        type={type} 
+        required={required} 
+        disabled={disabled} 
+        placeholder={placeholder} 
+        className={cn("h-11 w-full rounded-lg border border-border-light bg-white px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]")}
+      />
+    </label>
+  );
 }
-function Area({ label, name, disabled, required=false }: { label:string; name:string; disabled:boolean; required?:boolean }) {
-  return <label className="block space-y-1.5 text-sm font-semibold"><span>{label}{required ? " *" : ""}</span><Textarea aria-label={label} name={name} required={required} disabled={disabled} className="min-h-36" /></label>;
+
+function Area({ label, name, disabled, required=false, placeholder }: { label:string; name:string; disabled:boolean; required?:boolean; placeholder?:string }) {
+  return (
+    <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+      <span>{label}{required ? <span className="text-red-500"> *</span> : ""}</span>
+      <Textarea 
+        name={name} 
+        required={required} 
+        disabled={disabled} 
+        placeholder={placeholder}
+        className="min-h-36 resize-y border border-border-light bg-white p-4 focus-visible:ring-[#2563EB]" 
+      />
+    </label>
+  );
 }
-function Select({ label, name, disabled, options, defaultValue="" }: { label:string; name:string; disabled:boolean; options:string[][]; defaultValue?:string }) {
-  return <label className="block space-y-1.5 text-sm font-semibold"><span>{label}</span><select aria-label={label} className={selectClass} name={name} disabled={disabled} defaultValue={defaultValue}><option value="">Chọn</option>{options.map(([value,text]) => <option key={value} value={value}>{text}</option>)}</select></label>;
+
+function Select({ label, name, disabled, options, defaultValue="", required=false }: { label:string; name:string; disabled:boolean; options:string[][]; defaultValue?:string; required?:boolean }) {
+  return (
+    <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+      <span>{label}{required ? <span className="text-red-500"> *</span> : ""}</span>
+      <select 
+        name={name} 
+        disabled={disabled} 
+        defaultValue={defaultValue}
+        required={required}
+        className={selectClass}
+      >
+        <option value="" disabled>Chọn {label.toLowerCase()}</option>
+        {options.map(([value,text]) => <option key={value} value={value}>{text}</option>)}
+      </select>
+    </label>
+  );
 }

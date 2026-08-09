@@ -3,7 +3,6 @@ import { ClipboardCheck, FileText } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { AssessmentStartForm } from "@/features/assessments/components/AssessmentStartForm";
 import { assessmentService } from "@/features/assessments/services/assessment.service";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 
@@ -30,48 +29,14 @@ export default async function AssessmentsPage({
       <section>
         <p className="text-sm font-semibold uppercase text-primary">Đánh giá kỹ thuật</p>
         <h1 className="mt-2 text-2xl font-bold text-foreground md:text-3xl">
-          CV + JD thành bài tập kỹ thuật có bằng chứng
+          Danh sách Phiên Đánh giá
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-text-muted">
-          Chọn một phiên bản CV và JD để tạo bài tập thực tế, nộp giải pháp cùng kế hoạch triển khai, rồi nhận báo cáo tư vấn theo rubric và bằng chứng.
+          Xem lại kết quả đánh giá năng lực hoặc tiếp tục các bài thi đang làm. Phiên đánh giá được tạo tự động khi bạn nộp CV ứng tuyển.
         </p>
       </section>
 
-      {hasMissingData && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <p>
-            {resumeVersions.length === 0
-              ? "Bạn cần lưu ít nhất một phiên bản CV trước khi tạo đánh giá."
-              : "Chưa có JD khả dụng trong hệ thống. Hãy thêm hoặc đồng bộ JD trước khi tạo đánh giá."}
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {resumeVersions.length === 0 && (
-              <Link
-                href="/my-cv"
-                className="rounded-md bg-white px-3 py-2 font-semibold text-amber-900 outline-none ring-1 ring-amber-200 focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                Tạo hoặc lưu CV
-              </Link>
-            )}
-            {jobs.length === 0 && (
-              <Link
-                href="/jobs"
-                className="rounded-md bg-white px-3 py-2 font-semibold text-amber-900 outline-none ring-1 ring-amber-200 focus-visible:ring-2 focus-visible:ring-primary"
-              >
-                Xem luồng JD
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
 
-      <AssessmentStartForm
-        resumeVersions={resumeVersions}
-        jobs={jobs}
-        selectedResumeVersionId={selectedResumeVersionId}
-        selectedJobId={selectedJobId}
-        applicationId={params?.applicationId}
-      />
 
       <section className="rounded-lg border border-border-light bg-surface-white p-4">
         <div className="flex items-center gap-2">

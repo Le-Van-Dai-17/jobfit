@@ -101,7 +101,7 @@ const ListApplicationsSchema = z.object({
   status: z.enum(["DRAFT","APPLIED","INTERVIEWING","OFFER","REJECTED","WITHDRAWN"]).optional(),
   search: z.string().trim().max(160).optional().transform((value) => value || undefined),
   jobId: z.string().trim().max(160).optional().transform((value) => value || undefined),
-  sort: z.enum(["recent", "oldest"]).optional().default("recent"),
+  sort: z.enum(["match", "recent", "oldest"]).optional().default("recent"),
 });
 const ListJobsSchema = z.object({
   search: z.string().trim().max(160).optional().transform((value) => value || undefined),

@@ -4,6 +4,7 @@ import {
   type ApplicationRepository,
 } from "../repositories/application.repository";
 import { z } from "zod";
+import { cvJdMatchService, type CvJdMatchService } from "@/features/job-match/services/cv-jd-match.service";
 
 export class ApplicationDuplicateError extends Error {}
 export class ApplicationOwnershipError extends Error {}
@@ -16,7 +17,10 @@ const ApplyToJobInputSchema = z.object({
 });
 
 export class ApplicationService {
-  constructor(private readonly repository: ApplicationRepository = applicationRepository) {}
+  constructor(
+    private readonly repository: ApplicationRepository = applicationRepository,
+    private readonly matchService: CvJdMatchService = cvJdMatchService
+  ) {}
 
   listForCandidate(userId: string) {
     return this.repository.listApplicationsForUser(userId);
@@ -53,7 +57,14 @@ export class ApplicationService {
     }
 
     try {
-      return await this.repository.createApplication(userId, parsed.data);
+      const application = await this.repository.createApplication(userId, parsed.data);
+      const match = this.matchService.analyze(resumeVersion.content, job);
+      try {
+        await this.repository.createMatchAnalysis(parsed.data.resumeVersionId, parsed.data.jobId, match);
+      } catch (error) {
+        console.error("CV-JD match analysis creation failed:", error);
+      }
+      return application;
     } catch (error) {
       if (error instanceof ApplicationUniqueConstraintError) {
         throw new ApplicationDuplicateError(error.message);

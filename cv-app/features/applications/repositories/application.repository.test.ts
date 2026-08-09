@@ -12,6 +12,7 @@ vi.mock("@/lib/db/prisma", () => ({
     },
     job: { findFirst: vi.fn() },
     resumeVersion: { findFirst: vi.fn() },
+    matchAnalysis: { findFirst: vi.fn(), create: vi.fn() },
   },
 }));
 
@@ -65,5 +66,39 @@ describe("ApplicationRepository", () => {
         }),
       })
     );
+  });
+  it("persists a deterministic CV-JD match analysis once per resume version and job", async () => {
+    (prisma.matchAnalysis.findFirst as Mock).mockResolvedValue(null);
+    (prisma.matchAnalysis.create as Mock).mockResolvedValue({ id: "match-1" });
+
+    await new ApplicationRepository().createMatchAnalysis("version-1", "job-1", {
+      overallScore: 82,
+      keywordMatch: 70,
+      experienceMatch: 80,
+      skillsMatch: 90,
+      details: { algorithm: "deterministic-cv-jd-v1" },
+    });
+
+    expect(prisma.matchAnalysis.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        resumeVersionId: "version-1",
+        jobId: "job-1",
+        overallScore: 82,
+      }),
+    });
+  });
+
+  it("reuses an existing CV-JD match analysis for the same resume version and job", async () => {
+    (prisma.matchAnalysis.findFirst as Mock).mockResolvedValue({ id: "match-existing" });
+
+    await expect(new ApplicationRepository().createMatchAnalysis("version-1", "job-1", {
+      overallScore: 82,
+      keywordMatch: 70,
+      experienceMatch: 80,
+      skillsMatch: 90,
+      details: { algorithm: "deterministic-cv-jd-v1" },
+    })).resolves.toEqual({ id: "match-existing" });
+
+    expect(prisma.matchAnalysis.create).not.toHaveBeenCalled();
   });
 });

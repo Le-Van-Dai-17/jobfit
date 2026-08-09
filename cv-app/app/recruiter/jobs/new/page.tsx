@@ -9,11 +9,7 @@ export default async function NewRecruiterJobPage() {
   if (roleRedirect) redirect(roleRedirect);
 
   return (
-    <div className="max-w-3xl space-y-5">
-      <div>
-        <p className="text-sm font-semibold text-primary">JD mới</p>
-        <h1 className="mt-1 text-2xl font-bold text-foreground">Tạo vị trí tuyển dụng</h1>
-      </div>
+    <div className="w-full">
       <RecruiterJobForm />
     </div>
   );

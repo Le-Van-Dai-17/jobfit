@@ -8,6 +8,8 @@ import { AssessmentSubmissionForm } from "@/features/assessments/components/Asse
 import { AssessmentOwnershipError, assessmentService } from "@/features/assessments/services/assessment.service";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 
+import { AssessmentIDE } from "@/features/assessments/components/AssessmentIDE";
+
 const statusLabels = { TASKS_GENERATED: "Đang làm bài", SUBMITTED: "Đã nộp", EVALUATED: "Đã có báo cáo", CANCELLED: "Đã hủy" } as const;
 const seniorityLabels = { INTERN: "Thực tập", JUNIOR: "Mới vào nghề", MID: "Trung cấp", SENIOR: "Cao cấp", LEAD: "Dẫn dắt" } as const;
 
@@ -19,6 +21,11 @@ export default async function AssessmentSessionPage({ params }: { params: Promis
   let session;
   try { session = await assessmentService.getSession(authSession!.user.id, sessionId); }
   catch (error) { if (error instanceof AssessmentOwnershipError) return <div className="rounded-xl bg-error-container p-4 text-sm text-error">Bạn không có quyền truy cập phiên đánh giá này.</div>; throw error; }
+
+  // Render the immersive IDE if the assessment is in progress
+  if (!session.result && session.status === "TASKS_GENERATED") {
+    return <AssessmentIDE sessionId={session.id} roleTitle={session.roleTitle} tasks={session.tasks} />;
+  }
 
   return (
     <div className="space-y-5">

@@ -33,14 +33,7 @@ export default async function RecruiterAssessmentReportPage({ params }: { params
   }
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-xl border border-border-light bg-surface-white p-5 shadow-sm">
-        <p className="text-sm font-semibold text-primary">Báo cáo đánh giá</p>
-        <h1 className="mt-1 text-2xl font-bold text-foreground">{report.session.roleTitle}</h1>
-        <p className="mt-2 text-sm text-text-muted">
-          {report.session.job.title} · {report.session.job.company}
-        </p>
-      </section>
+    <div className="bg-[#F8FAFC] -m-6 p-6 min-h-screen">
       <EmployerAssessmentReport result={report} />
     </div>
   );

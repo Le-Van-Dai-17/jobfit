@@ -127,7 +127,7 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
     return this.findJobForCompany(companyId, jobId);
   }
 
-  listApplications(companyId: string, filters?: { status?: ApplicationStatus; search?: string; jobId?: string; sort?: RecruiterApplicationSort }) {
+  async listApplications(companyId: string, filters?: { status?: ApplicationStatus; search?: string; jobId?: string; sort?: RecruiterApplicationSort }) {
     const where: Prisma.ApplicationWhereInput = {
       deletedAt: null,
       ...(filters?.status ? { status: filters.status } : {}),
@@ -147,15 +147,31 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
         ...(filters?.jobId ? { id: filters.jobId } : {}),
       },
     };
-    return prisma.application.findMany({
+    const applications = await prisma.application.findMany({
       where,
       include: {
         user: { select: { id: true, name: true, email: true } },
         job: true,
-        resumeVersion: { include: { resume: true } },
+        resumeVersion: {
+          include: {
+            resume: true,
+            matchAnalyses: {
+              where: { job: { companyId } },
+              orderBy: { createdAt: "desc" },
+            },
+          },
+        },
         assessmentSessions: { include: { result: true }, orderBy: { updatedAt: "desc" } },
       },
       orderBy: filters?.sort === "oldest" ? { updatedAt: "asc" } : { updatedAt: "desc" },
+    });
+
+    if (filters?.sort !== "match") return applications;
+
+    return applications.sort((a, b) => {
+      const aScore = a.resumeVersion?.matchAnalyses.find((analysis) => analysis.jobId === a.jobId)?.overallScore ?? -1;
+      const bScore = b.resumeVersion?.matchAnalyses.find((analysis) => analysis.jobId === b.jobId)?.overallScore ?? -1;
+      return bScore - aScore || b.updatedAt.getTime() - a.updatedAt.getTime();
     });
   }
 
