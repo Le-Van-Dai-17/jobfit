@@ -15,13 +15,22 @@ const statusLabels = {
   WITHDRAWN: "Đã rút",
 };
 
-export default async function ApplicationsPage() {
+export default async function ApplicationsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ applied?: string | string[] }>;
+}) {
   const session = await auth();
   const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "CANDIDATE" });
   if (roleRedirect) redirect(roleRedirect);
   const user = session!.user;
 
   const applications = await applicationService.listForCandidate(user.id);
+  const resolvedSearchParams = await searchParams;
+  const appliedId = Array.isArray(resolvedSearchParams?.applied)
+    ? resolvedSearchParams?.applied[0]
+    : resolvedSearchParams?.applied;
+  const appliedApplication = appliedId ? applications.find((application) => application.id === appliedId) : null;
 
   return (
     <div className="space-y-5">
@@ -32,6 +41,20 @@ export default async function ApplicationsPage() {
           Theo dõi trạng thái, CV snapshot đã nộp và mở bài đánh giá kỹ thuật theo từng JD.
         </p>
       </section>
+
+      {appliedApplication ? (
+        <section className="rounded-2xl border border-primary/20 bg-surface-white p-5 shadow-sm" role="status">
+          <p className="text-sm font-semibold text-primary">Da nop don ung tuyen</p>
+          <p className="mt-2 text-sm leading-6 text-text-muted">
+            Ban da ung tuyen {appliedApplication.job.title} bang snapshot{" "}
+            <span className="font-semibold text-foreground">
+              {appliedApplication.resumeVersion?.resume.title ?? "CV"} v
+              {appliedApplication.resumeVersion?.version ?? "?"}
+            </span>
+            .
+          </p>
+        </section>
+      ) : null}
 
       {applications.length === 0 ? (
         <div className="rounded-2xl border border-border-light bg-surface-white p-6">

@@ -44,8 +44,9 @@ export async function applyToJobAction(
     return { status: "error", message: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ." };
   }
 
+  let application;
   try {
-    await applicationService.applyToJob(principal.id, parsed.data);
+    application = await applicationService.applyToJob(principal.id, parsed.data);
   } catch (error) {
     if (
       error instanceof ApplicationDuplicateError ||
@@ -59,5 +60,5 @@ export async function applyToJobAction(
 
   revalidatePath("/applications");
   revalidatePath("/dashboard");
-  redirect("/applications");
+  redirect(`/applications?applied=${application.id}`);
 }

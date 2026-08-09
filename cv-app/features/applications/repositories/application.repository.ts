@@ -36,6 +36,15 @@ export class ApplicationRepository {
           notes: input.notes,
           status: "APPLIED",
           appliedAt: new Date(),
+          events: {
+            create: {
+              type: "STATUS_CHANGE",
+              actorUserId: userId,
+              fromStatus: "DRAFT",
+              toStatus: "APPLIED",
+              notes: "Ung vien da nop don ung tuyen.",
+            },
+          },
         },
         include: { job: true, resumeVersion: { include: { resume: true } } },
       });
@@ -64,6 +73,7 @@ export class ApplicationRepository {
       include: {
         job: true,
         resumeVersion: { include: { resume: true } },
+        events: { orderBy: { date: "desc" } },
         assessmentSessions: { include: { result: true }, orderBy: { updatedAt: "desc" } },
       },
     });
