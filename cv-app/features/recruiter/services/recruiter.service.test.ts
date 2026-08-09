@@ -180,8 +180,15 @@ describe("RecruiterService", () => {
         type: "Full-time",
         description: "Own the candidate application and assessment experience end to end.",
         requirements: "React, TypeScript, accessibility, testing.",
+        deadline: "2026-09-30",
       })
-    ).resolves.toMatchObject({ id: "job-a", companyId: "company-a", title: "Frontend Lead", company: "Acme" });
+    ).resolves.toMatchObject({
+      id: "job-a",
+      companyId: "company-a",
+      title: "Frontend Lead",
+      company: "Acme",
+      deadline: new Date("2026-09-30T00:00:00.000Z"),
+    });
   });
 
   it("persists draft, published and archived JD lifecycle states", async () => {

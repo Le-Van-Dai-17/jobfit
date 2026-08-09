@@ -16,6 +16,7 @@ type RecruiterJobEditFormProps = {
     description: string | null;
     requirements: string | null;
     url?: string | null;
+    deadline?: Date | null;
   };
 };
 
@@ -34,7 +35,14 @@ export function RecruiterJobEditForm({ job }: RecruiterJobEditFormProps) {
         <Field label="Ten vi tri" name="title" defaultValue={job.title} required disabled={pending} />
         <Field label="Dia diem" name="location" defaultValue={job.location ?? ""} disabled={pending} />
         <Field label="Hinh thuc" name="type" defaultValue={job.type ?? ""} disabled={pending} />
-        <Field label="Luong cong khai" name="salaryRange" defaultValue={job.salaryRange ?? ""} disabled={pending} />
+        <Field label="Lương công khai" name="salaryRange" defaultValue={job.salaryRange ?? ""} disabled={pending} />
+        <Field
+          label="Hạn ứng tuyển"
+          name="deadline"
+          defaultValue={job.deadline?.toISOString().slice(0, 10) ?? ""}
+          disabled={pending}
+          type="date"
+        />
         <Field label="Link JD" name="url" defaultValue={job.url ?? ""} disabled={pending} type="url" />
       </div>
       <label className="block space-y-1.5 text-sm font-semibold text-foreground">

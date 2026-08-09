@@ -38,6 +38,7 @@ export function RecruiterJobForm() {
         <Field label="Địa điểm" name="location" disabled={pending} placeholder="TP. Hồ Chí Minh / Remote" />
         <Field label="Hình thức" name="type" disabled={pending} placeholder="Full-time, Hybrid" />
         <Field label="Lương công khai" name="salaryRange" disabled={pending} placeholder="25-40 triệu" />
+        <Field label="Hạn ứng tuyển" name="deadline" type="date" disabled={pending} />
         <label className="block space-y-1.5 text-sm font-semibold text-foreground md:col-span-2">
           <span>Link JD</span>
           <Input name="url" type="url" disabled={pending} placeholder="https://..." />
@@ -71,17 +72,19 @@ function Field({
   required = false,
   disabled,
   placeholder,
+  type = "text",
 }: {
   label: string;
   name: string;
   required?: boolean;
   disabled: boolean;
   placeholder?: string;
+  type?: string;
 }) {
   return (
     <label className="block space-y-1.5 text-sm font-semibold text-foreground">
       <span>{label}</span>
-      <Input name={name} required={required} disabled={disabled} placeholder={placeholder} />
+      <Input name={name} type={type} required={required} disabled={disabled} placeholder={placeholder} />
     </label>
   );
 }

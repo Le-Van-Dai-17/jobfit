@@ -56,6 +56,18 @@ export class JobRepository {
     });
   }
 
+  findSavedJob(userId: string, jobId: string) {
+    return prisma.savedJob.findUnique({
+      where: { userId_jobId: { userId, jobId } },
+    });
+  }
+
+  deleteSavedJob(userId: string, jobId: string) {
+    return prisma.savedJob.delete({
+      where: { userId_jobId: { userId, jobId } },
+    });
+  }
+
   /**
    * Save a job for a user
    */

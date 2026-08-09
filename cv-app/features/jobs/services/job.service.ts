@@ -20,8 +20,14 @@ export class JobService {
    * Toggle saving a job for a user
    */
   async toggleSaveJob(userId: string, jobId: string) {
-    // Assuming we want to just save it for now
-    return this.repository.saveJob(userId, jobId);
+    const existing = await this.repository.findSavedJob(userId, jobId);
+    if (existing) {
+      await this.repository.deleteSavedJob(userId, jobId);
+      return { saved: false };
+    }
+
+    await this.repository.saveJob(userId, jobId);
+    return { saved: true };
   }
 }
 

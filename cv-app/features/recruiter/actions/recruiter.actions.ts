@@ -48,6 +48,7 @@ export async function createRecruiterJobAction(
       description: value(formData, "description"),
       requirements: value(formData, "requirements"),
       url: value(formData, "url"),
+      deadline: value(formData, "deadline"),
     })) as { id: string };
     jobId = job.id;
     revalidatePath("/recruiter/jobs");
@@ -100,6 +101,7 @@ export async function updateRecruiterJobAction(
       description: value(formData, "description"),
       requirements: value(formData, "requirements"),
       url: value(formData, "url"),
+      deadline: value(formData, "deadline"),
     });
   } catch (error) {
     return { error: mapError(error) };

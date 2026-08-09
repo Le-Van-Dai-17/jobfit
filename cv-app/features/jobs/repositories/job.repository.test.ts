@@ -6,7 +6,7 @@ import { JobRepository } from "./job.repository";
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
     job: { findMany: vi.fn(), findFirst: vi.fn() },
-    savedJob: { findMany: vi.fn(), upsert: vi.fn() },
+    savedJob: { findMany: vi.fn(), findUnique: vi.fn(), delete: vi.fn(), upsert: vi.fn() },
   },
 }));
 

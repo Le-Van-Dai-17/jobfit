@@ -20,6 +20,7 @@ export type RecruiterJobInput = {
   description?: string | null;
   requirements?: string | null;
   url?: string | null;
+  deadline?: string | Date | null;
 };
 
 export type RecruiterRepository = {
@@ -64,6 +65,19 @@ const JobInputSchema = z.object({
   description: z.string().trim().min(20).max(12000),
   requirements: z.string().trim().min(10).max(12000),
   url: z.string().trim().url().optional().nullable().or(z.literal("")).transform(emptyToNull),
+  deadline: z
+    .union([z.string(), z.date()])
+    .optional()
+    .nullable()
+    .transform((value, ctx) => {
+      if (!value) return null;
+      const deadline = value instanceof Date ? value : new Date(`${value}T00:00:00.000Z`);
+      if (Number.isNaN(deadline.getTime())) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Hạn ứng tuyển không hợp lệ." });
+        return z.NEVER;
+      }
+      return deadline;
+    }),
 });
 
 const ListApplicationsSchema = z.object({
