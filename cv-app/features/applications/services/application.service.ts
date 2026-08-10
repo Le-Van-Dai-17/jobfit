@@ -58,12 +58,15 @@ export class ApplicationService {
 
     try {
       const application = await this.repository.createApplication(userId, parsed.data);
-      const match = this.matchService.analyze(resumeVersion.content, job);
-      try {
-        await this.repository.createMatchAnalysis(parsed.data.resumeVersionId, parsed.data.jobId, match);
-      } catch (error) {
-        console.error("CV-JD match analysis creation failed:", error);
-      }
+      // Run AI match async in the background to avoid blocking the user request
+      this.matchService.analyze(resumeVersion.content, job).then((match) => {
+        this.repository.createMatchAnalysis(parsed.data.resumeVersionId, parsed.data.jobId, match).catch((err) => {
+          console.error("CV-JD match analysis creation failed:", err);
+        });
+      }).catch((err) => {
+        console.error("CV-JD match AI trigger failed:", err);
+      });
+      
       return application;
     } catch (error) {
       if (error instanceof ApplicationUniqueConstraintError) {

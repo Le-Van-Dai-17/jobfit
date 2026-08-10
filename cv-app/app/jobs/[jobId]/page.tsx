@@ -18,6 +18,7 @@ import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects
 import { resumeRepository } from "@/features/cv/repositories/resume.repository";
 import { saveJobAction } from "@/features/jobs/actions/save-job";
 import { jobRepository } from "@/features/jobs/repositories/job.repository";
+import { translateJobInfo } from "@/lib/utils";
 
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", { dateStyle: "short" });
 
@@ -81,22 +82,24 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
                   <span>•</span>
                   {job.location && (
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />{job.location}
+                      <MapPin className="h-4 w-4" />{translateJobInfo(job.location)}
                     </span>
                   )}
                   <span>•</span>
                   {job.type && (
                     <span className="rounded bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
-                      {job.type}
+                      {translateJobInfo(job.type)}
                     </span>
                   )}
                 </div>
                 
-                <div className="mt-3">
-                  <span className="rounded-full bg-surface-container px-3 py-1 text-xs font-semibold text-text-muted">
-                    Làm việc từ xa (Hybrid)
-                  </span>
-                </div>
+                {job.workMode && (
+                  <div className="mt-3">
+                    <span className="rounded-full bg-surface-container px-3 py-1 text-xs font-semibold text-text-muted">
+                      {translateJobInfo(job.workMode)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

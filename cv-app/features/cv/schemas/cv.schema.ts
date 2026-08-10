@@ -10,7 +10,7 @@ export const PersonalInfoSchema = z.object({
 });
 
 export const ExperienceSchema = z.object({
-  id: z.string(),
+  id: z.string().default(() => crypto.randomUUID()),
   company: z.string().min(1, "Vui lòng nhập tên công ty"),
   role: z.string().min(1, "Vui lòng nhập vị trí công việc"),
   startDate: z.string().optional(),
@@ -20,7 +20,7 @@ export const ExperienceSchema = z.object({
 });
 
 export const EducationSchema = z.object({
-  id: z.string(),
+  id: z.string().default(() => crypto.randomUUID()),
   institution: z.string().min(1, "Vui lòng nhập tên trường"),
   degree: z.string().min(1, "Vui lòng nhập bằng cấp"),
   field: z.string().optional(),
@@ -30,7 +30,7 @@ export const EducationSchema = z.object({
 });
 
 export const SkillSchema = z.object({
-  id: z.string(),
+  id: z.string().default(() => crypto.randomUUID()),
   name: z.string().min(1, "Vui lòng nhập kỹ năng"),
   level: z.number().min(1).max(5).optional(),
 });

@@ -15,6 +15,7 @@ describe("CompanySettingsForm", () => {
     vi.mocked(useActionState).mockReturnValue([{}, vi.fn(), false]);
     render(<CompanySettingsForm company={{
       name: "Kada",
+      slug: "kada",
       website: null,
       description: null,
       location: null,

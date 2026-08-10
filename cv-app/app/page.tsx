@@ -31,7 +31,7 @@ export default async function HomePage() {
 
   const [summary, jobs] = await Promise.all([
     candidateDashboardService.getSummary(session.user.id),
-    jobService.getCandidateFeed(session.user.id, { q: "", mode: "all" }),
+    jobService.getCandidateFeed(session.user.id, { q: "", mode: "all" }, { includeProgress: false }),
   ]);
   const featuredJobs = jobs.slice(0, 3);
   const latestJobs = jobs.slice(3, 6);

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, CompanyIndustry, CompanySize } from "@prisma/client";
 import { AuthService } from "../features/auth/services/auth.service";
 import { PrismaAuthUserRepository } from "../features/auth/repositories/auth.repository";
 import { PrismaCompanyRepository } from "../features/companies/repositories/company.repository";
@@ -56,8 +56,8 @@ async function main() {
         website: `https://demo${i}.example.com`,
         description: `Đây là công ty demo số ${i} để test.`,
         location: "TP. Hồ Chí Minh",
-        industry: INDUSTRIES[i % INDUSTRIES.length] as any,
-        size: SIZES[i % SIZES.length] as any,
+        industry: INDUSTRIES[i % INDUSTRIES.length] as CompanyIndustry,
+        size: SIZES[i % SIZES.length] as CompanySize,
         ownerUserId: user.id,
       });
     }

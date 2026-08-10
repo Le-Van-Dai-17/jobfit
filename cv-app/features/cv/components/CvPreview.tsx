@@ -44,8 +44,8 @@ export function CvPreview() {
                   Kinh nghiệm làm việc
                 </h3>
                 <div className="space-y-4">
-                  {experiences.map((exp) => (
-                    <div key={exp.id}>
+                  {experiences.map((exp, index) => (
+                    <div key={exp.id || index}>
                       <div className="flex justify-between items-baseline mb-1">
                         <h4 className="font-bold text-slate-800 text-base">{exp.role || "Vị trí"}</h4>
                         <span className="text-sm font-medium text-slate-500 shrink-0 ml-4">
@@ -73,8 +73,8 @@ export function CvPreview() {
                 <h3 className="text-lg font-bold text-slate-900 border-b border-slate-300 pb-1 mb-4 uppercase tracking-wider">
                   Học vấn
                 </h3>
-                {educations.map((edu) => (
-                  <div key={edu.id} className="mb-2">
+                {educations.map((edu, index) => (
+                  <div key={edu.id || index} className="mb-2">
                     <p className="font-bold text-slate-800 text-sm">{edu.institution}</p>
                     <p className="text-xs text-slate-600">{edu.degree} {edu.field && `- ${edu.field}`}</p>
                   </div>
@@ -89,8 +89,8 @@ export function CvPreview() {
                   Kỹ năng
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <span key={skill.id} className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-md font-medium">
+                  {skills.map((skill, index) => (
+                    <span key={skill.id || index} className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-md font-medium">
                       {skill.name}
                     </span>
                   ))}

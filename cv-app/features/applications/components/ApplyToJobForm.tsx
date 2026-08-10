@@ -47,6 +47,7 @@ export function ApplyToJobForm({
               </option>
             ))}
           </select>
+          <p className="mt-2 text-xs leading-5 text-text-muted">Sau khi ứng tuyển, hệ thống sẽ mở bài đánh giá kỹ thuật theo đúng JD và snapshot CV này.</p>
         </div>
 
         {state.status === "error" ? (
@@ -62,7 +63,7 @@ export function ApplyToJobForm({
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0047AB] px-4 text-sm font-bold text-white outline-none transition-colors hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-[#0047AB] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Send className="h-4 w-4" />
-          {pending ? "Đang ứng tuyển..." : "Ứng tuyển ngay"}
+          {pending ? "Đang tạo phiên đánh giá..." : "Ứng tuyển & bắt đầu đánh giá"}
         </button>
       </form>
 

@@ -71,3 +71,9 @@ body {
 ::-webkit-scrollbar-track { background: var(--background); }
 ::-webkit-scrollbar-thumb { border-radius: 9999px; background: var(--outline-variant); }
 ::-webkit-scrollbar-thumb:hover { background: var(--outline); }
+
+@keyframes route-progress {
+  0% { transform: translateX(-120%); }
+  55% { transform: translateX(90%); }
+  100% { transform: translateX(240%); }
+}

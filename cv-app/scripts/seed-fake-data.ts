@@ -97,7 +97,7 @@ async function main() {
         const statuses: ApplicationStatus[] = ["APPLIED", "INTERVIEWING", "OFFER", "REJECTED"];
         const status = statuses[idx % statuses.length];
         
-        const resumeVersion = allResumeVersions.find(rv => rv.resumeId === (prisma as any).resumeId /* rough match */ || true);
+        // Removed unused resumeVersion line
         const candidateResumeVersion = await prisma.resumeVersion.findFirst({ where: { resume: { userId: candidate.id } }});
         
         if (!candidateResumeVersion) continue;

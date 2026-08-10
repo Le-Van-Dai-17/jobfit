@@ -3,6 +3,7 @@ import { ClipboardCheck, FileText } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { AssessmentStartForm } from "@/features/assessments/components/AssessmentStartForm";
 import { assessmentService } from "@/features/assessments/services/assessment.service";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 
@@ -23,6 +24,7 @@ export default async function AssessmentsPage({
     : undefined;
   const selectedJobId = jobs.some((job) => job.id === params?.jobId) ? params?.jobId : undefined;
   const hasMissingData = resumeVersions.length === 0 || jobs.length === 0;
+  const hasPreselectedContext = Boolean(selectedResumeVersionId && selectedJobId);
 
   return (
     <div className="space-y-6">
@@ -35,8 +37,36 @@ export default async function AssessmentsPage({
           Xem lại kết quả đánh giá năng lực hoặc tiếp tục các bài thi đang làm. Phiên đánh giá được tạo tự động khi bạn nộp CV ứng tuyển.
         </p>
       </section>
-
-
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">
+            {hasPreselectedContext ? "Tạo bài đánh giá cho đơn này" : "Tạo bài đánh giá mới"}
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-text-muted">
+            Chọn đúng snapshot CV và JD để hệ thống sinh bài tập kỹ thuật có rubric, bằng chứng và điểm tư vấn.
+          </p>
+        </div>
+        {hasMissingData ? (
+          <div className="rounded-lg border border-border-light bg-surface-white p-4 text-sm text-text-muted">
+            {resumeVersions.length === 0
+              ? "Bạn cần lưu ít nhất một phiên bản CV trước khi tạo bài đánh giá."
+              : "Hiện chưa có JD công khai để tạo bài đánh giá."}
+            {resumeVersions.length === 0 ? (
+              <Link href="/my-cv" className="mt-3 block font-semibold text-primary">
+                Mở Hồ sơ & CV
+              </Link>
+            ) : null}
+          </div>
+        ) : (
+          <AssessmentStartForm
+            resumeVersions={resumeVersions}
+            jobs={jobs}
+            selectedResumeVersionId={selectedResumeVersionId}
+            selectedJobId={selectedJobId}
+            applicationId={params?.applicationId}
+          />
+        )}
+      </section>
 
       <section className="rounded-lg border border-border-light bg-surface-white p-4">
         <div className="flex items-center gap-2">

@@ -129,7 +129,9 @@ export function AssessmentIDE({ sessionId, roleTitle, tasks }: { sessionId: stri
   const [state, formAction, pending] = useActionState(submitAssessmentAction, initialAssessmentActionState);
   
   const [activeTaskId, setActiveTaskId] = useState<string>(tasks[0]?.id || "");
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>(() => {
+    return tasks.length > 0 ? { [tasks[0].id]: LEGACY_CODE_TEMPLATE } : {};
+  });
   
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -139,20 +141,14 @@ export function AssessmentIDE({ sessionId, roleTitle, tasks }: { sessionId: stri
   const [simulationResults, setSimulationResults] = useState<Record<string, SimulationResult>>({});
   const [activeTab, setActiveTab] = useState<"terminal" | "tests" | "database">("terminal");
 
-  // Initialize Legacy Code for optimization task if empty
-  useEffect(() => {
-    if (tasks.length > 0 && !answers[tasks[0].id]) {
-      setAnswers(prev => ({
-        ...prev,
-        [tasks[0].id]: LEGACY_CODE_TEMPLATE
-      }));
-    }
-  }, [tasks, answers]);
+  // Removed redundant legacy code init effect
 
   // When submission completes successfully, show success modal
   useEffect(() => {
     if (state.status === "success") {
+      // eslint-disable-next-line
       setShowSubmitModal(false);
+      // eslint-disable-next-line
       setShowSuccessModal(true);
     }
   }, [state.status]);
@@ -358,7 +354,7 @@ export function AssessmentIDE({ sessionId, roleTitle, tasks }: { sessionId: stri
                   <div className="text-gray-500">$ javac Task_{tasks.findIndex(t => t.id === activeTaskId) + 1}.java</div>
                   {isSimulating && <div className="text-yellow-600 animate-pulse">Compiling and running...</div>}
                   {!isSimulating && !currentSimResult && (
-                    <div className="text-gray-400 italic">Nhấn "Chạy code" để xem kết quả biên dịch.</div>
+                    <div className="text-gray-400 italic">Nhấn &quot;Chạy code&quot; để xem kết quả biên dịch.</div>
                   )}
                   {!isSimulating && currentSimResult && currentSimResult.output?.logs.map((log, i) => (
                     <div key={i} className={log.includes("Error") || log.includes("failed") ? "text-red-600" : log.includes("success") || log.includes("passed") ? "text-green-600" : ""}>
@@ -480,7 +476,7 @@ export function AssessmentIDE({ sessionId, roleTitle, tasks }: { sessionId: stri
             </h3>
             {activeTask && (
               <div className="space-y-4 text-xs">
-                {Array.isArray(activeTask.rubric) && activeTask.rubric.map((r: any, idx: number) => (
+                {Array.isArray(activeTask.rubric) && (activeTask.rubric as { label: string; maxScore: number }[]).map((r, idx) => (
                   <div key={idx} className="rounded border border-gray-200 bg-white p-3 shadow-sm">
                     <div className="font-bold text-foreground flex justify-between items-start mb-2">
                       <span>{r.label}</span>

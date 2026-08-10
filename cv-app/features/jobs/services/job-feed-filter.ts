@@ -35,7 +35,8 @@ export function filterJobFeed<T extends FilterableJob>(jobs: T[], filters: JobFe
     const searchableText = `${job.title} ${job.company}`.toLocaleLowerCase("vi-VN");
     const matchesQuery = !filters.q || searchableText.includes(filters.q);
     const normalizedType = (job.type ?? "").toLowerCase();
-    const matchesMode = filters.mode === "all" || normalizedType.includes(filters.mode);
+    const normalizedLocation = ((job as any).location ?? "").toLowerCase();
+    const matchesMode = filters.mode === "all" || normalizedType.includes(filters.mode) || normalizedLocation.includes(filters.mode);
 
     return matchesQuery && matchesMode;
   });

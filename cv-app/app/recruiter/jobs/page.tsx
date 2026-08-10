@@ -80,7 +80,7 @@ export default async function RecruiterJobsPage({
   const filters = parseRecruiterJobFilters(await searchParams);
 
   let jobs: JobRow[];
-  let dashboard: { counts: any };
+  let dashboard: Awaited<ReturnType<typeof recruiterService.getDashboard>>;
   try {
     const [jobsRes, dashboardRes] = await Promise.all([
       recruiterService.listJobs(user.id, filters),
@@ -320,26 +320,8 @@ export default async function RecruiterJobsPage({
       {jobs.length > 0 && (
         <div className="mt-8 flex items-center justify-between border-t border-border-light pt-6">
           <p className="text-sm font-medium text-text-muted">
-            Hiển thị 1 - {Math.min(3, totalJobs)} của {totalJobs} vị trí
+            Hiển thị toàn bộ {totalJobs} vị trí
           </p>
-          <div className="flex items-center gap-1">
-            <button className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted hover:bg-surface-low disabled:opacity-50">
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0047AB] font-semibold text-white">
-              1
-            </button>
-            <button className="flex h-9 w-9 items-center justify-center rounded-lg font-semibold text-text-muted hover:bg-surface-low">
-              2
-            </button>
-            <button className="flex h-9 w-9 items-center justify-center rounded-lg font-semibold text-text-muted hover:bg-surface-low">
-              3
-            </button>
-            <span className="flex h-9 w-9 items-center justify-center text-text-muted">...</span>
-            <button className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted hover:bg-surface-low disabled:opacity-50">
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
         </div>
       )}
     </div>

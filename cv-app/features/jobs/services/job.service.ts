@@ -12,8 +12,8 @@ export class JobService {
     return this.repository.findActiveJobs();
   }
 
-  async getCandidateFeed(userId: string, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite" }) {
-    return this.repository.findActiveJobsForCandidate(userId, filters);
+  async getCandidateFeed(userId: string, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite" }, options?: { includeProgress?: boolean }) {
+    return this.repository.findActiveJobsForCandidate(userId, filters, options);
   }
 
   /**

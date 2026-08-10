@@ -13,6 +13,7 @@ describe("EmployerAssessmentReport", () => {
       limitations: ["Chỉ đánh giá một bài"],
       rubricBreakdown: [{ taskId: "task-1", taskTitle: "API review", scores: [{ criterionId: "c1", label: "Correctness", score: 4, maxScore: 5, evidence: ["quote"], gap: "Cần edge cases" }] }],
       evidence: [{ taskId: "task-1", quote: "Use a transaction", rationale: "Cho thấy hiểu atomicity" }],
+      session: { roleTitle: "Senior Backend", job: { title: "Backend Engineer", company: "Kada" } },
     }} />);
 
     expect(screen.getByText("Rubric")).toBeInTheDocument();

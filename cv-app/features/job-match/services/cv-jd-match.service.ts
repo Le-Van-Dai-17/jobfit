@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { analyzeResumeMatch } from "@/lib/ai/gemini";
 
 export type MatchJobInput = {
   title: string;
@@ -85,21 +86,49 @@ function jobSkills(job: MatchJobInput) {
 }
 
 export class CvJdMatchService {
-  analyze(resumeContent: unknown, job: MatchJobInput): CvJdMatchResult {
-    const resume = normalize(jsonText(resumeContent));
+  async analyze(resumeContent: unknown, job: MatchJobInput): Promise<CvJdMatchResult> {
+    const resume = jsonText(resumeContent);
     const jd = jobText(job);
+
+    try {
+      const result = await analyzeResumeMatch(resume, jd);
+      
+      return {
+        overallScore: clampScore(result.overallScore),
+        keywordMatch: clampScore(result.keywordMatch),
+        experienceMatch: clampScore(result.experienceMatch),
+        skillsMatch: clampScore(result.skillsMatch),
+        details: {
+          algorithm: "gemini-cv-jd-v2",
+          matchedKeywords: result.matchedKeywords,
+          missingKeywords: result.missingKeywords,
+          recommendations: result.recommendations,
+          evidence: [
+            "Điểm số được tính toán bằng mô hình AI Gemini dựa trên khả năng hiểu ngữ nghĩa.",
+          ],
+        },
+      };
+    } catch (error) {
+      console.error("AI CV Match failed, falling back to heuristic:", error);
+      // Fallback to deterministic heuristic
+      return this.analyzeHeuristic(resume, jd, job);
+    }
+  }
+
+  private analyzeHeuristic(resume: string, jd: string, job: MatchJobInput): CvJdMatchResult {
+    const normalizedResume = normalize(resume);
     const jdTokens = unique(tokenize(jd)).slice(0, 80);
-    const matchedKeywords = jdTokens.filter((token) => resume.includes(token));
-    const missingKeywords = jdTokens.filter((token) => !resume.includes(token)).slice(0, 20);
+    const matchedKeywords = jdTokens.filter((token) => normalizedResume.includes(token));
+    const missingKeywords = jdTokens.filter((token) => !normalizedResume.includes(token)).slice(0, 20);
     const requiredSkills = jobSkills(job);
-    const matchedSkills = requiredSkills.filter((skill) => resume.includes(skill));
-    const missingSkills = requiredSkills.filter((skill) => !resume.includes(skill));
+    const matchedSkills = requiredSkills.filter((skill) => normalizedResume.includes(skill));
+    const missingSkills = requiredSkills.filter((skill) => !normalizedResume.includes(skill));
 
     const keywordMatch = jdTokens.length === 0 ? 0 : clampScore((matchedKeywords.length / jdTokens.length) * 100);
     const skillsMatch =
       requiredSkills.length === 0 ? keywordMatch : clampScore((matchedSkills.length / requiredSkills.length) * 100);
     const seniorityTerms = job.experienceLevel ? seniorityKeywords[job.experienceLevel] ?? [] : [];
-    const seniorityHits = seniorityTerms.filter((term) => resume.includes(normalize(term)));
+    const seniorityHits = seniorityTerms.filter((term) => normalizedResume.includes(normalize(term)));
     const experienceMatch =
       seniorityTerms.length === 0 ? keywordMatch : clampScore((seniorityHits.length / seniorityTerms.length) * 100);
     const overallScore = clampScore(keywordMatch * 0.35 + skillsMatch * 0.45 + experienceMatch * 0.2);
@@ -117,12 +146,12 @@ export class CvJdMatchService {
         matchedSkills,
         missingSkills,
         evidence: [
-          `${matchedKeywords.length}/${jdTokens.length} tu khoa JD xuat hien trong CV snapshot.`,
-          `${matchedSkills.length}/${requiredSkills.length} ky nang yeu cau duoc tim thay trong CV snapshot.`,
+          `${matchedKeywords.length}/${jdTokens.length} từ khóa JD xuất hiện trong CV snapshot.`,
+          `${matchedSkills.length}/${requiredSkills.length} kỹ năng yêu cầu được tìm thấy trong CV snapshot.`,
         ],
         limitations: [
-          "Diem phu hop la goi y tu van dua tren CV snapshot va JD da luu.",
-          "Heuristic khong thay the viec review CV va bai assessment cua nha tuyen dung.",
+          "Điểm phù hợp (Fallback) là gợi ý tư vấn dựa trên CV snapshot và JD đã lưu.",
+          "Heuristic không hiểu được ngữ nghĩa phức tạp.",
         ],
       },
     };

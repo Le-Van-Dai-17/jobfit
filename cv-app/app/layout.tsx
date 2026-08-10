@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { auth } from "@/auth";
 import { AppShell } from "@/components/layout/AppShell";
+import { ToastContainer } from "@/components/ui/ToastContainer";
 import { PrismaCompanyRepository } from "@/features/companies/repositories/company.repository";
 import { createResumeAction } from "@/features/my-cv/actions/create-resume";
 
@@ -31,6 +32,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="vi" className={`h-full antialiased ${beVietnamPro.variable}`}>
       <body className="min-h-screen bg-background font-sans text-foreground">
         {session?.user ? <AppShell user={session.user} companyName={companyName} createResume={createResumeFromHeader}>{children}</AppShell> : children}
+        <ToastContainer />
       </body>
     </html>
   );

@@ -8,7 +8,7 @@ import { PrismaCompanyRepository } from "../repositories/company.repository";
 import { CompanyAccessError, CompanyService, CompanyValidationError } from "../services/company.service";
 import type { CompanyIndustry, CompanySize } from "@prisma/client";
 
-export type CompanyOnboardingState = { error?: string };
+export type CompanyOnboardingState = { error?: string; success?: boolean };
 const field = (formData: FormData, name: string) => String(formData.get(name) ?? "");
 function companyFields(formData: FormData) {
   return {
@@ -44,5 +44,5 @@ export async function updateCompanySettingsAction(_state: CompanyOnboardingState
   } catch (error) { return errorState(error); }
   revalidatePath("/recruiter/company");
   revalidatePath("/recruiter");
-  return {};
+  return { success: true };
 }

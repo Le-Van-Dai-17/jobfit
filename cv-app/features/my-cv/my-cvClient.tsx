@@ -55,13 +55,6 @@ export default function MyCvClient({ initialResumeId, initialTitle, initialData 
     <div className="flex min-h-[calc(100vh-7rem)] w-full flex-col overflow-hidden rounded-xl border border-border-light bg-surface-white shadow-sm">
       <header className="flex shrink-0 flex-col gap-3 border-b border-border-light bg-surface-white p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="gap-2 text-text-muted">
-              <LayoutDashboard className="h-4 w-4" />
-              Tổng quan
-            </Button>
-          </Link>
-          <div className="hidden h-4 w-px bg-border-light sm:block" />
           <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-foreground">
             <FileText className="h-4 w-4 shrink-0 text-primary" />
             <span className="truncate">{initialTitle}</span>

@@ -7,6 +7,7 @@ import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects
 import { saveJobAction } from "@/features/jobs/actions/save-job";
 import { parseJobFeedFilters } from "@/features/jobs/services/job-feed-filter";
 import { jobService } from "@/features/jobs/services/job.service";
+import { translateJobInfo } from "@/lib/utils";
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
@@ -79,8 +80,8 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-text-muted">
                         {job.salaryRange ? <span className="rounded-md bg-secondary-container px-2.5 py-1 text-secondary">{job.salaryRange}</span> : null}
-                        {job.location ? <span className="inline-flex items-center gap-1 rounded-md bg-surface-container-highest px-2.5 py-1"><MapPin className="h-3.5 w-3.5" />{job.location}</span> : null}
-                        {job.type ? <span className="rounded-md bg-surface-container px-2.5 py-1">{job.type}</span> : null}
+                        {job.location ? <span className="inline-flex items-center gap-1 rounded-md bg-surface-container-highest px-2.5 py-1"><MapPin className="h-3.5 w-3.5" />{translateJobInfo(job.location)}</span> : null}
+                        {job.type ? <span className="rounded-md bg-surface-container px-2.5 py-1">{translateJobInfo(job.type)}</span> : null}
                         {job.deadline ? <span className="inline-flex items-center gap-1 rounded-md bg-surface-container px-2.5 py-1"><Clock3 className="h-3.5 w-3.5" />Hạn {formatDate(job.deadline)}</span> : null}
                       </div>
                       {job.description ? <p className="mt-3 line-clamp-3 text-sm leading-6 text-foreground">{job.description}</p> : <p className="mt-3 text-sm text-text-muted">JD chưa công bố mô tả chi tiết.</p>}
