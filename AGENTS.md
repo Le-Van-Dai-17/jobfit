@@ -1,4 +1,4 @@
-# CV_KADA — Codex Operating Rules
+# Jobfit — Codex Operating Rules
 
 ## Read first
 Before changing code, read in this order:
@@ -13,7 +13,7 @@ Before changing code, read in this order:
 If documents conflict, this file and `docs/AUTONOMOUS_MVP_BRIEF.md` win for product scope; live code and package manifests win for implementation status and versions.
 
 ## Product north star
-CV_KADA must keep this focused loop:
+Jobfit must keep this focused loop:
 
 `CV → realistic engineering tasks → evidence-based assessment results for employers`
 

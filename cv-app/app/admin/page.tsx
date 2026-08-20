@@ -9,7 +9,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-2">
-      <h1 className="text-2xl font-bold text-foreground">Quản trị CV_KADA</h1>
+      <h1 className="text-2xl font-bold text-foreground">Quản trị Jobfit</h1>
       <p className="text-sm text-text-muted">Khu vực quản trị nền tảng.</p>
     </div>
   );

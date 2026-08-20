@@ -1,6 +1,6 @@
 ## Current MVP Scope
 
-CV_KADA hiện tập trung vào vòng lặp:
+Jobfit hiện tập trung vào vòng lặp:
 
 ```text
 CV -> realistic engineering tasks -> evidence-based assessment results for employers
@@ -10,10 +10,10 @@ Các luồng CV, jobs, matching, optimization, tracker và interview chỉ hỗ 
 
 <div align="center">
   
-  # ✨ CV_KADA
+  # ✨ Jobfit
   ### The Next-Gen Career & Resume Platform
   
-  CV_KADA là một nền tảng toàn diện hỗ trợ ứng viên từ bước tạo CV chuyên nghiệp đến khi nhận được Offer. Được xây dựng dựa trên kiến trúc **Modular Monolith** với công nghệ AI tiên tiến, giúp tự động hóa quá trình tối ưu hồ sơ và phỏng vấn.
+  Jobfit là một nền tảng toàn diện hỗ trợ ứng viên từ bước tạo CV chuyên nghiệp đến khi nhận được Offer. Được xây dựng dựa trên kiến trúc **Modular Monolith** với công nghệ AI tiên tiến, giúp tự động hóa quá trình tối ưu hồ sơ và phỏng vấn.
 
   ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
   ![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)
@@ -52,7 +52,7 @@ Dự án được phát triển bởi các thành viên:
 - ❌ Quản lý trạng thái ứng tuyển lộn xộn trên Excel/Ghi chú, thường xuyên quên lịch hoặc nhầm lẫn giữa các công ty.
 - ❌ Thiếu tự tin, không biết nhà tuyển dụng sẽ hỏi gì trong buổi phỏng vấn dựa trên CV và JD cụ thể.
 
-## 💡 Giải pháp từ CV_KADA (Solutions)
+## 💡 Giải pháp từ Jobfit (Solutions)
 - ✅ Trình tạo CV giao diện trực quan, cấu trúc xuất chuẩn ATS dành riêng cho kỹ sư công nghệ.
 - ✅ Tích hợp AI phân tích điểm Match Score giữa CV và JD, gợi ý bổ sung keyword bị thiếu.
 - ✅ AI hỗ trợ viết lại mô tả kinh nghiệm chuyên nghiệp (theo format STAR).

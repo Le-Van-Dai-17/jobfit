@@ -9,7 +9,7 @@ export function PublicHeader() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
             <BriefcaseBusiness className="h-4 w-4" />
           </span>
-          <span className="text-lg font-bold tracking-tight">CV_KADA</span>
+          <span className="text-lg font-bold tracking-tight">Jobfit</span>
         </Link>
         <div className="flex items-center gap-3">
           <Link href="/login" className="rounded-lg px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">

@@ -1,8 +1,8 @@
-# CV_KADA Two-Sided Recruiting MVP Brief
+# Jobfit Two-Sided Recruiting MVP Brief
 
 ## Product decision
 
-CV_KADA must become a focused two-sided recruiting product for Vietnamese IT candidates and recruiters.
+Jobfit must become a focused two-sided recruiting product for Vietnamese IT candidates and recruiters.
 
 ```text
 Candidate profile/CV -> job application -> practical assessment -> evidence-based recruiter decision

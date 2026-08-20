@@ -67,7 +67,7 @@ export default function Sidebar({ user, companyName }: { user: SidebarUser; comp
         <div className="flex h-16 items-center justify-between border-b border-outline-variant/60 px-5">
           <Link href={user.role === "RECRUITER" ? "/recruiter" : "/dashboard"} onClick={closeDrawer} className="flex items-center gap-3 rounded-lg text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-fixed"><BriefcaseBusiness className="h-5 w-5" aria-hidden="true" /></span>
-            <span><span className="block text-lg font-bold tracking-tight">CV_KADA</span><span className="block text-[11px] font-medium text-text-muted">Career Hub</span></span>
+            <span><span className="block text-lg font-bold tracking-tight">Jobfit</span><span className="block text-[11px] font-medium text-text-muted">Career Hub</span></span>
           </Link>
           <button type="button" aria-label="Đóng menu" className="rounded-lg p-2 text-text-muted hover:bg-surface-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden" onClick={closeDrawer}><X className="h-5 w-5" /></button>
         </div>

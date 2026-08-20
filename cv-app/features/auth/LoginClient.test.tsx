@@ -22,9 +22,9 @@ describe("LoginClient", () => {
 
   it("renders the downloaded public-auth hierarchy with a semantic form", () => {
     render(<LoginClient />);
-    expect(screen.getByRole("banner")).toHaveTextContent("CV_KADA");
+    expect(screen.getByRole("banner")).toHaveTextContent("Jobfit");
     expect(screen.getByRole("heading", { name: "Đăng nhập" })).toBeInTheDocument();
-    expect(screen.getByText("Chào mừng bạn quay lại với CV_KADA")).toBeInTheDocument();
+    expect(screen.getByText("Chào mừng bạn quay lại với Jobfit")).toBeInTheDocument();
     expect(screen.getByRole("contentinfo")).toHaveTextContent("Nền tảng tuyển dụng chuyên nghiệp");
     expect(screen.getByRole("button", { name: "Đăng nhập" }).closest("form")).toBeInTheDocument();
     expect(screen.queryByText(/Demo lỗi đăng nhập/i)).not.toBeInTheDocument();

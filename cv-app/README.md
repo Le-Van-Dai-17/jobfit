@@ -1,6 +1,6 @@
-# CV_KADA
+# Jobfit
 
-CV_KADA is a Next.js recruiting MVP for Vietnamese IT candidates and employers. The product loop is:
+Jobfit is a Next.js recruiting MVP for Vietnamese IT candidates and employers. The product loop is:
 
 ```text
 CV -> realistic engineering tasks -> evidence-based assessment results for employers

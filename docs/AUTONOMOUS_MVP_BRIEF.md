@@ -1,7 +1,7 @@
-# CV_KADA Autonomous MVP Brief
+# Jobfit Autonomous MVP Brief
 
 ## Mission
-Continue CV_KADA into a coherent, demonstrable recruiting MVP for Vietnamese IT candidates and employers.
+Continue Jobfit into a coherent, demonstrable recruiting MVP for Vietnamese IT candidates and employers.
 
 The non-negotiable product formula is:
 

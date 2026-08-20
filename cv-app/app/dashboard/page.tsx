@@ -287,7 +287,7 @@ export default async function DashboardPage() {
 
           {/* Promo Card */}
           <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border-light">
-            <h3 className="mb-2 text-base font-bold text-foreground">Tải ứng dụng CV_KADA</h3>
+            <h3 className="mb-2 text-base font-bold text-foreground">Tải ứng dụng Jobfit</h3>
             <p className="text-sm font-medium text-text-muted mb-5 leading-relaxed">
               Cập nhật việc làm mới nhất và ứng tuyển nhanh chóng mọi lúc mọi nơi.
             </p>

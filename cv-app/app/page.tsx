@@ -141,9 +141,9 @@ export default async function LandingPage() {
             </div>
 
             <div className="order-1 lg:order-2">
-              <h2 className="text-3xl font-extrabold md:text-4xl">Tại sao doanh nghiệp thích ứng viên từ CV_KADA?</h2>
+              <h2 className="text-3xl font-extrabold md:text-4xl">Tại sao doanh nghiệp thích ứng viên từ Jobfit?</h2>
               <p className="mt-6 text-lg leading-relaxed text-slate-400">
-                Các nhà tuyển dụng (Recruiters) luôn khao khát tìm được ứng viên &quot;thật&quot;. CV_KADA cung cấp cho họ một hệ thống đánh giá khách quan:
+                Các nhà tuyển dụng (Recruiters) luôn khao khát tìm được ứng viên &quot;thật&quot;. Jobfit cung cấp cho họ một hệ thống đánh giá khách quan:
               </p>
 
               <ul className="mt-8 space-y-5">

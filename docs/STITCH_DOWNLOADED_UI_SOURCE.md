@@ -2,7 +2,7 @@
 
 ## Verified artifact
 
-- Project: `CV_KADA Job Feed`
+- Project: `Jobfit Job Feed`
 - Stitch URL: https://stitch.withgoogle.com/projects/5567340400182043103
 - ZIP: `D:\Downloads\stitch_cv_kada_job_feed.zip`
 - Extracted read-only audit copy: `D:\WebCV-stitch-export-audit-20260809\stitch_cv_kada_job_feed`

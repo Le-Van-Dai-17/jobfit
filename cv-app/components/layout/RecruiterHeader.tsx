@@ -40,7 +40,7 @@ export function RecruiterHeader({ userName, companyName }: RecruiterHeaderProps)
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
             <BriefcaseBusiness className="h-4 w-4" />
           </span>
-          <span className="hidden text-lg font-bold tracking-tight md:block">CV_KADA</span>
+          <span className="hidden text-lg font-bold tracking-tight md:block">Jobfit</span>
         </Link>
       </div>
 

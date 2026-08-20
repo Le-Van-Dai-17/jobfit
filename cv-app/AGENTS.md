@@ -7,7 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- BEGIN:product-rules -->
 ## Product Rules
 
-- **Mục tiêu sản phẩm:** CV_KADA là MVP tuyển dụng xoay quanh vòng lặp `CV -> realistic engineering tasks -> evidence-based assessment results for employers`; CV, jobs, matching, optimization, tracker, and interview modules support that loop.
+- **Mục tiêu sản phẩm:** Jobfit là MVP tuyển dụng xoay quanh vòng lặp `CV -> realistic engineering tasks -> evidence-based assessment results for employers`; CV, jobs, matching, optimization, tracker, and interview modules support that loop.
 - **Đối tượng người dùng:** Người tìm việc (Việt Nam), kỹ sư công nghệ.
 - **Luồng chính:** Tạo/Quản lý CV → Tối ưu theo JD → Phân tích match → Ứng tuyển → Theo dõi → Phỏng vấn thử.
 - **Dữ liệu:** Prisma/PostgreSQL, Auth.js, repositories/services, and API routes exist. Some UI surfaces still use mock/demo state; document that status instead of reverting to UI-only assumptions.

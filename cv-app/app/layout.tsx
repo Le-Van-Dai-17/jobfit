@@ -11,7 +11,7 @@ import { createResumeAction } from "@/features/my-cv/actions/create-resume";
 const beVietnamPro = Be_Vietnam_Pro({ subsets: ["latin", "vietnamese"], variable: "--font-be-vietnam-pro", display: "swap", weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "CV_KADA - Platform Quản lý CV & Tối ưu Nghề nghiệp Thông minh",
+  title: "Jobfit - Platform Quản lý CV & Tối ưu Nghề nghiệp Thông minh",
   description: "Trình tạo CV, tối ưu ATS, phân tích Job Match bằng AI và quản lý quá trình ứng tuyển.",
 };
 

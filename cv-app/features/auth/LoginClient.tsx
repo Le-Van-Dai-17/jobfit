@@ -44,7 +44,7 @@ export default function LoginClient() {
             <LockKeyhole className="h-8 w-8" aria-hidden="true" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[32px] sm:leading-10">Đăng nhập</h1>
-          <p className="mt-2 text-sm text-text-muted">Chào mừng bạn quay lại với CV_KADA</p>
+          <p className="mt-2 text-sm text-text-muted">Chào mừng bạn quay lại với Jobfit</p>
         </div>
 
         <form className="space-y-4" onSubmit={handleLogin}>

@@ -14,9 +14,9 @@ vi.mock("next/link", () => ({
 describe("RegisterClient", () => {
   it("renders the downloaded registration hierarchy and guidance", () => {
     render(<RegisterClient />);
-    expect(screen.getByRole("banner")).toHaveTextContent("CV_KADA");
+    expect(screen.getByRole("banner")).toHaveTextContent("Jobfit");
     expect(screen.getByRole("heading", { name: "Tạo tài khoản mới" })).toBeInTheDocument();
-    expect(screen.getByText("Bắt đầu hành trình nghề nghiệp của bạn cùng CV_KADA.")).toBeInTheDocument();
+    expect(screen.getByText("Bắt đầu hành trình nghề nghiệp của bạn cùng Jobfit.")).toBeInTheDocument();
     expect(screen.getByText(/Mật khẩu phải có ít nhất 12 ký tự/)).toBeInTheDocument();
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Đăng ký tài khoản" }).closest("form")?.parentElement).toHaveClass("max-sm:bg-transparent", "max-sm:shadow-none");

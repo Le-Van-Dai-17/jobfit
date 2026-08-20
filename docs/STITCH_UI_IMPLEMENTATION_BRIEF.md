@@ -1,8 +1,8 @@
-# CV_KADA Stitch UI Implementation Brief
+# Jobfit Stitch UI Implementation Brief
 
 ## Source and audited scope
 
-- Private Stitch project: `CV_KADA Job Feed`.
+- Private Stitch project: `Jobfit Job Feed`.
 - URL: https://stitch.withgoogle.com/projects/5567340400182043103
 - **Authoritative downloaded UX/UI artifact:** `D:\Downloads\stitch_cv_kada_job_feed.zip`.
 - **Safe extracted source:** `D:\WebCV-stitch-export-audit-20260809\stitch_cv_kada_job_feed`.

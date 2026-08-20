@@ -25,7 +25,7 @@ export default function RegisterClient() {
               <UserPlus className="h-8 w-8" aria-hidden="true" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[32px] sm:leading-10">Tạo tài khoản mới</h1>
-            <p className="mt-2 text-sm text-text-muted sm:text-base">Bắt đầu hành trình nghề nghiệp của bạn cùng CV_KADA.</p>
+            <p className="mt-2 text-sm text-text-muted sm:text-base">Bắt đầu hành trình nghề nghiệp của bạn cùng Jobfit.</p>
           </div>
 
           <fieldset>

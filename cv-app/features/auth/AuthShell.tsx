@@ -17,7 +17,7 @@ export function AuthShell({ active, children }: AuthShellProps) {
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-fixed" aria-hidden="true">
               <BriefcaseBusiness className="h-5 w-5" />
             </span>
-            <span className="text-lg font-semibold tracking-tight">CV_KADA</span>
+            <span className="text-lg font-semibold tracking-tight">Jobfit</span>
           </Link>
           <nav aria-label="Tài khoản" className="hidden items-center gap-6 text-sm md:flex">
             <AuthLink href="/login" active={active === "login"}>Đăng nhập</AuthLink>
@@ -34,7 +34,7 @@ export function AuthShell({ active, children }: AuthShellProps) {
         <div className="relative z-10 w-full">{children}</div>
       </main>
       <footer className="border-t border-outline-variant/30 bg-surface-low px-4 py-5 text-center text-xs text-text-muted">
-        © {currentYear} CV_KADA. Nền tảng tuyển dụng chuyên nghiệp.
+        © {currentYear} Jobfit. Nền tảng tuyển dụng chuyên nghiệp.
       </footer>
     </div>
   );

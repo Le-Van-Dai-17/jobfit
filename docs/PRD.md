@@ -1,8 +1,8 @@
-# Product Requirements Document - CV_KADA
+# Product Requirements Document - Jobfit
 
 ## Product North Star
 
-CV_KADA is a recruiting MVP for Vietnamese IT candidates and employers. The focused loop is:
+Jobfit is a recruiting MVP for Vietnamese IT candidates and employers. The focused loop is:
 
 ```text
 CV -> realistic engineering tasks -> evidence-based assessment results for employers

@@ -9,11 +9,11 @@ import Sidebar from "./Sidebar";
 
 describe("Sidebar recruiter context", () => {
   it("shows persisted context and the downloaded active navigation treatment", () => {
-    render(<Sidebar user={{ name: "Mai", role: "RECRUITER" }} companyName="Công ty KADA" />);
-    expect(screen.getByText("Công ty KADA")).toBeInTheDocument();
+    render(<Sidebar user={{ name: "Mai", role: "RECRUITER" }} companyName="Công ty Jobfit" />);
+    expect(screen.getByText("Công ty Jobfit")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Điều hướng chính" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Tổng quan/ })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: /Tổng quan/ })).toHaveClass("bg-primary-fixed", "text-primary");
-    expect(screen.getByText("CV_KADA")).toBeInTheDocument();
+    expect(screen.getByText("Jobfit")).toBeInTheDocument();
   });
 });
