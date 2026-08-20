@@ -68,6 +68,54 @@ describe("ResumeService", () => {
     expect(mockedResumeRepository.create).not.toHaveBeenCalled();
   });
 
+  it("creates an imported resume from candidate-provided text without inventing missing identity facts", async () => {
+    mockedResumeRepository.create.mockResolvedValue({ id: "resume-imported" } as never);
+
+    await new ResumeService().createImportedResume(
+      "user-1",
+      "Imported CV",
+      `Nguyen Van A
+Frontend Engineer
+candidate@example.com
+Built React and TypeScript applications with PostgreSQL.`
+    );
+
+    expect(mockedResumeRepository.create).toHaveBeenCalledWith(
+      "user-1",
+      "Imported CV",
+      expect.objectContaining({
+        personalInfo: expect.objectContaining({
+          fullName: "Nguyen Van A",
+          title: "Frontend Engineer",
+          email: "candidate@example.com",
+        }),
+        skills: expect.arrayContaining([
+          expect.objectContaining({ name: "React" }),
+          expect.objectContaining({ name: "TypeScript" }),
+          expect.objectContaining({ name: "PostgreSQL" }),
+        ]),
+      })
+    );
+  });
+
+  it("keeps missing imported email empty instead of fabricating one", async () => {
+    mockedResumeRepository.create.mockResolvedValue({ id: "resume-imported" } as never);
+
+    await new ResumeService().createImportedResume(
+      "user-1",
+      "Imported CV",
+      "Backend Developer\nBuilt Node.js services, REST APIs, and Docker deployment pipelines for internal products."
+    );
+
+    expect(mockedResumeRepository.create).toHaveBeenCalledWith(
+      "user-1",
+      "Imported CV",
+      expect.objectContaining({
+        personalInfo: expect.objectContaining({ email: "" }),
+      })
+    );
+  });
+
   it("uses the soft-delete repository path for deletion", async () => {
     mockedResumeRepository.softDelete.mockResolvedValue({ id: "resume-1" } as never);
 

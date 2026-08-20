@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 
 import { saveJobAction } from "@/features/jobs/actions/save-job";
 import { parseJobFeedFilters } from "@/features/jobs/services/job-feed-filter";
+import { formatJobPostedLabel } from "@/features/jobs/services/job-posted-label";
 import { jobService } from "@/features/jobs/services/job.service";
 import { translateJobInfo } from "@/lib/utils";
 
@@ -19,11 +20,22 @@ function getSkillTags(requirements?: string | null) {
   return commonSkills.filter((skill) => requirements.toLocaleLowerCase("vi-VN").includes(skill.toLocaleLowerCase("vi-VN"))).slice(0, 5);
 }
 
-export default async function JobsPage({ searchParams }: { searchParams: Promise<{ q?: string | string[]; mode?: string | string[] }> }) {
+export default async function JobsPage({ searchParams }: { searchParams: Promise<{ q?: string | string[]; location?: string | string[]; mode?: string | string[]; page?: string | string[]; limit?: string | string[] }> }) {
   const session = await auth();
 
   const filters = parseJobFeedFilters(await searchParams);
   const { data: jobs, meta } = await jobService.getCandidateFeed(session?.user?.id, filters);
+  const buildJobsHref = (overrides: Partial<typeof filters>) => {
+    const nextFilters = { ...filters, ...overrides };
+    const params = new URLSearchParams();
+    if (nextFilters.q) params.set("q", nextFilters.q);
+    if (nextFilters.location) params.set("location", nextFilters.location);
+    if (nextFilters.mode !== "all") params.set("mode", nextFilters.mode);
+    if (nextFilters.page > 1) params.set("page", String(nextFilters.page));
+    if (nextFilters.limit !== 10) params.set("limit", String(nextFilters.limit));
+    const query = params.toString();
+    return query ? `/jobs?${query}` : "/jobs";
+  };
 
   return (
     <div className="space-y-5">
@@ -38,11 +50,16 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
             <BriefcaseBusiness className="h-4 w-4 text-primary" />{meta.total} vị trí phù hợp bộ lọc
           </span>
         </div>
-        <form className="mt-5 grid overflow-hidden rounded-lg bg-surface-white shadow-card md:grid-cols-[1fr_220px_120px]" role="search">
+        <form className="mt-5 grid overflow-hidden rounded-lg bg-surface-white shadow-card md:grid-cols-[1fr_220px_180px_120px]" role="search">
           <label className="relative border-b border-outline-variant md:border-b-0 md:border-r">
             <span className="sr-only">Tìm theo chức danh hoặc công ty</span>
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-outline" />
             <input className="h-12 w-full bg-transparent pl-11 pr-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" defaultValue={filters.q} name="q" placeholder="Tên công việc hoặc công ty" type="search" />
+          </label>
+          <label className="relative border-b border-outline-variant md:border-b-0 md:border-r">
+            <span className="sr-only">Lọc theo địa điểm</span>
+            <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-outline" />
+            <input className="h-12 w-full bg-transparent pl-11 pr-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" defaultValue={filters.location} name="location" placeholder="Địa điểm" type="search" />
           </label>
           <select aria-label="Lọc hình thức làm việc" className="h-12 bg-transparent px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary" defaultValue={filters.mode} name="mode">
             <option value="all">Tất cả hình thức</option><option value="remote">Từ xa</option><option value="hybrid">Kết hợp</option><option value="onsite">Tại văn phòng</option>
@@ -53,7 +70,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
 
       <div className="flex gap-2 overflow-x-auto pb-1 md:hidden" aria-label="Bộ lọc nhanh">
         {[{ label: "Tất cả", mode: "all" }, { label: "Từ xa", mode: "remote" }, { label: "Kết hợp", mode: "hybrid" }, { label: "Tại văn phòng", mode: "onsite" }].map((item) => (
-          <Link key={item.mode} href={`/jobs?mode=${item.mode}${filters.q ? `&q=${encodeURIComponent(filters.q)}` : ""}`} className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${filters.mode === item.mode ? "bg-primary-container text-white" : "bg-surface-container-highest text-text-muted"}`}>{item.label}</Link>
+          <Link key={item.mode} href={buildJobsHref({ mode: item.mode as typeof filters.mode, page: 1 })} className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${filters.mode === item.mode ? "bg-primary-container text-white" : "bg-surface-container-highest text-text-muted"}`}>{item.label}</Link>
         ))}
       </div>
 
@@ -73,7 +90,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-fixed text-lg font-bold text-primary" aria-hidden="true">{job.company.trim().charAt(0).toLocaleUpperCase("vi-VN") || "C"}</div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <div><Link href={`/jobs/${job.id}`} className="text-base font-semibold text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-primary md:text-lg">{job.title}</Link><p className="mt-1 text-sm text-text-muted">{job.company} · Đăng {formatDate(job.createdAt)}</p></div>
+                        <div><Link href={`/jobs/${job.id}`} className="text-base font-semibold text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-primary md:text-lg">{job.title}</Link><p className="mt-1 text-sm text-text-muted">{job.company} · {formatJobPostedLabel(job.createdAt)}</p></div>
                         <form action={saveJobAction}><input type="hidden" name="jobId" value={job.id} /><button type="submit" aria-label={saved ? `Bỏ lưu ${job.title}` : `Lưu ${job.title}`} className={`rounded-lg p-2 outline-none hover:bg-surface-low focus-visible:ring-2 focus-visible:ring-primary ${saved ? "text-primary" : "text-outline"}`}><Bookmark className="h-5 w-5" fill={saved ? "currentColor" : "none"} /></button></form>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-text-muted">
@@ -98,7 +115,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
             {meta.totalPages > 1 && (
               <div className="mt-8 flex items-center justify-center gap-4 border-t border-outline-variant/50 pt-6">
                 {meta.page > 1 ? (
-                  <Link href={`/jobs?page=${meta.page - 1}&mode=${filters.mode}${filters.q ? `&q=${encodeURIComponent(filters.q)}` : ""}`} className="rounded-lg px-4 py-2 text-sm font-semibold text-text-muted hover:bg-surface-container hover:text-foreground">Trang trước</Link>
+                  <Link href={buildJobsHref({ page: meta.page - 1 })} className="rounded-lg px-4 py-2 text-sm font-semibold text-text-muted hover:bg-surface-container hover:text-foreground">Trang trước</Link>
                 ) : (
                   <span className="cursor-not-allowed rounded-lg px-4 py-2 text-sm font-semibold text-outline">Trang trước</span>
                 )}
@@ -106,7 +123,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                   Trang {meta.page} / {meta.totalPages}
                 </span>
                 {meta.hasNextPage ? (
-                  <Link href={`/jobs?page=${meta.page + 1}&mode=${filters.mode}${filters.q ? `&q=${encodeURIComponent(filters.q)}` : ""}`} className="rounded-lg bg-surface-container px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-highest">Trang kế</Link>
+                  <Link href={buildJobsHref({ page: meta.page + 1 })} className="rounded-lg bg-surface-container px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-highest">Trang kế</Link>
                 ) : (
                   <span className="cursor-not-allowed rounded-lg px-4 py-2 text-sm font-semibold text-outline">Trang kế</span>
                 )}

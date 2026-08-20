@@ -69,6 +69,17 @@ describe("CV schemas", () => {
     expect(result.success).toBe(true);
   });
 
+  it("allows draft identity fields to stay empty before the candidate completes the CV", () => {
+    const result = PersonalInfoSchema.safeParse({
+      fullName: "",
+      title: "",
+      email: "",
+      phone: "",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("rejects invalid advisory input before persistence or AI use", () => {
     const result = CvSchema.safeParse({
       ...validCv,

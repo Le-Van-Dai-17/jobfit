@@ -1,4 +1,5 @@
 import { jobRepository, type JobRepository } from "../repositories/job.repository";
+import type { JobFeedFilters } from "./job-feed-filter";
 
 export class JobService {
   constructor(private readonly repository: JobRepository = jobRepository) {}
@@ -12,7 +13,7 @@ export class JobService {
     return this.repository.findActiveJobs();
   }
 
-  async getCandidateFeed(userId: string | undefined, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite"; page: number; limit: number }, options?: { includeProgress?: boolean }) {
+  async getCandidateFeed(userId: string | undefined, filters: JobFeedFilters, options?: { includeProgress?: boolean }) {
     const { data, total } = await this.repository.findActiveJobsForCandidate(userId, filters, options);
     const totalPages = Math.ceil(total / filters.limit);
     return {

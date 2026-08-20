@@ -21,6 +21,7 @@ import { auth } from "@/auth";
 import { candidateDashboardService } from "@/features/dashboard/services/candidate-dashboard.service";
 import { getDashboardPathForRole } from "@/features/auth/services/role-redirects";
 import { saveJobAction } from "@/features/jobs/actions/save-job";
+import { formatJobPostedLabel } from "@/features/jobs/services/job-posted-label";
 import { jobService } from "@/features/jobs/services/job.service";
 import { cn } from "@/lib/utils";
 
@@ -29,10 +30,12 @@ export default async function DashboardPage() {
   if (!session?.user?.id) redirect("/login");
   if (session.user.role !== "CANDIDATE") redirect(getDashboardPathForRole(session.user.role));
 
-  const [summary, { data: jobs }] = await Promise.all([
-    candidateDashboardService.getSummary(session.user.id),
-    jobService.getCandidateFeed(session.user.id, { q: "", mode: "all", page: 1, limit: 10 }, { includeProgress: false }),
-  ]);
+  const summary = await candidateDashboardService.getSummary(session.user.id);
+  const { data: jobs } = await jobService.getCandidateFeed(
+    session.user.id,
+    { q: "", location: summary.profileLocation ?? "", mode: "all", page: 1, limit: 10 },
+    { includeProgress: false }
+  );
   const featuredJobs = jobs.slice(0, 3);
   const latestJobs = jobs.slice(3, 6);
 
@@ -171,7 +174,7 @@ export default async function DashboardPage() {
               </div>
 
               <div className="divide-y divide-border-light">
-                {latestJobs.map((job, idx) => (
+                {latestJobs.map((job) => (
                   <div key={job.id} className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-4">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-low font-bold text-[#0047AB]">
@@ -191,7 +194,7 @@ export default async function DashboardPage() {
 
                     <div className="shrink-0">
                       <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">
-                        {idx === 0 ? "Vừa đăng" : "2 giờ trước"}
+                        {formatJobPostedLabel(job.createdAt)}
                       </span>
                     </div>
                   </div>

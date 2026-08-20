@@ -1,6 +1,7 @@
 import type { Prisma, WorkMode } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
+import type { JobFeedFilters } from "../services/job-feed-filter";
 
 export class JobRepository {
   /**
@@ -16,7 +17,7 @@ export class JobRepository {
     });
   }
 
-  async findActiveJobsForCandidate(userId: string | undefined, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite"; page: number; limit: number } = { q: "", mode: "all", page: 1, limit: 10 }, options: { includeProgress?: boolean } = { includeProgress: true }) {
+  async findActiveJobsForCandidate(userId: string | undefined, filters: JobFeedFilters = { q: "", location: "", mode: "all", page: 1, limit: 10 }, options: { includeProgress?: boolean } = { includeProgress: true }) {
     const conditions: Prisma.JobWhereInput[] = [];
     if (filters.q) {
       conditions.push({
@@ -36,6 +37,9 @@ export class JobRepository {
         modeConditions.push({ workMode: modeUpper as WorkMode });
       }
       conditions.push({ OR: modeConditions });
+    }
+    if (filters.location) {
+      conditions.push({ location: { contains: filters.location, mode: "insensitive" } });
     }
 
     const jobs = await prisma.job.findMany({

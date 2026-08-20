@@ -26,7 +26,7 @@ describe("JobRepository", () => {
     (prisma.job.findMany as Mock).mockResolvedValue([{ id: "job-1", title: "Frontend", company: "Kada", createdAt: new Date() }]);
     (prisma.job.count as Mock).mockResolvedValue(1);
 
-    await new JobRepository().findActiveJobsForCandidate("user-1", { q: "frontend", mode: "remote", page: 1, limit: 10 });
+    await new JobRepository().findActiveJobsForCandidate("user-1", { q: "frontend", location: "hồ chí minh", mode: "remote", page: 1, limit: 10 });
 
     expect(prisma.job.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -40,6 +40,7 @@ describe("JobRepository", () => {
               { location: { contains: "remote", mode: "insensitive" } },
               { workMode: "REMOTE" },
             ] },
+            { location: { contains: "hồ chí minh", mode: "insensitive" } },
           ],
         },
         select: expect.objectContaining({ id: true, title: true, company: true, requirements: true }),
@@ -90,7 +91,7 @@ describe("JobRepository", () => {
 
     const jobs = await new JobRepository().findActiveJobsForCandidate(
       "user-1",
-      { q: "", mode: "all", page: 1, limit: 10 },
+      { q: "", location: "", mode: "all", page: 1, limit: 10 },
       { includeProgress: false }
     );
 

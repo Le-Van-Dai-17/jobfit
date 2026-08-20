@@ -4,6 +4,49 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || "dummy-key-for-build", 
 });
 
+export type ResumeImageOcrInput = {
+  mimeType: "image/jpeg" | "image/png";
+  base64Data: string;
+};
+
+export async function extractResumeTextFromImage(input: ResumeImageOcrInput): Promise<string> {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("Gemini API key is required for image CV import.");
+  }
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: [
+              "Extract the resume/CV text from this image.",
+              "Return only text that is visibly present in the image.",
+              "Preserve Vietnamese accents and section order when possible.",
+              "Do not infer, summarize, translate, or invent missing candidate facts.",
+            ].join(" "),
+          },
+          {
+            inlineData: {
+              mimeType: input.mimeType,
+              data: input.base64Data,
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  const extractedText = response.text?.trim();
+  if (!extractedText) {
+    throw new Error("No text could be extracted from the resume image.");
+  }
+
+  return extractedText;
+}
+
 export interface MatchAnalysisResult {
   overallScore: number;
   keywordMatch: number;

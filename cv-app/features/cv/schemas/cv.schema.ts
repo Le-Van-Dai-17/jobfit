@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 export const PersonalInfoSchema = z.object({
-  fullName: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
-  title: z.string().min(2, "Vị trí phải có ít nhất 2 ký tự"),
-  email: z.string().email("Email không hợp lệ"),
+  fullName: z.string().min(2, "Tên phải có ít nhất 2 ký tự").optional().or(z.literal("")),
+  title: z.string().min(2, "Vị trí phải có ít nhất 2 ký tự").optional().or(z.literal("")),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   phone: z.string().min(9, "Số điện thoại không hợp lệ").optional().or(z.literal("")),
   location: z.string().optional(),
   summary: z.string().max(1000, "Tóm tắt không được vượt quá 1000 ký tự").optional(),

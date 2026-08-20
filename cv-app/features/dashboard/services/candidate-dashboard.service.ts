@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/db/prisma";
-import { CvSchema } from "@/features/cv/schemas/cv.schema";
+import { CvSchema, type CvData } from "@/features/cv/schemas/cv.schema";
 
 export type CandidateDashboardSummary = {
   userName: string;
   cvReady: boolean;
   profileComplete: boolean;
+  profileLocation?: string;
   resumeCount: number;
   latestResumeVersionId?: string;
   nextAction: {
@@ -26,6 +27,23 @@ export type CandidateDashboardSummary = {
     href: string;
   }>;
 };
+
+function hasText(value?: string | null) {
+  return Boolean(value?.trim());
+}
+
+function hasMeaningfulCvContent(content: CvData) {
+  return Boolean(
+    hasText(content.personalInfo.fullName) ||
+      hasText(content.personalInfo.title) ||
+      hasText(content.personalInfo.email) ||
+      hasText(content.personalInfo.phone) ||
+      hasText(content.personalInfo.summary) ||
+      content.skills.some((skill) => hasText(skill.name)) ||
+      content.experiences.some((experience) => hasText(experience.company) || hasText(experience.role) || hasText(experience.description)) ||
+      content.educations.some((education) => hasText(education.institution) || hasText(education.degree) || hasText(education.field))
+  );
+}
 
 export class CandidateDashboardService {
   async getSummary(userId: string): Promise<CandidateDashboardSummary> {
@@ -64,7 +82,11 @@ export class CandidateDashboardService {
 
     const readyVersion = resumes
       .map((resume) => resume.versions[0])
-      .find((version) => version && CvSchema.safeParse(version.content).success);
+      .find((version) => {
+        if (!version) return false;
+        const parsed = CvSchema.safeParse(version.content);
+        return parsed.success && hasMeaningfulCvContent(parsed.data);
+      });
     const latestResumeVersionId = readyVersion?.id;
     const cvReady = Boolean(readyVersion);
     const profileComplete = Boolean(
@@ -106,6 +128,7 @@ export class CandidateDashboardService {
       userName: user?.name || user?.email || "Ứng viên",
       cvReady,
       profileComplete,
+      profileLocation: user?.profile?.location?.trim() || undefined,
       resumeCount: resumes.length,
       latestResumeVersionId,
       nextAction,

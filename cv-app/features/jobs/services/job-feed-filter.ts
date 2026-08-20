@@ -2,6 +2,7 @@ export type JobFeedMode = "all" | "remote" | "hybrid" | "onsite";
 
 export type JobFeedFilters = {
   q: string;
+  location: string;
   mode: JobFeedMode;
   page: number;
   limit: number;
@@ -9,6 +10,7 @@ export type JobFeedFilters = {
 
 type JobFeedSearchParams = {
   q?: string | string[];
+  location?: string | string[];
   mode?: string | string[];
   page?: string | string[];
   limit?: string | string[];
@@ -29,6 +31,7 @@ function firstValue(value: string | string[] | undefined) {
 
 export function parseJobFeedFilters(searchParams: JobFeedSearchParams): JobFeedFilters {
   const q = (firstValue(searchParams.q) ?? "").trim().toLocaleLowerCase("vi-VN");
+  const location = (firstValue(searchParams.location) ?? "").trim().toLocaleLowerCase("vi-VN");
   const requestedMode = (firstValue(searchParams.mode) ?? "all").trim().toLowerCase();
   const mode = allowedModes.has(requestedMode as JobFeedMode) ? (requestedMode as JobFeedMode) : "all";
 
@@ -38,7 +41,7 @@ export function parseJobFeedFilters(searchParams: JobFeedSearchParams): JobFeedF
   const parsedLimit = parseInt(firstValue(searchParams.limit) ?? "10", 10);
   const limit = isNaN(parsedLimit) || parsedLimit < 1 ? 10 : (parsedLimit > 50 ? 50 : parsedLimit);
 
-  return { q, mode, page, limit };
+  return { q, location, mode, page, limit };
 }
 
 export function filterJobFeed<T extends FilterableJob>(jobs: T[], filters: JobFeedFilters): T[] {
@@ -48,7 +51,8 @@ export function filterJobFeed<T extends FilterableJob>(jobs: T[], filters: JobFe
     const normalizedType = (job.type ?? "").toLowerCase();
     const normalizedLocation = (job.location ?? "").toLowerCase();
     const matchesMode = filters.mode === "all" || normalizedType.includes(filters.mode) || normalizedLocation.includes(filters.mode);
+    const matchesLocation = !filters.location || normalizedLocation.includes(filters.location);
 
-    return matchesQuery && matchesMode;
+    return matchesQuery && matchesMode && matchesLocation;
   });
 }
