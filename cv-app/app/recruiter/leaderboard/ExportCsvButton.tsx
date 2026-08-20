@@ -5,41 +5,49 @@ import { Download } from "lucide-react";
 type ExportData = {
   name: string;
   email: string;
-  cvMatch: number;
-  techScore: number;
-  totalScore: number;
+  cvMatch: number | null;
   status: string;
+  updatedAt: string;
 }[];
+
+const statusLabels: Record<string, string> = {
+  APPLIED: "Mới ứng tuyển",
+  INTERVIEWING: "Đang phỏng vấn",
+  OFFER: "Đề nghị nhận việc",
+  REJECTED: "Từ chối",
+  WITHDRAWN: "Đã rút hồ sơ",
+};
 
 export function ExportCsvButton({ data, jobTitle }: { data: ExportData; jobTitle?: string }) {
   const handleExport = () => {
     if (data.length === 0) {
-      alert("Không có dữ liệu để xuất!");
+      alert("Không có dữ liệu để xuất.");
       return;
     }
 
-    const headers = ["Candidate Name", "Email", "CV Match Score", "Tech Assessment Score", "Total Score", "Status"];
-    
+    const headers = ["Tên ứng viên", "Email", "Độ khớp CV/JD", "Trạng thái", "Cập nhật"];
+
     const csvContent = [
       headers.join(","),
-      ...data.map(row => [
-        `"${row.name.replace(/"/g, '""')}"`,
-        `"${row.email}"`,
-        row.cvMatch,
-        row.techScore,
-        row.totalScore,
-        `"${row.status}"`
-      ].join(","))
+      ...data.map((row) =>
+        [
+          `"${row.name.replace(/"/g, '""')}"`,
+          `"${row.email.replace(/"/g, '""')}"`,
+          row.cvMatch === null ? `"Chưa có điểm"` : row.cvMatch,
+          `"${statusLabels[row.status] ?? row.status}"`,
+          `"${row.updatedAt}"`,
+        ].join(",")
+      ),
     ].join("\n");
 
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" }); // BOM for Excel UTF-8
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    
-    const safeTitle = (jobTitle || "leaderboard").replace(/[^a-z0-9]/gi, "_").toLowerCase();
-    link.download = `candidates_${safeTitle}_${new Date().toISOString().split('T')[0]}.csv`;
-    
+
+    const safeTitle = (jobTitle || "ung_vien").replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    link.download = `ung_vien_${safeTitle}_${new Date().toISOString().split("T")[0]}.csv`;
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -47,12 +55,12 @@ export function ExportCsvButton({ data, jobTitle }: { data: ExportData; jobTitle
   };
 
   return (
-    <button 
+    <button
       onClick={handleExport}
-      className="flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-[#4648D4] shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#4648D4] focus:ring-offset-2"
+      className="inline-flex items-center justify-center gap-2 rounded-lg bg-surface-low px-4 py-2.5 text-sm font-semibold text-primary shadow-sm outline-none hover:bg-outline-variant focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
       <Download className="h-4 w-4" />
-      Export CSV
+      Xuất CSV
     </button>
   );
 }

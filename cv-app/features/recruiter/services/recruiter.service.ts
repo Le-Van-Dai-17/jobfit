@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   ApplicationEventType, ApplicationStatus, CompanyMembershipRole, EmploymentType,
   ExperienceLevel, JobDepartment, JobStatus, WorkMode,
 } from "@prisma/client";
@@ -62,22 +62,22 @@ const money = z.union([z.string(), z.number()]).optional().nullable().transform(
   if (value === undefined || value === null || value === "") return null;
   const parsed = typeof value === "number" ? value : Number(value.replace(/[^0-9]/g, ""));
   if (!Number.isSafeInteger(parsed) || parsed < 0 || parsed > 2_000_000_000) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Mức lương không hợp lệ." });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Má»©c lÆ°Æ¡ng khÃ´ng há»£p lá»‡." });
     return z.NEVER;
   }
   return parsed;
 });
 const JobInputSchema = z.object({
-  title: z.string().trim().min(3, "Tên vị trí phải có ít nhất 3 ký tự.").max(160),
+  title: z.string().trim().min(3, "TÃªn vá»‹ trÃ­ pháº£i cÃ³ Ã­t nháº¥t 3 kÃ½ tá»±.").max(160),
   location: nullableText(160), type: nullableText(80), salaryRange: nullableText(120),
-  description: z.string().trim().min(20, "Mô tả công việc phải có ít nhất 20 ký tự.").max(12000),
-  requirements: z.string().trim().min(10, "Yêu cầu ứng viên phải có ít nhất 10 ký tự.").max(12000),
+  description: z.string().trim().min(20, "MÃ´ táº£ cÃ´ng viá»‡c pháº£i cÃ³ Ã­t nháº¥t 20 kÃ½ tá»±.").max(12000),
+  requirements: z.string().trim().min(10, "YÃªu cáº§u á»©ng viÃªn pháº£i cÃ³ Ã­t nháº¥t 10 kÃ½ tá»±.").max(12000),
   benefits: nullableText(12000),
-  url: z.string().trim().url("Liên kết JD không hợp lệ.").optional().nullable().or(z.literal("")).transform(emptyToNull),
+  url: z.string().trim().url("LiÃªn káº¿t JD khÃ´ng há»£p lá»‡.").optional().nullable().or(z.literal("")).transform(emptyToNull),
   deadline: z.union([z.string(), z.date()]).optional().nullable().transform((value, ctx) => {
     if (!value) return null;
     const date = value instanceof Date ? value : new Date(`${value}T00:00:00.000Z`);
-    if (Number.isNaN(date.getTime())) { ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Hạn ứng tuyển không hợp lệ." }); return z.NEVER; }
+    if (Number.isNaN(date.getTime())) { ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Háº¡n á»©ng tuyá»ƒn khÃ´ng há»£p lá»‡." }); return z.NEVER; }
     return date;
   }),
   department: z.enum(["ENGINEERING","PRODUCT","DESIGN","DATA","MARKETING","SALES","OPERATIONS","HUMAN_RESOURCES","FINANCE","OTHER"]).optional().nullable().or(z.literal("")).transform(emptyToNull),
@@ -93,7 +93,7 @@ const JobInputSchema = z.object({
   }),
 }).superRefine((data, ctx) => {
   if (data.salaryMin !== null && data.salaryMax !== null && data.salaryMin > data.salaryMax) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["salaryMax"], message: "Lương tối đa phải lớn hơn hoặc bằng lương tối thiểu." });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["salaryMax"], message: "LÆ°Æ¡ng tá»‘i Ä‘a pháº£i lá»›n hÆ¡n hoáº·c báº±ng lÆ°Æ¡ng tá»‘i thiá»ƒu." });
   }
 });
 
@@ -114,12 +114,12 @@ const allowedTransitions: Record<ApplicationStatus, ApplicationStatus[]> = {
 export function getAllowedApplicationTransitions(status: ApplicationStatus) { return allowedTransitions[status] ?? []; }
 function emptyToNull(value: string | null | undefined) { return value && value.length > 0 ? value : null; }
 function legacyType(employmentType: EmploymentType | null, workMode: WorkMode | null, fallback: string | null) {
-  return [employmentType, workMode].filter(Boolean).join(" · ") || fallback;
+  return [employmentType, workMode].filter(Boolean).join(" Â· ") || fallback;
 }
 function legacySalary(min: number | null, max: number | null, currency: string, negotiable: boolean, fallback: string | null) {
-  if (negotiable) return "Thỏa thuận";
+  if (negotiable) return "Thá»a thuáº­n";
   if (min === null && max === null) return fallback;
-  return `${min?.toLocaleString("vi-VN") ?? "?"} – ${max?.toLocaleString("vi-VN") ?? "?"} ${currency}`;
+  return `${min?.toLocaleString("vi-VN") ?? "?"} â€“ ${max?.toLocaleString("vi-VN") ?? "?"} ${currency}`;
 }
 
 export class RecruiterService {
@@ -143,7 +143,8 @@ export class RecruiterService {
   }
   async getDashboard(userId: string) {
     const membership = await this.requireMembership(userId);
-    const [counts, recentApplications] = await Promise.all([this.repository.getDashboardCounts(membership.companyId), this.repository.listRecentApplications(membership.companyId, 5)]);
+    const counts = await this.repository.getDashboardCounts(membership.companyId);
+    const recentApplications = await this.repository.listRecentApplications(membership.companyId, 5);
     const hasCompanyProfile = Boolean(
       membership.company.name &&
         membership.company.website &&
@@ -160,7 +161,6 @@ export class RecruiterService {
         { key: "firstJob", label: "Tạo JD đầu tiên", completed: counts.jobs > 0 },
         { key: "publishedJob", label: "Đăng vị trí đang mở", completed: counts.activeJobs > 0 },
         { key: "candidatePipeline", label: "Có ứng viên trong pipeline", completed: counts.applications > 0 },
-        { key: "assessmentEvidence", label: "Có báo cáo đánh giá bằng chứng", completed: counts.assessmentReports > 0 },
       ],
       recentApplications,
     };
@@ -188,6 +188,7 @@ export class RecruiterService {
   }
   publishJob(userId: string, jobId: string) { return this.transitionJob(userId, jobId, "PUBLISHED", ["DRAFT"]); }
   archiveJob(userId: string, jobId: string) { return this.transitionJob(userId, jobId, "ARCHIVED", ["DRAFT", "PUBLISHED"]); }
+  restoreJob(userId: string, jobId: string) { return this.transitionJob(userId, jobId, "DRAFT", ["ARCHIVED"]); }
   async updateJob(userId: string, jobId: string, input: RecruiterJobInput) {
     const m = await this.requireMembership(userId); const current = await this.repository.findJobForCompany(m.companyId, jobId);
     if (!current) throw new RecruiterAccessError("Resource is not available.");

@@ -20,12 +20,6 @@ export type CandidateDashboardSummary = {
     rejected: number;
     withdrawn: number;
   };
-  pendingAssessments: Array<{
-    id: string;
-    roleTitle: string;
-    company: string;
-    href: string;
-  }>;
 };
 
 function hasText(value?: string | null) {
@@ -47,7 +41,7 @@ function hasMeaningfulCvContent(content: CvData) {
 
 export class CandidateDashboardService {
   async getSummary(userId: string): Promise<CandidateDashboardSummary> {
-    const [user, resumes, applications, pendingAssessments] = await Promise.all([
+    const [user, resumes, applications] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -71,12 +65,6 @@ export class CandidateDashboardService {
       prisma.application.findMany({
         where: { userId, deletedAt: null },
         select: { status: true },
-      }),
-      prisma.assessmentSession.findMany({
-        where: { userId, status: "TASKS_GENERATED" },
-        include: { job: true },
-        orderBy: { updatedAt: "desc" },
-        take: 5,
       }),
     ]);
 
@@ -118,8 +106,6 @@ export class CandidateDashboardService {
       : { label: "Hoàn thiện hồ sơ", href: "/profile" };
     if (profileComplete && cvReady && applications.length === 0) {
       nextAction = { label: "Tìm việc phù hợp", href: "/jobs" };
-    } else if (profileComplete && pendingAssessments.length > 0) {
-      nextAction = { label: "Hoàn thành đánh giá", href: `/assessments/${pendingAssessments[0].id}` };
     } else if (profileComplete && cvReady) {
       nextAction = { label: "Theo dõi ứng tuyển", href: "/applications" };
     }
@@ -133,12 +119,6 @@ export class CandidateDashboardService {
       latestResumeVersionId,
       nextAction,
       applicationCounts: counts,
-      pendingAssessments: pendingAssessments.map((session) => ({
-        id: session.id,
-        roleTitle: session.roleTitle,
-        company: session.job.company,
-        href: `/assessments/${session.id}`,
-      })),
     };
   }
 }

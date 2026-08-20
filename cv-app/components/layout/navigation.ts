@@ -29,7 +29,6 @@ const recruiterNavItems: AppNavItem[] = [
   { name: "Vị trí tuyển dụng", href: "/recruiter/jobs", icon: Briefcase },
   { name: "Ứng viên", href: "/recruiter/candidates", icon: Users },
   { name: "Bảng xếp hạng", href: "/recruiter/leaderboard", icon: Trophy },
-  { name: "Đánh giá", href: "/recruiter/assessments", icon: ClipboardCheck },
   { name: "Công ty", href: "/recruiter/company", icon: Building2 },
 ];
 

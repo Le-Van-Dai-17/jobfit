@@ -1,106 +1,30 @@
 import Link from "next/link";
-import { ClipboardCheck, FileText } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { AssessmentStartForm } from "@/features/assessments/components/AssessmentStartForm";
-import { assessmentService } from "@/features/assessments/services/assessment.service";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 
-export default async function AssessmentsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ resumeVersionId?: string; jobId?: string; applicationId?: string }>;
-}) {
+export default async function AssessmentsPage() {
   const session = await auth();
   const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "CANDIDATE" });
   if (roleRedirect) redirect(roleRedirect);
-  const user = session!.user;
-
-  const { resumeVersions, jobs, sessions } = await assessmentService.getStartOptions(user.id);
-  const params = await searchParams;
-  const selectedResumeVersionId = resumeVersions.some((version) => version.id === params?.resumeVersionId)
-    ? params?.resumeVersionId
-    : undefined;
-  const selectedJobId = jobs.some((job) => job.id === params?.jobId) ? params?.jobId : undefined;
-  const hasMissingData = resumeVersions.length === 0 || jobs.length === 0;
-  const hasPreselectedContext = Boolean(selectedResumeVersionId && selectedJobId);
 
   return (
-    <div className="space-y-6">
-      <section>
-        <p className="text-sm font-semibold uppercase text-primary">Đánh giá kỹ thuật</p>
-        <h1 className="mt-2 text-2xl font-bold text-foreground md:text-3xl">
-          Danh sách Phiên Đánh giá
-        </h1>
+    <div className="space-y-5">
+      <section className="rounded-2xl bg-surface-white p-5 shadow-card md:p-7">
+        <p className="text-sm font-semibold text-primary">Đánh giá kỹ thuật</p>
+        <h1 className="mt-2 text-2xl font-bold text-foreground md:text-3xl">Luồng tự làm bài test đã được tắt</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-text-muted">
-          Xem lại kết quả đánh giá năng lực hoặc tiếp tục các bài thi đang làm. Phiên đánh giá được tạo tự động khi bạn nộp CV ứng tuyển.
+          Ứng viên không cần tự tạo hoặc tự làm bài test trong quá trình nộp CV. Sau khi bạn ứng tuyển, nhà tuyển dụng sẽ xem hồ sơ và chủ động mời phỏng vấn hoặc làm bài đánh giá trực tiếp nếu phù hợp.
         </p>
-      </section>
-      <section className="space-y-3">
-        <div>
-          <h2 className="text-lg font-bold text-foreground">
-            {hasPreselectedContext ? "Tạo bài đánh giá cho đơn này" : "Tạo bài đánh giá mới"}
-          </h2>
-          <p className="mt-1 text-sm leading-6 text-text-muted">
-            Chọn đúng snapshot CV và JD để hệ thống sinh bài tập kỹ thuật có rubric, bằng chứng và điểm tư vấn.
-          </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href="/applications" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover">
+            Xem đơn ứng tuyển
+          </Link>
+          <Link href="/jobs" className="rounded-lg border border-outline-variant px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-low">
+            Tìm việc làm
+          </Link>
         </div>
-        {hasMissingData ? (
-          <div className="rounded-lg border border-border-light bg-surface-white p-4 text-sm text-text-muted">
-            {resumeVersions.length === 0
-              ? "Bạn cần lưu ít nhất một phiên bản CV trước khi tạo bài đánh giá."
-              : "Hiện chưa có JD công khai để tạo bài đánh giá."}
-            {resumeVersions.length === 0 ? (
-              <Link href="/my-cv" className="mt-3 block font-semibold text-primary">
-                Mở Hồ sơ & CV
-              </Link>
-            ) : null}
-          </div>
-        ) : (
-          <AssessmentStartForm
-            resumeVersions={resumeVersions}
-            jobs={jobs}
-            selectedResumeVersionId={selectedResumeVersionId}
-            selectedJobId={selectedJobId}
-            applicationId={params?.applicationId}
-          />
-        )}
-      </section>
-
-      <section className="rounded-lg border border-border-light bg-surface-white p-4">
-        <div className="flex items-center gap-2">
-          <ClipboardCheck className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-bold text-foreground">Phiên gần đây</h2>
-        </div>
-        {sessions.length === 0 ? (
-          <div className="mt-4 rounded-md bg-surface-low p-4 text-sm text-text-muted">
-            Chưa có phiên đánh giá nào. Sau khi tạo bài tập, phiên sẽ xuất hiện tại đây.
-          </div>
-        ) : (
-          <div className="mt-4 divide-y divide-border-light">
-            {sessions.map((item) => (
-              <Link
-                key={item.id}
-                href={`/assessments/${item.id}`}
-                className="flex flex-col gap-2 py-3 outline-none transition-colors hover:bg-surface-low focus-visible:ring-2 focus-visible:ring-primary md:flex-row md:items-center md:justify-between"
-              >
-                <div className="flex items-start gap-3">
-                  <FileText className="mt-1 h-4 w-4 text-primary" />
-                  <div>
-                    <p className="font-semibold text-foreground">{item.roleTitle}</p>
-                    <p className="text-sm text-text-muted">
-                      {item.job.company} - {item.status === "EVALUATED" ? "Đã có báo cáo" : "Đang chờ nộp bài"}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-sm font-semibold text-primary">
-                  {item.result ? `${item.result.advisoryScore}/100 tư vấn` : "Mở phiên"}
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
       </section>
     </div>
   );

@@ -25,28 +25,43 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
   }
 
   async getDashboardCounts(companyId: string) {
-    const [jobs, activeJobs, archivedJobs, applications, assessmentReports, awaitingReview, awaitingAssessment, interviewing, offers, rejected] = await Promise.all([
-      prisma.job.count({ where: { companyId } }),
-      prisma.job.count({ where: { companyId, status: "PUBLISHED", isArchived: false } }),
-      prisma.job.count({ where: { companyId, status: "ARCHIVED", isArchived: true } }),
-      prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, job: { companyId } } }),
-      prisma.assessmentResult.count({
-        where: { session: { application: { deletedAt: null, user: { deletedAt: null }, job: { companyId } } } },
-      }),
-      prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, status: "APPLIED", job: { companyId } } }),
-      prisma.application.count({
-        where: {
-          deletedAt: null,
-          user: { deletedAt: null },
-          status: { in: ["DRAFT", "APPLIED", "INTERVIEWING"] },
-          job: { companyId },
-          assessmentSessions: { some: { status: { in: ["TASKS_GENERATED", "SUBMITTED"] } } },
-        },
-      }),
-      prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, status: "INTERVIEWING", job: { companyId } } }),
-      prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, status: "OFFER", job: { companyId } } }),
-      prisma.application.count({ where: { deletedAt: null, user: { deletedAt: null }, status: "REJECTED", job: { companyId } } }),
-    ]);
+    const jobStatusCounts = await prisma.job.groupBy({
+      by: ["status", "isArchived"],
+      where: { companyId },
+      _count: { _all: true },
+    });
+    const applicationStatusCounts = await prisma.application.groupBy({
+      by: ["status"],
+      where: { deletedAt: null, user: { deletedAt: null }, job: { companyId } },
+      _count: { _all: true },
+    });
+    const assessmentReports = await prisma.assessmentResult.count({
+      where: { session: { application: { deletedAt: null, user: { deletedAt: null }, job: { companyId } } } },
+    });
+    const awaitingAssessment = await prisma.application.count({
+      where: {
+        deletedAt: null,
+        user: { deletedAt: null },
+        status: { in: ["DRAFT", "APPLIED", "INTERVIEWING"] },
+        job: { companyId },
+        assessmentSessions: { some: { status: { in: ["TASKS_GENERATED", "SUBMITTED"] } } },
+      },
+    });
+
+    const jobs = jobStatusCounts.reduce((total, row) => total + row._count._all, 0);
+    const activeJobs = jobStatusCounts
+      .filter((row) => row.status === "PUBLISHED" && !row.isArchived)
+      .reduce((total, row) => total + row._count._all, 0);
+    const archivedJobs = jobStatusCounts
+      .filter((row) => row.status === "ARCHIVED" && row.isArchived)
+      .reduce((total, row) => total + row._count._all, 0);
+    const applicationCountByStatus = new Map(applicationStatusCounts.map((row) => [row.status, row._count._all]));
+    const applications = applicationStatusCounts.reduce((total, row) => total + row._count._all, 0);
+    const awaitingReview = applicationCountByStatus.get("APPLIED") ?? 0;
+    const interviewing = applicationCountByStatus.get("INTERVIEWING") ?? 0;
+    const offers = applicationCountByStatus.get("OFFER") ?? 0;
+    const rejected = applicationCountByStatus.get("REJECTED") ?? 0;
+
     return {
       jobs, activeJobs, archivedJobs, applications, assessmentReports, awaitingReview, awaitingAssessment,
       pipeline: { APPLIED: awaitingReview, INTERVIEWING: interviewing, OFFER: offers, REJECTED: rejected },
@@ -112,7 +127,7 @@ export class PrismaRecruiterRepository implements RecruiterRepositoryContract {
   async setJobStatus(companyId: string, jobId: string, expectedStatus: JobStatus, status: JobStatus) {
     const updated = await prisma.job.updateMany({
       where: { id: jobId, companyId, status: expectedStatus },
-      data: { status, isArchived: status !== "PUBLISHED" },
+      data: { status, isArchived: status === "ARCHIVED" },
     });
     if (updated.count !== 1) return null;
     return this.findJobForCompany(companyId, jobId);

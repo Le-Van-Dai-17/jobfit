@@ -1,6 +1,5 @@
 import { Bookmark, BriefcaseBusiness, Building2, Clock3, MapPin, Search } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 
@@ -82,7 +81,6 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
             {jobs.map((job) => {
               const skills = getSkillTags(job.requirements);
               const application = job.applications[0];
-              const assessment = application?.assessmentSessions[0] ?? job.assessmentSessions[0];
               const saved = job.savedBy.length > 0;
               return (
                 <article key={job.id} className="group rounded-xl bg-surface-white p-4 shadow-card transition-shadow hover:shadow-card-hover md:p-5">
@@ -105,7 +103,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                         <Link href={`/jobs/${job.id}`} className="flex-1 rounded-lg py-2.5 text-center text-sm font-semibold text-primary hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Chi tiết</Link>
                         <Link href={`/jobs/${job.id}#apply`} className="flex-1 rounded-lg bg-primary py-2.5 text-center text-sm font-semibold text-white hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">Ứng tuyển</Link>
                       </div>
-                      {application || assessment ? <p className="mt-3 text-xs text-text-muted">{application ? `Trạng thái đơn: ${application.status}` : ""}{application && assessment ? " · " : ""}{assessment ? `Đánh giá: ${assessment.status}` : ""}</p> : null}
+                      {application ? <p className="mt-3 text-xs text-text-muted">Trạng thái đơn: {application.status}</p> : null}
                     </div>
                   </div>
                 </article>

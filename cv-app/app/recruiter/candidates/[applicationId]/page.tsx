@@ -44,6 +44,15 @@ type ApplicationDetail = {
   }>;
 };
 
+const statusLabels: Record<ApplicationStatus, string> = {
+  DRAFT: "Bản nháp",
+  APPLIED: "Mới ứng tuyển",
+  INTERVIEWING: "Đang phỏng vấn",
+  OFFER: "Đề nghị nhận việc",
+  REJECTED: "Từ chối",
+  WITHDRAWN: "Đã rút",
+};
+
 export default async function RecruiterApplicationDetailPage({ params }: { params: Promise<{ applicationId: string }> }) {
   const session = await auth();
   const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "RECRUITER" });
@@ -99,7 +108,7 @@ export default async function RecruiterApplicationDetailPage({ params }: { param
                   <div className="flex flex-wrap items-center gap-3">
                     <h1 className="text-2xl font-bold text-foreground">{candidateName}</h1>
                     <span className="rounded bg-[#E8F0FE] px-2 py-0.5 text-xs font-bold text-[#0047AB]">
-                      {application.status === "APPLIED" ? "MỚI ỨNG TUYỂN" : application.status}
+                      {statusLabels[application.status]}
                     </span>
                   </div>
                   

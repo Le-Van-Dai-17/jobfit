@@ -3,17 +3,15 @@ import type { ApplicationStatus } from "@prisma/client";
 
 const steps = [
   { id: "SUBMIT_CV", label: "Nộp hồ sơ" },
-  { id: "ASSESSMENT", label: "Làm bài test" },
-  { id: "COMPLETED", label: "Hoàn tất" },
+  { id: "REVIEW", label: "Nhà tuyển dụng xem xét" },
+  { id: "NEXT_STEP", label: "Vòng tiếp theo" },
 ];
 
 export function ApplicationStepper({
   hasResume,
-  hasTestResult,
   status
 }: {
   hasResume: boolean;
-  hasTestResult: boolean;
   status: ApplicationStatus;
 }) {
   let activeIndex = 0;
@@ -21,7 +19,7 @@ export function ApplicationStepper({
   if (hasResume) {
     activeIndex = 1;
   }
-  if (hasTestResult) {
+  if (status === "INTERVIEWING" || status === "OFFER") {
     activeIndex = 2;
   }
 

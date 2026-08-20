@@ -83,9 +83,9 @@ export default async function LandingPage() {
             <div className="mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-[#0047AB]">
               <BrainCircuit className="h-7 w-7" />
             </div>
-            <h3 className="mt-6 text-xl font-bold text-slate-900">Bài Test Kỹ Thuật AI</h3>
+            <h3 className="mt-6 text-xl font-bold text-slate-900">Nhà Tuyển Dụng Xem Xét</h3>
             <p className="mt-3 leading-relaxed text-slate-600">
-              Sau khi bấm &quot;Ứng tuyển&quot;, bạn sẽ lập tức nhận được bài test mã hóa/tư duy. Đây là cơ hội để chứng minh kỹ năng thực chiến thay vì chỉ nói suông.
+              Sau khi bấm &quot;Ứng tuyển&quot;, CV của bạn được gửi tới recruiter để xem xét mức độ phù hợp với JD, kinh nghiệm và kỹ năng.
             </p>
           </div>
 
@@ -97,9 +97,9 @@ export default async function LandingPage() {
             <div className="mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-[#0047AB]">
               <Trophy className="h-7 w-7" />
             </div>
-            <h3 className="mt-6 text-xl font-bold text-slate-900">Lên Đỉnh Bảng Xếp Hạng</h3>
+            <h3 className="mt-6 text-xl font-bold text-slate-900">Được Mời Vào Vòng Sau</h3>
             <p className="mt-3 leading-relaxed text-slate-600">
-              Kết quả bài test sẽ được chấm bằng hệ thống Rubric và nộp thẳng cho Nhà tuyển dụng. Điểm càng cao, hồ sơ của bạn càng nằm chót vót trên Leaderboard!
+              Nếu phù hợp, công ty sẽ chủ động mời bạn phỏng vấn hoặc làm bài đánh giá trực tiếp để kết quả khách quan hơn.
             </p>
           </div>
 
@@ -125,7 +125,7 @@ export default async function LandingPage() {
                       <h4 className="font-bold text-white">Báo Cáo Năng Lực Ứng Viên</h4>
                       <p className="text-sm text-slate-400">Match Score: 85% - Rất phù hợp</p>
                     </div>
-                    <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-bold text-green-400">Đã qua bài test</span>
+                    <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-bold text-green-400">Sẵn sàng phỏng vấn</span>
                   </div>
                   <div className="mt-4 space-y-3">
                     <div className="h-4 w-3/4 rounded bg-slate-700" />

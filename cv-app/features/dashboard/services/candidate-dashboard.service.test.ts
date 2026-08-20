@@ -8,7 +8,6 @@ vi.mock("@/lib/db/prisma", () => ({
     user: { findUnique: vi.fn() },
     resume: { findMany: vi.fn() },
     application: { findMany: vi.fn() },
-    assessmentSession: { findMany: vi.fn() },
   },
 }));
 
@@ -54,19 +53,14 @@ describe("CandidateDashboardService", () => {
       { status: "INTERVIEWING" },
       { status: "INTERVIEWING" },
     ]);
-    (prisma.assessmentSession.findMany as Mock).mockResolvedValue([
-      { id: "session-1", roleTitle: "Frontend Engineer", job: { company: "Kada" } },
-    ]);
-
     await expect(new CandidateDashboardService().getSummary("user-1")).resolves.toMatchObject({
       userName: "An Nguyen",
       cvReady: true,
       profileComplete: true,
       resumeCount: 1,
       latestResumeVersionId: "version-1",
-      nextAction: { label: "Hoàn thành đánh giá", href: "/assessments/session-1" },
+      nextAction: { label: "Theo dõi ứng tuyển", href: "/applications" },
       applicationCounts: { total: 3, applied: 1, interviewing: 2 },
-      pendingAssessments: [{ id: "session-1", company: "Kada" }],
     });
   });
 
@@ -81,8 +75,6 @@ describe("CandidateDashboardService", () => {
       { id: "resume-2", versions: [{ id: "version-invalid", content: "not-json-object" }] },
     ]);
     (prisma.application.findMany as Mock).mockResolvedValue([]);
-    (prisma.assessmentSession.findMany as Mock).mockResolvedValue([]);
-
     await expect(new CandidateDashboardService().getSummary("user-1")).resolves.toMatchObject({
       cvReady: false,
       profileComplete: false,

@@ -5,8 +5,8 @@ import { PrismaRecruiterRepository } from "./recruiter.repository";
 
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
-    job: { count: vi.fn() },
-    application: { count: vi.fn(), findMany: vi.fn() },
+    job: { count: vi.fn(), groupBy: vi.fn() },
+    application: { count: vi.fn(), findMany: vi.fn(), groupBy: vi.fn() },
     assessmentResult: { count: vi.fn() },
   },
 }));
@@ -15,7 +15,9 @@ describe("PrismaRecruiterRepository dashboard queries", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (prisma.job.count as Mock).mockResolvedValue(0);
+    (prisma.job.groupBy as Mock).mockResolvedValue([]);
     (prisma.application.count as Mock).mockResolvedValue(0);
+    (prisma.application.groupBy as Mock).mockResolvedValue([]);
     (prisma.assessmentResult.count as Mock).mockResolvedValue(0);
     (prisma.application.findMany as Mock).mockResolvedValue([]);
   });
@@ -37,13 +39,22 @@ describe("PrismaRecruiterRepository dashboard queries", () => {
   });
 
   it("counts each persisted pipeline stage within the active company", async () => {
-    await new PrismaRecruiterRepository().getDashboardCounts("company-a");
+    (prisma.application.groupBy as Mock).mockResolvedValue([
+      { status: "APPLIED", _count: { _all: 3 } },
+      { status: "INTERVIEWING", _count: { _all: 2 } },
+      { status: "OFFER", _count: { _all: 1 } },
+      { status: "REJECTED", _count: { _all: 4 } },
+    ]);
 
-    for (const status of ["APPLIED", "INTERVIEWING", "OFFER", "REJECTED"] as const) {
-      expect(prisma.application.count).toHaveBeenCalledWith({
-        where: { deletedAt: null, user: { deletedAt: null }, status, job: { companyId: "company-a" } },
-      });
-    }
+    await expect(new PrismaRecruiterRepository().getDashboardCounts("company-a")).resolves.toMatchObject({
+      applications: 10,
+      pipeline: { APPLIED: 3, INTERVIEWING: 2, OFFER: 1, REJECTED: 4 },
+    });
+    expect(prisma.application.groupBy).toHaveBeenCalledWith({
+      by: ["status"],
+      where: { deletedAt: null, user: { deletedAt: null }, job: { companyId: "company-a" } },
+      _count: { _all: true },
+    });
   });
 
   it("sorts recent applications by applied time then creation time", async () => {

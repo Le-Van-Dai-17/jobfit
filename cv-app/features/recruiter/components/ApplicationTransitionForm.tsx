@@ -10,6 +10,15 @@ import {
 
 const initialState: RecruiterActionState = {};
 
+const statusLabels: Record<ApplicationStatus, string> = {
+  DRAFT: "Bản nháp",
+  APPLIED: "Đã ứng tuyển",
+  INTERVIEWING: "Đang phỏng vấn",
+  OFFER: "Đề nghị nhận việc",
+  REJECTED: "Từ chối",
+  WITHDRAWN: "Đã rút",
+};
+
 export function ApplicationTransitionForm({
   applicationId,
   nextStatuses,
@@ -35,7 +44,7 @@ export function ApplicationTransitionForm({
         <select name="status" disabled={disabled} className="mt-1 block rounded-xl border border-border-light px-3 py-2">
           {nextStatuses.map((status) => (
             <option key={status} value={status}>
-              {status}
+              {statusLabels[status]}
             </option>
           ))}
         </select>

@@ -35,15 +35,15 @@ export class ApplicationRepository {
           jobId: input.jobId,
           resumeVersionId: input.resumeVersionId,
           notes: input.notes,
-          status: "DRAFT",
+          status: "APPLIED",
           appliedAt: new Date(),
           events: {
             create: {
               type: "STATUS_CHANGE",
               actorUserId: userId,
               fromStatus: "DRAFT",
-              toStatus: "DRAFT",
-              notes: "Ứng viên đã chọn CV. Cần hoàn thành bài kiểm tra để nộp đơn chính thức.",
+              toStatus: "APPLIED",
+              notes: "Ứng viên đã nộp CV. Nhà tuyển dụng sẽ xem xét và chủ động mời vào vòng đánh giá nếu phù hợp.",
             },
           },
         },

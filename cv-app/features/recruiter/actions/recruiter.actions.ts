@@ -95,6 +95,21 @@ export async function archiveRecruiterJobAction(
   return {};
 }
 
+export async function restoreRecruiterJobAction(
+  _state: RecruiterActionState,
+  formData: FormData
+): Promise<RecruiterActionState> {
+  const userId = await requireRecruiterId();
+  try {
+    await recruiterService.restoreJob(userId, value(formData, "jobId"));
+  } catch (error) {
+    return { error: mapError(error) };
+  }
+  revalidatePath("/recruiter/jobs");
+  revalidatePath(`/recruiter/jobs/${value(formData, "jobId")}`);
+  return {};
+}
+
 export async function updateRecruiterJobAction(
   _state: RecruiterActionState,
   formData: FormData

@@ -1,7 +1,6 @@
 "use client";
 
-import { ClipboardCheck, FileText, LayoutDashboard, Save } from "lucide-react";
-import Link from "next/link";
+import { FileText, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
@@ -63,12 +62,6 @@ export default function MyCvClient({ initialResumeId, initialTitle, initialData 
 
         <div className="flex flex-wrap items-center gap-3">
           {isDirty ? <span className="text-xs font-medium text-text-muted">Chưa lưu thay đổi</span> : null}
-          <Link href="/assessments">
-            <Button variant="outline" className="gap-2">
-              <ClipboardCheck className="h-4 w-4" />
-              Tạo đánh giá
-            </Button>
-          </Link>
           <Button onClick={handleSave} disabled={!isDirty || isSaving} isLoading={isSaving} className="gap-2">
             <Save className="h-4 w-4" />
             {isSaving ? "Đang lưu..." : "Lưu CV"}

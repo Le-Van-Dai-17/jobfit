@@ -9,8 +9,7 @@ import {
   Users
 } from "lucide-react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import Image from "next/image";
+import { notFound } from "next/navigation";
 
 import { auth } from "@/auth";
 import { ApplyToJobForm } from "@/features/applications/components/ApplyToJobForm";
@@ -202,10 +201,10 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600">
                     <CheckCircle2 className="h-8 w-8" />
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Đã tạo đơn ứng tuyển</h3>
-                  <p className="text-sm text-text-muted mb-6">Bạn đã bắt đầu quá trình ứng tuyển cho vị trí này.</p>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Đã ứng tuyển</h3>
+                  <p className="text-sm text-text-muted mb-6">CV của bạn đã được gửi tới nhà tuyển dụng cho vị trí này.</p>
                   <Link href={`/applications/${existingApplication.id}`} className="flex w-full items-center justify-center rounded-xl bg-[#0047AB] px-4 py-3 text-sm font-bold text-white hover:bg-blue-800 transition-colors">
-                    {existingApplication.status === "DRAFT" ? "Tiếp tục làm bài test" : "Xem đơn ứng tuyển"}
+                    Xem đơn ứng tuyển
                   </Link>
                 </div>
               ) : (

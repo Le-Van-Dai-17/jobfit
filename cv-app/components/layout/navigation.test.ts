@@ -18,7 +18,6 @@ describe("role-aware navigation", () => {
       ["Vị trí tuyển dụng", "/recruiter/jobs"],
       ["Ứng viên", "/recruiter/candidates"],
       ["Bảng xếp hạng", "/recruiter/leaderboard"],
-      ["Đánh giá", "/recruiter/assessments"],
       ["Công ty", "/recruiter/company"],
     ]);
   });

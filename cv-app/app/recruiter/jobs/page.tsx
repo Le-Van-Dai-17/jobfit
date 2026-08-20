@@ -2,8 +2,6 @@ import type { EmploymentType, WorkMode } from "@prisma/client";
 import {
   Briefcase,
   BriefcaseBusiness,
-  ChevronLeft,
-  ChevronRight,
   Code,
   MapPin,
   Megaphone,
@@ -17,6 +15,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
+import { publishRecruiterJobAction, restoreRecruiterJobAction } from "@/features/recruiter/actions/recruiter.actions";
 import { parseRecruiterJobFilters } from "@/features/recruiter/services/recruiter-query";
 import {
   RecruiterAccessError,
@@ -40,7 +39,7 @@ type JobRow = {
 const statusLabels: Record<string, string> = {
   DRAFT: "Bản nháp",
   PUBLISHED: "Đang mở",
-  ARCHIVED: "Đã đóng",
+  ARCHIVED: "Đang ẩn",
 };
 
 const workModeLabels: Record<string, string> = {
@@ -59,13 +58,46 @@ const employmentTypeLabels: Record<string, string> = {
 
 function getIconForJob(title: string) {
   const lower = title.toLowerCase();
-  if (lower.includes("frontend") || lower.includes("developer") || lower.includes("engineer"))
+  if (lower.includes("frontend") || lower.includes("developer") || lower.includes("engineer")) {
     return <Code className="h-5 w-5" />;
-  if (lower.includes("design") || lower.includes("ui") || lower.includes("ux"))
+  }
+  if (lower.includes("design") || lower.includes("ui") || lower.includes("ux")) {
     return <PenTool className="h-5 w-5" />;
-  if (lower.includes("marketing") || lower.includes("sales"))
+  }
+  if (lower.includes("marketing") || lower.includes("sales")) {
     return <Megaphone className="h-5 w-5" />;
+  }
   return <BriefcaseBusiness className="h-5 w-5" />;
+}
+
+function getJobTone(status: JobRow["status"]) {
+  if (status === "PUBLISHED") {
+    return {
+      borderClass: "border-l-green-500",
+      titleClass: "text-[#0047AB]",
+      dotClass: "bg-green-500",
+      badgeStyle: "bg-green-100 text-green-700",
+      iconBg: "bg-[#E8F0FE] text-[#0047AB]",
+    };
+  }
+
+  if (status === "DRAFT") {
+    return {
+      borderClass: "border-l-gray-300",
+      titleClass: "text-foreground",
+      dotClass: "bg-gray-400",
+      badgeStyle: "bg-gray-100 text-gray-700",
+      iconBg: "bg-surface-low text-text-muted",
+    };
+  }
+
+  return {
+    borderClass: "border-l-slate-400",
+    titleClass: "text-text-muted",
+    dotClass: "bg-slate-400",
+    badgeStyle: "bg-slate-100 text-slate-700",
+    iconBg: "bg-surface-low text-text-muted",
+  };
 }
 
 export default async function RecruiterJobsPage({
@@ -73,19 +105,28 @@ export default async function RecruiterJobsPage({
 }: {
   searchParams: Promise<{ q?: string | string[]; status?: string | string[] }>;
 }) {
+  async function publishFromList(formData: FormData) {
+    "use server";
+    await publishRecruiterJobAction({}, formData);
+  }
+
+  async function restoreFromList(formData: FormData) {
+    "use server";
+    await restoreRecruiterJobAction({}, formData);
+  }
+
   const session = await auth();
   const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "RECRUITER" });
   if (roleRedirect) redirect(roleRedirect);
+
   const user = session!.user;
   const filters = parseRecruiterJobFilters(await searchParams);
 
   let jobs: JobRow[];
   let dashboard: Awaited<ReturnType<typeof recruiterService.getDashboard>>;
   try {
-    const [jobsRes, dashboardRes] = await Promise.all([
-      recruiterService.listJobs(user.id, filters),
-      recruiterService.getDashboard(user.id),
-    ]);
+    const jobsRes = await recruiterService.listJobs(user.id, filters);
+    const dashboardRes = await recruiterService.getDashboard(user.id);
     jobs = jobsRes as JobRow[];
     dashboard = dashboardRes;
   } catch (error) {
@@ -101,12 +142,11 @@ export default async function RecruiterJobsPage({
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-2xl">
           <h1 className="text-3xl font-bold text-foreground">Vị trí tuyển dụng</h1>
           <p className="mt-2 text-base text-text-muted">
-            Quản lý, theo dõi và tối ưu hóa các chiến dịch tuyển dụng của bạn. Theo dõi hiệu suất và tương tác của ứng viên theo thời gian thực.
+            Quản lý, theo dõi và tối ưu hóa các chiến dịch tuyển dụng của bạn. Theo dõi ứng viên theo từng vị trí và trạng thái xử lý.
           </p>
         </div>
         <Link
@@ -114,17 +154,16 @@ export default async function RecruiterJobsPage({
           href="/recruiter/jobs/new"
         >
           <Plus className="h-5 w-5" />
-          TẠO TIN MỚI
+          Tạo tin mới
         </Link>
       </div>
 
-      {/* Filter Bar */}
       <div className="flex flex-col gap-4 rounded-xl bg-[#E8F0FE] p-4 sm:flex-row sm:items-center sm:justify-between">
         <form
           action="/recruiter/jobs"
           className="relative flex h-11 w-full max-w-md items-center rounded-lg bg-white shadow-sm"
         >
-          {filters.status && <input type="hidden" name="status" value={filters.status} />}
+          {filters.status ? <input type="hidden" name="status" value={filters.status} /> : null}
           <Search className="absolute left-3 h-5 w-5 text-text-muted" />
           <input
             className="h-full w-full rounded-lg border-none bg-transparent pl-10 pr-4 text-sm font-medium text-foreground placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[#0047AB]"
@@ -136,7 +175,7 @@ export default async function RecruiterJobsPage({
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           <Link
-            href={`/recruiter/jobs?status=${currentSearch ? `&q=${encodeURIComponent(currentSearch)}` : ""}`}
+            href={`/recruiter/jobs${currentSearch ? `?q=${encodeURIComponent(currentSearch)}` : ""}`}
             className={cn(
               "inline-flex h-11 items-center justify-center whitespace-nowrap rounded-full px-5 text-sm font-semibold transition-colors",
               !currentStatus ? "bg-[#0047AB] text-white shadow-sm" : "bg-white text-text-muted hover:bg-surface-low"
@@ -169,23 +208,22 @@ export default async function RecruiterJobsPage({
               currentStatus === "ARCHIVED" ? "bg-[#0047AB] text-white shadow-sm" : "bg-white text-text-muted hover:bg-surface-low"
             )}
           >
-            Đã đóng ({archivedJobs})
+            Đang ẩn ({archivedJobs})
           </Link>
-          <button className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-5 text-sm font-semibold text-text-muted transition-colors hover:bg-surface-low ml-2">
+          <button className="ml-2 inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-5 text-sm font-semibold text-text-muted transition-colors hover:bg-surface-low">
             <SlidersHorizontal className="h-4 w-4" />
             Lọc thêm
           </button>
         </div>
       </div>
 
-      {/* Data Table / List */}
       <div>
-        <div className="hidden grid-cols-[minmax(0,2fr)_1fr_1fr_1fr_100px] gap-4 px-6 pb-4 text-xs font-bold uppercase tracking-wider text-text-muted lg:grid">
-          <div>VỊ TRÍ & CHI TIẾT</div>
-          <div>TRẠNG THÁI</div>
-          <div>ỨNG VIÊN</div>
-          <div>CẬP NHẬT</div>
-          <div className="text-right">THAO TÁC</div>
+        <div className="hidden grid-cols-[minmax(0,1.7fr)_140px_150px_150px_260px] gap-4 px-6 pb-4 text-xs font-bold uppercase tracking-wider text-text-muted lg:grid">
+          <div>Vị trí & chi tiết</div>
+          <div>Trạng thái</div>
+          <div>Ứng viên</div>
+          <div>Cập nhật</div>
+          <div className="text-right">Thao tác</div>
         </div>
 
         {jobs.length === 0 ? (
@@ -204,44 +242,25 @@ export default async function RecruiterJobsPage({
                 month: "short",
                 year: "numeric",
               });
-
-              let borderClass = "border-l-border-light";
-              let titleClass = "text-text-muted";
-              let dotClass = "bg-gray-400";
-              let badgeStyle = "bg-surface-low text-text-muted";
-              let iconBg = "bg-surface-low text-text-muted";
-
-              if (job.status === "PUBLISHED") {
-                borderClass = "border-l-green-500";
-                titleClass = "text-[#0047AB]";
-                dotClass = "bg-green-500";
-                badgeStyle = "bg-green-100 text-green-700";
-                iconBg = "bg-[#E8F0FE] text-[#0047AB]";
-              } else if (job.status === "DRAFT") {
-                borderClass = "border-l-gray-300";
-                titleClass = "text-foreground";
-                dotClass = "bg-gray-400";
-                badgeStyle = "bg-gray-100 text-gray-700";
-                iconBg = "bg-surface-low text-text-muted";
-              }
+              const tone = getJobTone(job.status);
 
               return (
                 <div
                   key={job.id}
                   className={cn(
-                    "group relative flex flex-col gap-4 overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-border-light transition-shadow hover:shadow-md lg:grid lg:grid-cols-[minmax(0,2fr)_1fr_1fr_1fr_100px] lg:items-center",
+                    "group relative flex flex-col gap-4 overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-border-light transition-shadow hover:shadow-md lg:grid lg:grid-cols-[minmax(0,1.7fr)_140px_150px_150px_260px] lg:items-center",
                     "border-l-[6px]",
-                    borderClass
+                    tone.borderClass
                   )}
                 >
                   <div className="flex items-start gap-4">
-                    <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-xl", iconBg)}>
+                    <div className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-xl", tone.iconBg)}>
                       {getIconForJob(job.title)}
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex min-w-0 flex-col">
                       <Link
                         href={`/recruiter/jobs/${job.id}`}
-                        className={cn("text-lg font-bold hover:underline", titleClass)}
+                        className={cn("text-lg font-bold hover:underline", tone.titleClass)}
                       >
                         {job.title}
                       </Link>
@@ -249,31 +268,29 @@ export default async function RecruiterJobsPage({
                         <span className="flex items-center gap-1">
                           <MapPin className="h-4 w-4" /> {job.location || "Chưa cập nhật"}
                         </span>
-                        {job.employmentType && (
+                        {job.employmentType ? (
                           <>
                             <span className="h-1 w-1 rounded-full bg-border-strong" />
                             <span className="flex items-center gap-1">
                               <Briefcase className="h-4 w-4" /> {employmentTypeLabels[job.employmentType] || job.employmentType}
                             </span>
                           </>
-                        )}
-                        {job.workMode && (
+                        ) : null}
+                        {job.workMode ? (
                           <>
                             <span className="h-1 w-1 rounded-full bg-border-strong" />
                             <span className="flex items-center gap-1">
-                              {/* Using home icon proxy */}
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-house"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-                              {" "}{workModeLabels[job.workMode] || job.workMode}
+                              {workModeLabels[job.workMode] || job.workMode}
                             </span>
                           </>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <span className={cn("inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold", badgeStyle)}>
-                      <span className={cn("h-2 w-2 rounded-full", dotClass)} />
+                    <span className={cn("inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold", tone.badgeStyle)}>
+                      <span className={cn("h-2 w-2 rounded-full", tone.dotClass)} />
                       {statusLabels[job.status] || job.status}
                     </span>
                   </div>
@@ -281,18 +298,11 @@ export default async function RecruiterJobsPage({
                   <div>
                     {appCount > 0 ? (
                       <div className="flex items-center gap-3">
-                        <div className="flex -space-x-2">
-                          <div className="h-8 w-8 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">NA</div>
-                          <div className="h-8 w-8 rounded-full border-2 border-white bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-700">TB</div>
-                          <div className="h-8 w-8 rounded-full border-2 border-white bg-green-100 flex items-center justify-center text-xs font-bold text-green-700">M</div>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-lg font-bold text-foreground">{appCount}</span>
-                          <span className="text-xs font-medium text-text-muted">Mới: {Math.max(1, Math.floor(appCount / 3))}</span>
-                        </div>
+                        <span className="text-lg font-bold text-foreground">{appCount}</span>
+                        <span className="text-xs font-medium text-text-muted">ứng viên</span>
                       </div>
                     ) : (
-                      <span className="text-sm italic text-text-muted">Chưa đăng</span>
+                      <span className="text-sm italic text-text-muted">Chưa có ứng viên</span>
                     )}
                   </div>
 
@@ -301,12 +311,34 @@ export default async function RecruiterJobsPage({
                     <span className="text-xs font-medium text-text-muted">bởi Admin</span>
                   </div>
 
-                  <div className="flex items-center justify-end">
+                  <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
+                    {job.status === "DRAFT" ? (
+                      <form action={publishFromList}>
+                        <input type="hidden" name="jobId" value={job.id} />
+                        <button className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-hover">
+                          Đăng tuyển
+                        </button>
+                      </form>
+                    ) : null}
+                    {job.status === "ARCHIVED" ? (
+                      <form action={restoreFromList}>
+                        <input type="hidden" name="jobId" value={job.id} />
+                        <button className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-hover">
+                          Hiện lại tin
+                        </button>
+                      </form>
+                    ) : null}
                     <Link
-                      href={`/recruiter/jobs/${job.id}`}
-                      className="inline-flex h-9 items-center justify-center rounded-lg bg-surface-low px-4 text-sm font-semibold text-foreground hover:bg-outline-variant"
+                      href={`/recruiter/jobs/${job.id}/edit`}
+                      className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-lg bg-surface-low px-4 text-sm font-semibold text-foreground hover:bg-outline-variant"
                     >
                       Sửa
+                    </Link>
+                    <Link
+                      href={`/recruiter/candidates?jobId=${job.id}`}
+                      className="inline-flex h-9 min-w-[116px] items-center justify-center whitespace-nowrap rounded-lg border border-primary/20 bg-primary-fixed px-4 text-sm font-semibold text-primary hover:bg-primary-fixed/80"
+                    >
+                      Xem ứng viên
                     </Link>
                   </div>
                 </div>
@@ -316,14 +348,11 @@ export default async function RecruiterJobsPage({
         )}
       </div>
 
-      {/* Pagination */}
-      {jobs.length > 0 && (
+      {jobs.length > 0 ? (
         <div className="mt-8 flex items-center justify-between border-t border-border-light pt-6">
-          <p className="text-sm font-medium text-text-muted">
-            Hiển thị toàn bộ {totalJobs} vị trí
-          </p>
+          <p className="text-sm font-medium text-text-muted">Hiển thị toàn bộ {totalJobs} vị trí</p>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

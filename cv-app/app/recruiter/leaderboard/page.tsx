@@ -1,192 +1,125 @@
-import {
-  ArrowLeft,
-  Home,
-  TrendingUp,
-  User,
-  FileText,
-  Briefcase
-} from "lucide-react";
+import { ArrowLeft, FileSpreadsheet, UsersRound } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import { auth } from "@/auth";
+import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 import { recruiterService } from "@/features/recruiter/services/recruiter.service";
-import { JobSelector } from "./JobSelector";
 import { ExportCsvButton } from "./ExportCsvButton";
+import { JobSelector } from "./JobSelector";
 import { LeaderboardClient } from "./LeaderboardClient";
+
+type ApplicationForLeaderboard = {
+  id: string;
+  status: string;
+  updatedAt: Date;
+  user: { name: string | null; email: string | null };
+  resumeVersion?: { matchAnalyses?: Array<{ jobId: string; overallScore: number }> } | null;
+};
+
+function getMatchScore(application: ApplicationForLeaderboard, jobId: string) {
+  return application.resumeVersion?.matchAnalyses?.find((analysis) => analysis.jobId === jobId)?.overallScore ?? null;
+}
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(date);
+}
 
 export default async function LeaderboardPage({ searchParams }: { searchParams: Promise<{ jobId?: string }> }) {
   const session = await auth();
-  if (!session?.user) return null;
-  
-  const rawJobs = await recruiterService.listJobs(session.user.id, { status: "PUBLISHED" });
-  const jobs = rawJobs as { id: string, title: string }[];
+  const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "RECRUITER" });
+  if (roleRedirect) redirect(roleRedirect);
+
+  const user = session!.user;
+  const rawJobs = await recruiterService.listJobs(user.id, {});
+  const jobs = rawJobs as { id: string; title: string; status?: string; isArchived?: boolean }[];
   const params = await searchParams;
-  const selectedJobId = params.jobId || (jobs.length > 0 ? jobs[0].id : "");
+  const selectedJobId = params.jobId || jobs[0]?.id || "";
+  const selectedJobTitle = jobs.find((job) => job.id === selectedJobId)?.title;
 
-  // Fetch applications
-  const applicationsData = selectedJobId ? await recruiterService.listApplications(session.user.id, { jobId: selectedJobId }) : [];
-  
-  // Transform and calculate scores
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const candidates = applicationsData.map((app: any) => {
-    const cvMatch = app.resumeVersion?.matchAnalyses?.[0]?.overallScore || 0;
-    const techScore = app.assessmentSessions?.[0]?.result?.advisoryScore || 0;
-    const totalScore = (cvMatch > 0 && techScore > 0) ? (cvMatch + techScore) / 2 : Math.max(cvMatch, techScore);
-    
-    return {
-      id: app.id,
-      name: app.user.name || "Unknown",
-      email: app.user.email || "",
-      cvMatch: Math.round(cvMatch),
-      techScore: Math.round(techScore),
-      totalScore: parseFloat(totalScore.toFixed(1)),
-      status: app.status
-    };
-  }).sort((a: {totalScore: number}, b: {totalScore: number}) => b.totalScore - a.totalScore);
+  const applicationsData = selectedJobId
+    ? ((await recruiterService.listApplications(user.id, { jobId: selectedJobId, sort: "match" })) as ApplicationForLeaderboard[])
+    : [];
 
-  const totalCandidates = candidates.length;
-  const appsWithTechScore = candidates.filter((c: {techScore: number}) => c.techScore > 0);
-  const averageTechScore = appsWithTechScore.length > 0 
-    ? Math.round(appsWithTechScore.reduce((sum: number, c: {techScore: number}) => sum + c.techScore, 0) / appsWithTechScore.length) 
-    : 0;
-  const passCount = candidates.filter((c: {totalScore: number}) => c.totalScore >= 70).length;
-  const passRate = totalCandidates > 0 ? Math.round((passCount / totalCandidates) * 100) : 0;
-  
-  const selectedJobTitle = jobs.find(j => j.id === selectedJobId)?.title;
+  const newApplications = applicationsData.filter((application) => application.status === "APPLIED");
 
+  const candidates = newApplications
+    .map((application) => {
+      const cvMatch = getMatchScore(application, selectedJobId);
+
+      return {
+        id: application.id,
+        name: application.user.name || application.user.email || "Ứng viên chưa có tên",
+        email: application.user.email || "Chưa có email",
+        cvMatch,
+        status: application.status,
+        updatedAt: formatDate(application.updatedAt),
+      };
+    })
+    .sort((a, b) => (b.cvMatch ?? -1) - (a.cvMatch ?? -1));
+
+  const scoredCandidates = candidates.filter((candidate) => typeof candidate.cvMatch === "number");
+  const averageMatch =
+    scoredCandidates.length > 0
+      ? Math.round(scoredCandidates.reduce((sum, candidate) => sum + (candidate.cvMatch ?? 0), 0) / scoredCandidates.length)
+      : null;
+  const waitingForAnalysis = candidates.length - scoredCandidates.length;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8F9FF] pb-24 font-sans text-[#0B1C30]">
-      {/* Top Header */}
-      <header className="flex h-16 items-center justify-between bg-white px-6 shadow-sm">
-        <div className="flex items-center gap-4">
-          <Link href="/recruiter/candidates" className="text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <h1 className="text-lg font-bold">Ứng Tuyển</h1>
-        </div>
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1e3a8a] text-sm font-bold text-white">
-          <User className="h-4 w-4" />
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        {/* Page Title & Actions */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-extrabold tracking-tight text-[#0B1C30]">
-            Candidate Leaderboard
-          </h1>
-          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-                Evaluating
-              </span>
-              <JobSelector jobs={jobs} selectedJobId={selectedJobId} />
-            </div>
-            <div className="flex items-center gap-3">
-              <ExportCsvButton data={candidates} jobTitle={selectedJobTitle} />
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* Card 1 */}
-          <div className="relative overflow-hidden rounded-xl bg-[#2552D8] p-6 shadow-sm">
-            <div className="relative z-10">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-white/80">
-                Total Candidates
-              </h3>
-              <p className="mt-2 text-5xl font-extrabold text-white">{totalCandidates}</p>
-              <div className="mt-4 flex items-center gap-1 text-sm font-semibold text-[#A5E57F]">
-                <TrendingUp className="h-4 w-4" />
-                <span>+12 this week</span>
-              </div>
-            </div>
-            {/* Background Decoration */}
-            <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-white/10 to-transparent"></div>
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <section className="rounded-2xl border border-border-light bg-surface-white p-5 shadow-sm md:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <Link
+              href="/recruiter/jobs"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-text-muted outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Quay lại danh sách vị trí
+            </Link>
+            <p className="mt-5 text-sm font-semibold text-primary">Bảng xếp hạng ứng viên mới</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">Sàng lọc hồ sơ vừa nộp vào job</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-text-muted">
+              Bảng này chỉ hiển thị ứng viên đang ở trạng thái “Mới ứng tuyển”. Ứng viên đã chuyển sang phỏng vấn, đã bị từ chối, đã rút hồ sơ hoặc đã nhận offer sẽ không còn nằm trong bảng xếp hạng này.
+            </p>
           </div>
 
-          {/* Card 2 */}
-          <div className="relative overflow-hidden rounded-xl bg-[#E8EEFF] p-6 shadow-sm">
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#464554]">
-                Average Technical Score
-              </h3>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-5xl font-extrabold text-[#0B1C30]">{averageTechScore || "--"}</span>
-                <span className="text-lg font-semibold text-[#464554]">/ 100</span>
-              </div>
-            </div>
-            {/* Background Chart Simulation */}
-            <div className="absolute bottom-0 right-4 flex items-end gap-1 opacity-60">
-              <div className="h-8 w-4 rounded-t-sm bg-[#D3E4FE]"></div>
-              <div className="h-12 w-4 rounded-t-sm bg-[#D3E4FE]"></div>
-              <div className="h-10 w-4 rounded-t-sm bg-[#D3E4FE]"></div>
-              <div className="h-16 w-4 rounded-t-sm bg-[#D3E4FE]"></div>
-              <div className="h-24 w-4 rounded-t-sm bg-[#2552D8]"></div>
-              <div className="h-14 w-4 rounded-t-sm bg-[#D3E4FE]"></div>
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="relative overflow-hidden rounded-xl bg-[#E8EEFF] p-6 shadow-sm">
-            <div className="flex h-full flex-col justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[#464554]">
-                Pass Rate
-              </h3>
-              <div className="mt-4 flex items-center">
-                {/* Circular Progress (64%) */}
-                <div className="relative flex h-20 w-20 items-center justify-center">
-                  <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 36 36">
-                    {/* Background Circle */}
-                    <path
-                      className="text-[#D3E4FE]"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    {/* Progress Circle (64%) */}
-                    <path
-                      className="text-[#059669]"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeDasharray={`${passRate}, 100`}
-                      strokeWidth="4"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center justify-center">
-                    <span className="text-xl font-bold text-[#0B1C30]">{passRate}%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <JobSelector jobs={jobs} selectedJobId={selectedJobId} />
+            <ExportCsvButton data={candidates} jobTitle={selectedJobTitle} />
           </div>
         </div>
+      </section>
 
-        <LeaderboardClient initialCandidates={candidates} />
-      </main>
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl bg-primary p-5 text-white shadow-sm">
+          <div className="flex items-center gap-2 text-sm font-semibold text-white/80">
+            <UsersRound className="h-4 w-4" />
+            Hồ sơ mới cần sàng lọc
+          </div>
+          <p className="mt-3 text-4xl font-extrabold">{candidates.length}</p>
+        </div>
 
-      {/* Bottom Mobile Tab Bar (Visible only on small screens) */}
-      <div className="fixed bottom-0 left-0 right-0 flex h-16 items-center justify-around border-t border-gray-100 bg-white px-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:hidden">
-        <Link href="/" className="flex flex-col items-center gap-1 text-gray-500 hover:text-[#0B1C30]">
-          <Home className="h-5 w-5" />
-          <span className="text-[10px] font-semibold">Trang chủ</span>
-        </Link>
-        <Link href="/recruiter/jobs" className="flex flex-col items-center gap-1 text-gray-500 hover:text-[#0B1C30]">
-          <Briefcase className="h-5 w-5" />
-          <span className="text-[10px] font-semibold">Việc làm</span>
-        </Link>
-        <Link href="/recruiter/candidates" className="flex flex-col items-center gap-1 text-[#4648D4]">
-          <FileText className="h-5 w-5" />
-          <span className="text-[10px] font-semibold">Ứng tuyển</span>
-        </Link>
-        <Link href="/profile" className="flex flex-col items-center gap-1 text-gray-500 hover:text-[#0B1C30]">
-          <User className="h-5 w-5" />
-          <span className="text-[10px] font-semibold">Hồ sơ</span>
-        </Link>
-      </div>
+        <div className="rounded-2xl border border-border-light bg-surface-white p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-sm font-semibold text-text-muted">
+            <FileSpreadsheet className="h-4 w-4 text-primary" />
+            Điểm khớp CV/JD trung bình
+          </div>
+          <p className="mt-3 text-4xl font-extrabold text-foreground">{averageMatch === null ? "--" : averageMatch}</p>
+          <p className="mt-1 text-sm text-text-muted">{scoredCandidates.length} hồ sơ mới đã có điểm phân tích</p>
+        </div>
+
+        <div className="rounded-2xl border border-border-light bg-surface-white p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-sm font-semibold text-text-muted">
+            <FileSpreadsheet className="h-4 w-4 text-primary" />
+            Chưa có điểm khớp
+          </div>
+          <p className="mt-3 text-4xl font-extrabold text-foreground">{waitingForAnalysis}</p>
+          <p className="mt-1 text-sm text-text-muted">Hồ sơ mới chưa được phân tích CV/JD</p>
+        </div>
+      </section>
+
+      <LeaderboardClient initialCandidates={candidates} />
     </div>
   );
 }

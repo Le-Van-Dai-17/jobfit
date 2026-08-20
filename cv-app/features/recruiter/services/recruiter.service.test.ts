@@ -38,6 +38,7 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
     createJob: async (companyId, input) => ({
       id: "job-new",
       companyId,
+      status: "DRAFT",
       isArchived: true,
       ...input,
     }),
@@ -56,7 +57,7 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
     ],
     findJobForCompany: async (companyId, jobId) =>
       companyId === "company-a" && jobId === "job-a"
-        ? { id: "job-a", companyId, title: "Frontend", company: "Acme", status: "DRAFT", isArchived: true }
+        ? { id: "job-a", companyId, title: "Frontend", company: "Acme", status: "DRAFT", isArchived: false }
         : null,
     setJobArchived: async (_companyId, jobId, isArchived) => ({
       id: jobId,
@@ -69,7 +70,7 @@ function makeRepository(overrides: Partial<RecruiterRepository> = {}): Recruiter
       companyId: "company-a",
       title: "Frontend",
       status,
-      isArchived: status !== "PUBLISHED",
+      isArchived: status === "ARCHIVED",
     }),
     updateJob: async (companyId, jobId, input) =>
       companyId === "company-a" && jobId === "job-a" ? { id: jobId, companyId, ...input } : null,
@@ -122,7 +123,6 @@ describe("RecruiterService", () => {
         { key: "firstJob", completed: true },
         { key: "publishedJob", completed: true },
         { key: "candidatePipeline", completed: true },
-        { key: "assessmentEvidence", completed: true },
       ],
       recentApplications: [{ id: "app-a", status: "APPLIED" }],
     });
@@ -220,13 +220,31 @@ describe("RecruiterService", () => {
   });
 
   it("persists draft, published and archived JD lifecycle states", async () => {
-    const service = new RecruiterService(makeRepository());
+    let currentStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED" = "DRAFT";
+    const service = new RecruiterService(
+      makeRepository({
+        findJobForCompany: async (companyId, jobId) =>
+          companyId === "company-a" && jobId === "job-a"
+            ? { id: "job-a", companyId, title: "Frontend", company: "Acme", status: currentStatus, isArchived: currentStatus === "ARCHIVED" }
+            : null,
+        setJobStatus: async (_companyId, jobId, _expectedStatus, status) => {
+          currentStatus = status;
+          return {
+            id: jobId,
+            companyId: "company-a",
+            title: "Frontend",
+            status,
+            isArchived: status === "ARCHIVED",
+          };
+        },
+      })
+    );
 
     await expect(service.createJob("recruiter-a", {
       title: "Backend Engineer",
       description: "Build reliable recruiter services with strict authorization boundaries.",
       requirements: "Node.js, PostgreSQL, tests.",
-    })).resolves.toMatchObject({ isArchived: true });
+    })).resolves.toMatchObject({ status: "DRAFT", isArchived: true });
     await expect(service.publishJob("recruiter-a", "job-a")).resolves.toMatchObject({
       status: "PUBLISHED",
       isArchived: false,
@@ -234,6 +252,10 @@ describe("RecruiterService", () => {
     await expect(service.archiveJob("recruiter-a", "job-a")).resolves.toMatchObject({
       status: "ARCHIVED",
       isArchived: true,
+    });
+    await expect(service.restoreJob("recruiter-a", "job-a")).resolves.toMatchObject({
+      status: "DRAFT",
+      isArchived: false,
     });
   });
 

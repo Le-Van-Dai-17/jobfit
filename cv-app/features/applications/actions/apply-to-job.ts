@@ -12,7 +12,6 @@ import {
   ApplicationValidationError,
   applicationService,
 } from "../services/application.service";
-import { assessmentService } from "@/features/assessments/services/assessment.service";
 
 const ApplyToJobSchema = z.object({
   jobId: z.string().min(1),
@@ -61,25 +60,7 @@ export async function applyToJobAction(
     return { status: "error", message: "Không thể ứng tuyển lúc này." };
   }
 
-  // Attempt to automatically create an assessment session and redirect to it
-  let assessmentSession;
-  try {
-    assessmentSession = await assessmentService.createSession(principal.id, {
-      jobId: parsed.data.jobId,
-      resumeVersionId: parsed.data.resumeVersionId,
-      applicationId: application.id
-    });
-  } catch (error) {
-    console.error("Auto Assessment Session Creation Failed:", error);
-    // Silently fall back to standard application redirect if session creation fails
-  }
-
   revalidatePath("/applications");
   revalidatePath("/dashboard");
-
-  if (assessmentSession) {
-    redirect(`/assessments/${assessmentSession.id}`);
-  } else {
-    redirect(`/applications/${application.id}?applied=1`);
-  }
+  redirect(`/applications/${application.id}?applied=1`);
 }
