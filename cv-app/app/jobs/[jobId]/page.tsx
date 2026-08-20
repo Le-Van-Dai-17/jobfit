@@ -1,9 +1,9 @@
-import { 
-  Building2, 
-  MapPin, 
-  Banknote, 
-  Hourglass, 
-  CheckCircle2, 
+import {
+  Building2,
+  MapPin,
+  Banknote,
+  Hourglass,
+  CheckCircle2,
   ChevronRight,
   Globe,
   Users
@@ -14,39 +14,39 @@ import Image from "next/image";
 
 import { auth } from "@/auth";
 import { ApplyToJobForm } from "@/features/applications/components/ApplyToJobForm";
-import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
+
 import { resumeRepository } from "@/features/cv/repositories/resume.repository";
 import { saveJobAction } from "@/features/jobs/actions/save-job";
 import { jobRepository } from "@/features/jobs/repositories/job.repository";
+import { applicationRepository } from "@/features/applications/repositories/application.repository";
 import { translateJobInfo } from "@/lib/utils";
 
 const dateFormatter = new Intl.DateTimeFormat("vi-VN", { dateStyle: "short" });
 
 export default async function JobDetailPage({ params }: { params: Promise<{ jobId: string }> }) {
   const session = await auth();
-  const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "CANDIDATE" });
-  if (roleRedirect) redirect(roleRedirect);
-  
+
   const { jobId } = await params;
-  const [job, resumes, saved] = await Promise.all([
+  const [job, resumes, saved, existingApplication] = await Promise.all([
     jobRepository.findPublishedById(jobId),
-    resumeRepository.findByUserId(session!.user.id),
-    jobRepository.findSavedJob(session!.user.id, jobId),
+    session?.user?.id ? resumeRepository.findByUserId(session.user.id) : Promise.resolve([]),
+    session?.user?.id ? jobRepository.findSavedJob(session.user.id, jobId) : Promise.resolve(null),
+    session?.user?.id ? applicationRepository.findApplicationForUserAndJob(session.user.id, jobId) : Promise.resolve(null),
   ]);
-  
+
   if (!job) notFound();
 
-  const resumeVersions = resumes.flatMap((resume) => 
-    resume.versions.map((version) => ({ 
-      id: version.id, 
-      resumeTitle: resume.title, 
-      version: version.version 
+  const resumeVersions = resumes.flatMap((resume) =>
+    resume.versions.map((version) => ({
+      id: version.id,
+      resumeTitle: resume.title,
+      version: version.version
     }))
   );
 
   return (
     <div className="bg-[#F8FAFC] -m-6 p-6 min-h-screen">
-      
+
       {/* Breadcrumbs */}
       <nav aria-label="Đường dẫn" className="mb-6 flex items-center gap-2 text-sm font-medium text-text-muted">
         <Link href="/jobs" className="hover:text-primary transition-colors">Việc làm</Link>
@@ -57,18 +57,18 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
       </nav>
 
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
-        
+
         {/* Left Column */}
         <div className="space-y-6">
-          
+
           {/* Hero Card */}
           <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border-light md:p-8">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-              
+
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-3xl font-bold text-[#0047AB]">
                 {job.company.charAt(0).toLocaleUpperCase("vi-VN")}
               </div>
-              
+
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-4">
                   <h1 className="text-2xl font-bold text-foreground md:text-3xl leading-tight">
@@ -76,7 +76,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
                   </h1>
                   <CheckCircle2 className="h-6 w-6 text-[#0047AB] shrink-0" />
                 </div>
-                
+
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-sm font-medium text-text-muted">
                   <span className="font-bold text-foreground">{job.company}</span>
                   <span>•</span>
@@ -92,7 +92,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
                     </span>
                   )}
                 </div>
-                
+
                 {job.workMode && (
                   <div className="mt-3">
                     <span className="rounded-full bg-surface-container px-3 py-1 text-xs font-semibold text-text-muted">
@@ -147,7 +147,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
                 <p className="text-sm text-text-muted">Nhà tuyển dụng chưa công bố mô tả chi tiết.</p>
               )}
             </section>
-            
+
             <section>
               <h2 className="text-xl font-bold text-foreground mb-4">Yêu cầu ứng viên</h2>
               {job.requirements ? (
@@ -193,14 +193,38 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
 
         {/* Right Column */}
         <aside className="space-y-6">
-          
+
           {/* Apply Form Card */}
           <div id="apply" className="scroll-mt-24">
-            {/* The hidden form required by saveJobAction since we moved the button to the ApplyToJobForm component visually */}
-            <form id="saveJobForm" action={saveJobAction}>
-              <input type="hidden" name="jobId" value={job.id} />
-            </form>
-            <ApplyToJobForm jobId={job.id} resumeVersions={resumeVersions} isSaved={saved != null} />
+            {session?.user ? (
+              existingApplication ? (
+                <div className="rounded-3xl bg-blue-50/50 p-6 shadow-sm ring-1 ring-blue-100 text-center mb-6">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                    <CheckCircle2 className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Đã tạo đơn ứng tuyển</h3>
+                  <p className="text-sm text-text-muted mb-6">Bạn đã bắt đầu quá trình ứng tuyển cho vị trí này.</p>
+                  <Link href={`/applications/${existingApplication.id}`} className="flex w-full items-center justify-center rounded-xl bg-[#0047AB] px-4 py-3 text-sm font-bold text-white hover:bg-blue-800 transition-colors">
+                    {existingApplication.status === "DRAFT" ? "Tiếp tục làm bài test" : "Xem đơn ứng tuyển"}
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <form id="saveJobForm" action={saveJobAction}>
+                    <input type="hidden" name="jobId" value={job.id} />
+                  </form>
+                  <ApplyToJobForm jobId={job.id} resumeVersions={resumeVersions} isSaved={saved != null} />
+                </>
+              )
+            ) : (
+              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border-light text-center">
+                <h3 className="font-bold text-foreground mb-4">Bạn chưa đăng nhập</h3>
+                <p className="text-sm text-text-muted mb-6">Vui lòng đăng nhập hoặc tạo tài khoản để ứng tuyển và lưu công việc này.</p>
+                <Link href="/login" className="flex w-full items-center justify-center rounded-xl bg-[#0047AB] px-4 py-3 text-sm font-bold text-white hover:bg-blue-800 transition-colors">
+                  Đăng nhập ngay
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Company Card */}
@@ -214,7 +238,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
                 <Link href="#" className="text-xs font-bold text-[#0047AB] hover:underline">Xem trang công ty</Link>
               </div>
             </div>
-            
+
             <div className="space-y-3 text-sm font-medium text-text-muted mb-6">
               <div className="flex items-center gap-3">
                 <Users className="h-4 w-4 text-gray-400" />
@@ -234,7 +258,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ jobI
               <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=400&h=200" alt="Map Location" className="h-full w-full object-cover grayscale opacity-80" />
             </div>
           </div>
-          
+
         </aside>
       </div>
     </div>

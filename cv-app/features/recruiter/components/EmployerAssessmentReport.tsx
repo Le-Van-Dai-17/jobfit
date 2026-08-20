@@ -2,15 +2,15 @@
 
 import type { Prisma } from "@prisma/client";
 import { AssessmentEvaluationSchema } from "@/features/assessments/schemas/assessment.schema";
-import { 
-  Eye, 
-  BarChart, 
-  Briefcase, 
+import {
+  Eye,
+  BarChart,
+  Briefcase,
   AlertTriangle,
   ChevronDown,
   Edit3
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 
 type EmployerReport = {
   advisoryScore: number;
@@ -31,13 +31,14 @@ export function EmployerAssessmentReport({ result }: { result: EmployerReport })
 
   // Safe defaults if parsing fails
   const rubricData = parsed.success ? parsed.data.rubricBreakdown : [];
+  const evidenceData = parsed.success ? parsed.data.evidence : [];
 
   // Determine top percentile string based on score (mockup says "top 15%")
   const percentile = result.advisoryScore >= 80 ? "15%" : result.advisoryScore >= 60 ? "30%" : "50%";
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8 pb-12 pt-4">
-      
+
       {/* Header Section */}
       <div className="flex flex-col gap-6 border-b border-border-light pb-6 md:flex-row md:items-start md:justify-between">
         <div className="flex flex-col gap-3">
@@ -49,7 +50,7 @@ export function EmployerAssessmentReport({ result }: { result: EmployerReport })
               <Eye className="h-4 w-4" /> INTERNAL ONLY
             </span>
           </div>
-          
+
           <div className="mt-1">
             <h1 className="text-xl font-bold text-foreground">Nguyễn Văn A</h1> {/* Mocking name as it is not in the object yet, could be fetched via session */}
             <p className="mt-1 text-sm font-medium text-text-muted">
@@ -75,29 +76,29 @@ export function EmployerAssessmentReport({ result }: { result: EmployerReport })
 
       {/* Main Layout */}
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        
+
         {/* Left Column */}
         <div className="flex flex-col gap-6">
-          
+
           {/* Điểm Đánh Giá Card */}
           <div className="rounded-2xl bg-[#E8F0FE] p-6 shadow-sm">
             <div className="flex items-center gap-2 font-bold text-foreground mb-4">
               <BarChart className="h-5 w-5 text-[#0047AB]" />
               Điểm Đánh Giá
             </div>
-            
+
             <div className="mb-4 flex items-baseline gap-1">
               <span className="text-6xl font-bold text-[#0047AB] leading-none">{result.advisoryScore}</span>
               <span className="text-lg font-medium text-text-muted">/ 100</span>
             </div>
-            
+
             <div className="mb-6 h-2 w-full overflow-hidden rounded-full bg-blue-200">
-              <div 
-                className="h-full rounded-full bg-[#0047AB]" 
-                style={{ width: `${result.advisoryScore}%` }} 
+              <div
+                className="h-full rounded-full bg-[#0047AB]"
+                style={{ width: `${result.advisoryScore}%` }}
               />
             </div>
-            
+
             <p className="text-sm font-medium text-text-muted leading-relaxed">
               Ứng viên thuộc top {percentile} những người ứng tuyển cho vị trí này. {result.reportSummary || "Phù hợp cao với yêu cầu kỹ thuật."}
             </p>
@@ -141,16 +142,16 @@ export function EmployerAssessmentReport({ result }: { result: EmployerReport })
               </div>
             </div>
           </div>
-          
+
         </div>
 
         {/* Right Column */}
         <div className="flex flex-col gap-6">
-          
+
           {/* Chi Tiết Đánh Giá (Rubric) Card */}
           <div className="rounded-2xl bg-[#F0F4F8] p-6 shadow-sm ring-1 ring-border-light">
             <h2 className="mb-6 font-bold text-foreground">Chi Tiết Đánh Giá (Rubric)</h2>
-            
+
             <div className="space-y-4">
               {/* Mockup matching Rubric structure */}
               <div className="rounded-xl bg-white p-4 shadow-sm border border-border-light">
@@ -192,32 +193,44 @@ export function EmployerAssessmentReport({ result }: { result: EmployerReport })
                 </div>
               </div>
             </div>
-            
-            {/* Keeping the dynamic backend data mapped cleanly if it exists, uncomment if needed */}
-            {/*
-            {rubricData.length > 0 && (
-              <div className="mt-8 space-y-4 pt-6 border-t border-border-light">
-                <h3 className="text-sm font-bold text-text-muted uppercase">Chi tiết theo đánh giá từ LLM</h3>
+            {rubricData.length > 0 ? (
+              <div className="mt-8 space-y-4 border-t border-border-light pt-6">
+                <h3 className="text-sm font-bold uppercase text-text-muted">Chi tiết theo rubric đã lưu</h3>
                 {rubricData.map((task) => (
                   <div key={task.taskId} className="rounded-xl bg-white p-4 shadow-sm">
-                    <p className="font-semibold text-sm mb-2">{task.taskTitle}</p>
-                    <div className="space-y-2">
+                    <p className="mb-2 text-sm font-semibold">{task.taskTitle}</p>
+                    <div className="space-y-3">
                       {task.scores.map((score) => (
-                        <div key={`${task.taskId}-${score.criterionId}`} className="text-sm text-text-muted flex justify-between">
-                          <span>{score.label}</span>
-                          <span className="font-bold text-foreground">{score.score}/{score.maxScore}</span>
+                        <div key={`${task.taskId}-${score.criterionId}`} className="text-sm text-text-muted">
+                          <div className="flex justify-between gap-4">
+                            <span>{score.label}</span>
+                            <span className="font-bold text-foreground">{score.score}/{score.maxScore}</span>
+                          </div>
+                          {score.evidence.map((item) => <p key={item} className="mt-1 text-xs">{item}</p>)}
+                          {score.gap ? <p className="mt-1 text-xs text-error">{score.gap}</p> : null}
                         </div>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
-            )}
-            */}
+            ) : null}
+
+            {evidenceData.length > 0 ? (
+              <div className="mt-6 space-y-3 border-t border-border-light pt-6">
+                <h3 className="text-sm font-bold uppercase text-text-muted">Bằng chứng từ bài làm</h3>
+                {evidenceData.map((item) => (
+                  <blockquote key={`${item.taskId}-${item.quote}`} className="rounded-xl border-l-4 border-primary bg-white p-4 text-sm">
+                    <p className="font-medium text-foreground">{item.quote}</p>
+                    <p className="mt-2 text-text-muted">{item.rationale}</p>
+                  </blockquote>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            
+
             {/* Điểm Hạn Chế Cần Lưu Ý */}
             <div className="rounded-2xl bg-[#F0F4F8] p-6 shadow-sm ring-1 ring-border-light">
               <h2 className="mb-4 flex items-center gap-2 font-bold text-foreground">
@@ -241,7 +254,7 @@ export function EmployerAssessmentReport({ result }: { result: EmployerReport })
               <h2 className="mb-4 flex items-center gap-2 font-bold text-foreground">
                 <Edit3 className="h-5 w-5 text-[#0047AB]" /> Ghi Chú Của Nhà Tuyển Dụng
               </h2>
-              <textarea 
+              <textarea
                 className="w-full min-h-[140px] rounded-xl border border-border-light bg-white p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-y"
                 placeholder="Nhập ghi chú hoặc câu hỏi để chuẩn bị cho buổi phỏng vấn..."
               />

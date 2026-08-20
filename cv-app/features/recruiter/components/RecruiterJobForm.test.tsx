@@ -30,7 +30,8 @@ describe("RecruiterJobForm", () => {
 
     render(<RecruiterJobForm />);
 
-    expect(screen.getByRole("button", { name: /Đang lưu/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Lưu Nháp/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Đăng Tin Tuyển Dụng/i })).toBeDisabled();
   });
 
   it("renders the persisted Stitch JD fields with Vietnamese labels", () => {
@@ -38,12 +39,13 @@ describe("RecruiterJobForm", () => {
     render(<RecruiterJobForm />);
 
     expect(screen.getByLabelText("Phòng ban")).toBeInTheDocument();
-    expect(screen.getByLabelText("Loại hình tuyển dụng")).toBeInTheDocument();
-    expect(screen.getByLabelText("Hình thức làm việc")).toBeInTheDocument();
-    expect(screen.getByLabelText("Mức kinh nghiệm")).toBeInTheDocument();
-    expect(screen.getByLabelText("Lương tối thiểu")).toBeInTheDocument();
-    expect(screen.getByLabelText("Lương tối đa")).toBeInTheDocument();
-    expect(screen.getByLabelText("Kỹ năng")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Kinh nghiệm yêu cầu/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tại văn phòng" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hybrid" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remote" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Tối thiểu (VND)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Tối đa (VND)")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Nhập kỹ năng/)).toBeInTheDocument();
     expect(screen.getByLabelText("Quyền lợi")).toBeInTheDocument();
   });
 });

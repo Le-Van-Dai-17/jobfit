@@ -1,308 +1,189 @@
-import { 
-  Bookmark, 
-  BriefcaseBusiness, 
-  ClipboardCheck, 
-  FileText, 
-  MapPin, 
-  Send,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  Settings,
-  Banknote,
-  ArrowRight
-} from "lucide-react";
+import { ArrowRight, BrainCircuit, CheckCircle2, ChevronRight, FileText, Search, Trophy } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import Image from "next/image";
+
 
 import { auth } from "@/auth";
-import { candidateDashboardService } from "@/features/dashboard/services/candidate-dashboard.service";
-import { getDashboardPathForRole } from "@/features/auth/services/role-redirects";
-import { saveJobAction } from "@/features/jobs/actions/save-job";
-import { jobService } from "@/features/jobs/services/job.service";
-import { cn } from "@/lib/utils";
 
-export default async function HomePage() {
+export default async function LandingPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  if (session.user.role !== "CANDIDATE") redirect(getDashboardPathForRole(session.user.role));
-
-  const [summary, jobs] = await Promise.all([
-    candidateDashboardService.getSummary(session.user.id),
-    jobService.getCandidateFeed(session.user.id, { q: "", mode: "all" }, { includeProgress: false }),
-  ]);
-  const featuredJobs = jobs.slice(0, 3);
-  const latestJobs = jobs.slice(3, 6);
-
-  const userName = summary.userName || "Ứng viên";
 
   return (
-    <div className="bg-[#F8FAFC] -m-6 pb-12">
-      
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#E8F0FE] to-[#DCE3FE] px-4 py-16 text-center md:px-10 md:py-20 rounded-b-[40px] md:rounded-b-[80px]">
-        {/* Subtle decorative curves (mockup feel) */}
-        <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-white/20 blur-3xl" />
-        <div className="absolute -right-20 -bottom-20 h-80 w-80 rounded-full bg-[#0047AB]/10 blur-3xl" />
-        
-        <div className="relative mx-auto max-w-4xl">
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
-            Chào mừng bạn quay lại, <span className="text-[#0047AB]">{userName}</span>!
+    <div className="bg-[#F8FAFC] -m-6 pb-20 font-sans">
+
+      {/* 1. HERO SECTION */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#E8F0FE] to-[#DCE3FE] px-4 py-20 md:px-10 md:py-32 rounded-b-[40px] md:rounded-b-[80px]">
+        {/* Abstract shapes */}
+        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 h-96 w-96 rounded-full bg-gradient-to-tr from-[#0047AB]/10 to-blue-300/30 blur-3xl" />
+        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-indigo-200/40 to-blue-200/20 blur-3xl" />
+
+        <div className="relative mx-auto max-w-5xl text-center">
+          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/60 px-4 py-1.5 backdrop-blur-md">
+            <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+            <span className="text-sm font-bold text-[#0047AB]">Tuyển dụng minh bạch bằng thực lực</span>
+          </div>
+
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl">
+            Vượt Qua Vòng Hồ Sơ, <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0047AB] to-indigo-600">
+              Nhận Việc Bằng Kỹ Năng Thật
+            </span>
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-text-muted md:text-lg">
-            Tìm kiếm cơ hội nghề nghiệp tiếp theo của bạn với hàng ngàn việc làm được cập nhật mỗi ngày.
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600 md:text-xl">
+            Nền tảng tuyển dụng IT tiên phong kết hợp <strong className="text-slate-800">So khớp CV bằng AI</strong> và <strong className="text-slate-800">Đánh giá Năng lực Thực tế</strong>. Đừng để CV đẹp che lấp tài năng thực sự của bạn.
           </p>
-          
-          <form action="/jobs" className="mx-auto mt-8 flex w-full max-w-3xl flex-col gap-2 rounded-2xl bg-white p-2 shadow-lg md:flex-row md:rounded-full md:items-center" role="search">
-            
-            <label className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2">
-              <Search className="h-5 w-5 shrink-0 text-gray-400" />
-              <span className="sr-only">Tên công việc, vị trí...</span>
-              <input name="q" type="search" placeholder="Tên công việc, vị trí..." className="h-10 min-w-0 flex-1 bg-transparent text-sm font-medium outline-none text-foreground placeholder:text-gray-400" />
-            </label>
-            
-            <div className="hidden h-8 w-px bg-gray-200 md:block" />
-            
-            <label className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2 border-t border-gray-100 md:border-none">
-              <MapPin className="h-5 w-5 shrink-0 text-gray-400" />
-              <span className="sr-only">Địa điểm...</span>
-              <input name="location" type="search" placeholder="Địa điểm..." className="h-10 min-w-0 flex-1 bg-transparent text-sm font-medium outline-none text-foreground placeholder:text-gray-400" />
-            </label>
-            
-            <button type="submit" className="mt-2 w-full shrink-0 rounded-xl md:rounded-full bg-[#0047AB] px-8 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-blue-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0047AB] md:mt-0 md:w-auto">
-              Tìm việc
-            </button>
-          </form>
-          
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm font-medium text-text-muted">
-            <span className="uppercase tracking-wider text-xs font-bold text-gray-500">Từ khóa phổ biến:</span>
-            <span className="cursor-pointer rounded-full bg-white/60 px-4 py-1.5 hover:bg-white transition-colors">Marketing</span>
-            <span className="cursor-pointer rounded-full bg-white/60 px-4 py-1.5 hover:bg-white transition-colors">IT Phần mềm</span>
-            <span className="cursor-pointer rounded-full bg-white/60 px-4 py-1.5 hover:bg-white transition-colors">Nhân sự</span>
+
+          <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+            {session ? (
+              <Link href="/dashboard" className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#0047AB] px-8 text-base font-bold text-white shadow-lg shadow-blue-500/30 transition-transform hover:scale-105 hover:bg-blue-800">
+                Vào Dashboard <ArrowRight className="h-5 w-5" />
+              </Link>
+            ) : (
+              <>
+                <Link href="/register" className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#0047AB] px-8 text-base font-bold text-white shadow-lg shadow-blue-500/30 transition-transform hover:scale-105 hover:bg-blue-800">
+                  Tạo CV & Ứng tuyển ngay <ArrowRight className="h-5 w-5" />
+                </Link>
+                <Link href="/jobs" className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-white px-8 text-base font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-50 hover:text-[#0047AB]">
+                  Xem việc làm <Search className="h-5 w-5" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Main Content Grid */}
-      <div className="mx-auto mt-10 grid max-w-7xl gap-8 px-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        
-        {/* Left Column */}
-        <div className="space-y-10">
-          
-          {/* Việc làm gợi ý */}
-          <section>
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-[#0047AB]">
-                  <BriefcaseBusiness className="h-4 w-4" />
-                </span>
-                Việc làm gợi ý cho bạn
-              </h2>
-              <Link href="/jobs" className="flex items-center gap-1 text-sm font-bold text-[#0047AB] hover:underline">
-                Xem tất cả <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            
-            {featuredJobs.length === 0 ? (
-              <div className="rounded-2xl bg-white p-8 text-center text-sm font-medium text-text-muted shadow-sm ring-1 ring-border-light">
-                Chưa có vị trí công khai để gợi ý.
-              </div>
-            ) : (
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {featuredJobs.map((job) => (
-                  <article key={job.id} className="group relative flex flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-border-light transition-all hover:shadow-md hover:ring-[#0047AB]/20">
-                    <div className="flex items-start justify-between">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface-low text-xl font-bold text-[#0047AB]">
-                        {job.company.charAt(0).toLocaleUpperCase("vi-VN")}
-                      </div>
-                      <form action={saveJobAction}>
-                        <input type="hidden" name="jobId" value={job.id} />
-                        <button type="submit" aria-label={`${job.savedBy.length ? "Bỏ lưu" : "Lưu"} ${job.title}`} className="rounded-full p-2 text-gray-400 hover:bg-blue-50 hover:text-[#0047AB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0047AB] transition-colors">
-                          <Bookmark className="h-5 w-5" fill={job.savedBy.length ? "currentColor" : "none"} />
-                        </button>
-                      </form>
-                    </div>
-                    
-                    <div className="mt-5 flex-1">
-                      <Link href={`/jobs/${job.id}`} className="line-clamp-2 text-lg font-bold text-[#0047AB] group-hover:underline">
-                        {job.title}
-                      </Link>
-                      <p className="mt-2 text-sm font-medium text-foreground">{job.company}</p>
-                    </div>
-                    
-                    <div className="mt-4 space-y-2 text-sm font-semibold text-text-muted">
-                      {job.salaryRange && (
-                        <p className="flex items-center gap-2">
-                          <Banknote className="h-4 w-4" />{job.salaryRange}
-                        </p>
-                      )}
-                      {job.location && (
-                        <p className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />{job.location}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {job.type && <span className="rounded bg-blue-50 px-2.5 py-1 text-xs font-bold text-[#0047AB]">Toàn thời gian</span>}
-                      <span className="rounded bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-600">Từ xa</span>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* Tin tuyển dụng mới nhất */}
-          {latestJobs.length > 0 && (
-            <section className="rounded-3xl bg-white p-8 shadow-sm ring-1 ring-border-light">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-foreground">Tin tuyển dụng mới nhất</h2>
-                <div className="flex gap-2">
-                  <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:bg-gray-50 transition-colors">
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="divide-y divide-border-light">
-                {latestJobs.map((job, idx) => (
-                  <div key={job.id} className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-low font-bold text-[#0047AB]">
-                        {job.company.charAt(0)}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <Link href={`/jobs/${job.id}`} className="text-base font-bold text-[#0047AB] hover:underline">
-                          {job.title}
-                        </Link>
-                        <p className="text-sm font-medium text-text-muted">{job.company}</p>
-                        <div className="flex items-center gap-4 text-xs font-semibold text-text-muted mt-1">
-                          {job.location && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {job.location}</span>}
-                          {job.salaryRange && <span className="flex items-center gap-1"><Banknote className="h-3.5 w-3.5" /> {job.salaryRange}</span>}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="shrink-0">
-                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">
-                        {idx === 0 ? "Vừa đăng" : "2 giờ trước"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-4 flex justify-center pt-4">
-                <Link href="/jobs" className="text-sm font-bold text-[#0047AB] hover:underline">
-                  Xem thêm việc làm mới
-                </Link>
-              </div>
-            </section>
-          )}
+      {/* 2. HOW IT WORKS (Luật chơi) */}
+      <section className="mx-auto max-w-7xl px-6 py-24">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-slate-900 md:text-4xl">Luật Chơi Rất Đơn Giản</h2>
+          <p className="mt-4 text-lg text-slate-600">Quy trình 3 bước đảm bảo bạn được đánh giá công bằng tuyệt đối bởi Nhà tuyển dụng.</p>
         </div>
 
-        {/* Right Column (Sidebar) */}
-        <aside className="space-y-6">
-          
-          {/* Profile Card */}
-          <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border-light text-center">
-            <div className="relative mx-auto h-20 w-20">
-              <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-2xl font-bold text-[#0047AB]">
-                {userName.substring(0, 2).toUpperCase()}
-              </div>
-              <div className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-green-500 text-white">
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-              </div>
-            </div>
-            
-            <h3 className="mt-4 text-lg font-bold text-foreground">{userName}</h3>
-            <p className="text-sm font-medium text-text-muted">UI/UX Designer</p>
-            
-            <div className="mt-6 text-left">
-              <div className="flex justify-between text-xs font-bold text-foreground mb-2">
-                <span>Mức độ hoàn thiện hồ sơ</span>
-                <span className="text-[#0047AB]">75%</span>
-              </div>
-              <div className="h-1.5 w-full rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-[#0047AB]" style={{ width: "75%" }} />
-              </div>
-              <p className="mt-2 text-xs font-medium text-text-muted text-center">Cập nhật kinh nghiệm để đạt 100%</p>
-            </div>
-            
-            <div className="mt-6 flex items-center gap-3">
-              <Link href="/profile" className="flex-1 rounded-xl bg-blue-50 py-2.5 text-sm font-bold text-[#0047AB] hover:bg-blue-100 transition-colors">
-                Cập nhật CV
-              </Link>
-              <button className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
-                <Settings className="h-5 w-5" />
-              </button>
-            </div>
-          </section>
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
 
-          {/* Activity Card */}
-          <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border-light">
-            <h3 className="mb-4 text-base font-bold text-foreground border-l-4 border-[#0047AB] pl-3">Hoạt động của bạn</h3>
-            
-            <div className="space-y-4">
-              <Link href="/saved-jobs" className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-[#0047AB] group-hover:bg-[#0047AB] group-hover:text-white transition-colors">
-                    <Bookmark className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-semibold text-foreground group-hover:text-[#0047AB] transition-colors">Việc làm đã lưu</span>
-                </div>
-                <span className="text-base font-bold text-[#0047AB]">12</span>
-              </Link>
-              
-              <Link href="/applications" className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white transition-colors">
-                    <Send className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-semibold text-foreground group-hover:text-green-600 transition-colors">Việc làm đã ứng tuyển</span>
-                </div>
-                <span className="text-base font-bold text-green-600">{summary.applicationCounts.total}</span>
-              </Link>
-              
-              <Link href="/profile-views" className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                    <Eye className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-semibold text-foreground group-hover:text-orange-600 transition-colors">Nhà tuyển dụng xem hồ sơ</span>
-                </div>
-                <span className="text-base font-bold text-orange-600">5</span>
-              </Link>
+          {/* Step 1 */}
+          <div className="relative rounded-3xl border border-slate-100 bg-white p-8 shadow-sm transition-shadow hover:shadow-xl">
+            <div className="absolute -top-6 left-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0047AB] to-blue-400 text-xl font-bold text-white shadow-lg">
+              1
             </div>
-          </section>
-
-          {/* Promo Card */}
-          <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border-light">
-            <h3 className="mb-2 text-base font-bold text-foreground">Tải ứng dụng CV_KADA</h3>
-            <p className="text-sm font-medium text-text-muted mb-5 leading-relaxed">
-              Cập nhật việc làm mới nhất và ứng tuyển nhanh chóng mọi lúc mọi nơi.
+            <div className="mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-[#0047AB]">
+              <FileText className="h-7 w-7" />
+            </div>
+            <h3 className="mt-6 text-xl font-bold text-slate-900">Chuẩn Bị CV Hoàn Hảo</h3>
+            <p className="mt-3 leading-relaxed text-slate-600">
+              Sử dụng CV Builder để tạo hồ sơ. Trí tuệ nhân tạo Gemini sẽ tự động soi chiếu CV của bạn với Yêu cầu công việc (JD) để tối ưu điểm chạm.
             </p>
-            <div className="flex flex-col gap-3">
-              <button className="flex items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 text-sm font-bold text-white hover:bg-black transition-colors">
-                <svg viewBox="0 0 384 512" className="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
-                App Store
-              </button>
-              <button className="flex items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 text-sm font-bold text-white hover:bg-black transition-colors">
-                <svg viewBox="0 0 512 512" className="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg"><path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/></svg>
-                Google Play
-              </button>
+          </div>
+
+          {/* Step 2 */}
+          <div className="relative rounded-3xl border border-slate-100 bg-white p-8 shadow-sm transition-shadow hover:shadow-xl">
+            <div className="absolute -top-6 left-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0047AB] to-blue-400 text-xl font-bold text-white shadow-lg">
+              2
             </div>
-          </section>
+            <div className="mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-[#0047AB]">
+              <BrainCircuit className="h-7 w-7" />
+            </div>
+            <h3 className="mt-6 text-xl font-bold text-slate-900">Bài Test Kỹ Thuật AI</h3>
+            <p className="mt-3 leading-relaxed text-slate-600">
+              Sau khi bấm &quot;Ứng tuyển&quot;, bạn sẽ lập tức nhận được bài test mã hóa/tư duy. Đây là cơ hội để chứng minh kỹ năng thực chiến thay vì chỉ nói suông.
+            </p>
+          </div>
 
-        </aside>
+          {/* Step 3 */}
+          <div className="relative rounded-3xl border border-slate-100 bg-white p-8 shadow-sm transition-shadow hover:shadow-xl">
+            <div className="absolute -top-6 left-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0047AB] to-blue-400 text-xl font-bold text-white shadow-lg">
+              3
+            </div>
+            <div className="mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-[#0047AB]">
+              <Trophy className="h-7 w-7" />
+            </div>
+            <h3 className="mt-6 text-xl font-bold text-slate-900">Lên Đỉnh Bảng Xếp Hạng</h3>
+            <p className="mt-3 leading-relaxed text-slate-600">
+              Kết quả bài test sẽ được chấm bằng hệ thống Rubric và nộp thẳng cho Nhà tuyển dụng. Điểm càng cao, hồ sơ của bạn càng nằm chót vót trên Leaderboard!
+            </p>
+          </div>
 
-      </div>
+        </div>
+      </section>
+
+      {/* 3. KEY FEATURES (Tính năng nổi bật) */}
+      <section className="bg-slate-900 py-24 text-white">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid items-center gap-16 lg:grid-cols-2">
+
+            <div className="order-2 lg:order-1">
+              {/* Mockup Window */}
+              <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 shadow-2xl">
+                <div className="flex items-center gap-2 border-b border-slate-700 bg-slate-900/50 px-4 py-3">
+                  <div className="h-3 w-3 rounded-full bg-red-500" />
+                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
+                  <div className="h-3 w-3 rounded-full bg-green-500" />
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center justify-between border-b border-slate-700 pb-4">
+                    <div>
+                      <h4 className="font-bold text-white">Báo Cáo Năng Lực Ứng Viên</h4>
+                      <p className="text-sm text-slate-400">Match Score: 85% - Rất phù hợp</p>
+                    </div>
+                    <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-bold text-green-400">Đã qua bài test</span>
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    <div className="h-4 w-3/4 rounded bg-slate-700" />
+                    <div className="h-4 w-full rounded bg-slate-700" />
+                    <div className="h-4 w-5/6 rounded bg-slate-700" />
+                  </div>
+                  <div className="mt-6 flex gap-3">
+                    <div className="h-8 w-20 rounded-lg bg-blue-600" />
+                    <div className="h-8 w-24 rounded-lg bg-slate-700" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="order-1 lg:order-2">
+              <h2 className="text-3xl font-extrabold md:text-4xl">Tại sao doanh nghiệp thích ứng viên từ CV_KADA?</h2>
+              <p className="mt-6 text-lg leading-relaxed text-slate-400">
+                Các nhà tuyển dụng (Recruiters) luôn khao khát tìm được ứng viên &quot;thật&quot;. CV_KADA cung cấp cho họ một hệ thống đánh giá khách quan:
+              </p>
+
+              <ul className="mt-8 space-y-5">
+                <li className="flex items-start gap-4">
+                  <CheckCircle2 className="mt-1 h-6 w-6 shrink-0 text-blue-500" />
+                  <div>
+                    <h4 className="font-bold text-white">Bằng Chứng Bê Tông (Hard Evidence)</h4>
+                    <p className="mt-1 text-sm text-slate-400">Nhà tuyển dụng không chỉ xem CV mà xem cách bạn giải quyết vấn đề kỹ thuật.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <CheckCircle2 className="mt-1 h-6 w-6 shrink-0 text-blue-500" />
+                  <div>
+                    <h4 className="font-bold text-white">Bảng Xếp Hạng Công Bằng (Leaderboard)</h4>
+                    <p className="mt-1 text-sm text-slate-400">Hệ thống AI tự động phân loại những ứng viên xuất sắc nhất lên đầu danh sách.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <CheckCircle2 className="mt-1 h-6 w-6 shrink-0 text-blue-500" />
+                  <div>
+                    <h4 className="font-bold text-white">Tối Ưu Hóa Phỏng Vấn (Mock Interview)</h4>
+                    <p className="mt-1 text-sm text-slate-400">Hệ thống tạo ra các câu hỏi phỏng vấn mô phỏng đúng trình độ của bạn để HR dễ dàng phỏng vấn.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 4. CTA */}
+      <section className="mx-auto max-w-4xl px-6 py-24 text-center">
+        <h2 className="text-3xl font-extrabold text-slate-900">Sẵn sàng chứng tỏ bản thân?</h2>
+        <p className="mt-4 text-lg text-slate-600">Đăng ký tài khoản miễn phí và nộp CV vào công ty mơ ước của bạn ngay hôm nay.</p>
+        <Link href="/register" className="mt-8 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-[#0047AB] px-10 text-lg font-bold text-white shadow-xl shadow-blue-500/30 transition-transform hover:scale-105 hover:bg-blue-800">
+          Bắt đầu miễn phí <ChevronRight className="h-5 w-5" />
+        </Link>
+      </section>
+
     </div>
   );
 }

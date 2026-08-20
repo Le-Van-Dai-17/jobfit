@@ -30,6 +30,6 @@ describe("CandidateResumeSnapshot", () => {
 
   it("shows a safe empty state for an invalid legacy snapshot", () => {
     render(<CandidateResumeSnapshot content={{ unexpected: "value" }} />);
-    expect(screen.getByText("Snapshot CV không có nội dung hợp lệ để hiển thị.")).toBeInTheDocument();
+    expect(screen.getByText("CV này chưa có nội dung để hiển thị.")).toBeInTheDocument();
   });
 });

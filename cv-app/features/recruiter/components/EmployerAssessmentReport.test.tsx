@@ -16,7 +16,7 @@ describe("EmployerAssessmentReport", () => {
       session: { roleTitle: "Senior Backend", job: { title: "Backend Engineer", company: "Kada" } },
     }} />);
 
-    expect(screen.getByText("Rubric")).toBeInTheDocument();
+    expect(screen.getByText(/Rubric/)).toBeInTheDocument();
     expect(screen.getByText("Correctness")).toBeInTheDocument();
     expect(screen.getByText(/Use a transaction/)).toBeInTheDocument();
     expect(screen.getByText("Chỉ đánh giá một bài")).toBeInTheDocument();

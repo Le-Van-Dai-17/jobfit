@@ -5,7 +5,7 @@ import { CvSchema } from "@/features/cv/schemas/cv.schema";
 export function CandidateResumeSnapshot({ content }: { content: Prisma.JsonValue }) {
   const parsed = CvSchema.safeParse(content);
   if (!parsed.success) {
-    return <p className="mt-4 rounded-lg bg-surface-low p-4 text-sm text-text-muted">Snapshot CV không có nội dung hợp lệ để hiển thị.</p>;
+    return <p className="mt-4 rounded-lg bg-surface-low p-4 text-sm text-text-muted">CV này chưa có nội dung để hiển thị.</p>;
   }
 
   const { personalInfo, experiences, educations, skills } = parsed.data;

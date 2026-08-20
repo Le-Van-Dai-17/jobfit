@@ -23,7 +23,7 @@ describe("CompanySettingsForm", () => {
       size: "SIZE_10_49",
     }} />);
 
-    expect(screen.getByRole("heading", { name: "Cài đặt công ty" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Thông tin cơ bản" })).toBeInTheDocument();
     expect(screen.getByLabelText("Ngành nghề")).toHaveValue("INFORMATION_TECHNOLOGY");
     expect(screen.getByLabelText("Quy mô công ty")).toHaveValue("SIZE_10_49");
     expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();

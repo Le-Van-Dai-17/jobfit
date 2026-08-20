@@ -20,9 +20,7 @@ describe("role redirects and guards", () => {
     expect(getRouteDecision({ pathname: "/recruiter/jobs", user: { id: "candidate-1", role: "CANDIDATE" } })).toEqual({
       redirectTo: "/dashboard",
     });
-    expect(getRouteDecision({ pathname: "/jobs", user: { id: "recruiter-1", role: "RECRUITER" } })).toEqual({
-      redirectTo: "/recruiter",
-    });
+    expect(getRouteDecision({ pathname: "/jobs", user: { id: "recruiter-1", role: "RECRUITER" } })).toEqual({ allow: true });
     expect(getRouteDecision({ pathname: "/profile", user: { id: "recruiter-1", role: "RECRUITER" } })).toEqual({
       redirectTo: "/recruiter",
     });

@@ -9,6 +9,7 @@ import { requireActiveRole } from "@/features/auth/services/session-authorizatio
 import {
   AssessmentOwnershipError,
   AssessmentValidationError,
+  AssessmentSessionStateError,
   assessmentService,
 } from "../services/assessment.service";
 import { AssessmentStartSchema } from "../schemas/assessment.schema";
@@ -21,11 +22,15 @@ function formValue(formData: FormData, name: string) {
 
 function toActionError(error: unknown): AssessmentActionState {
   if (error instanceof ZodError) {
+    console.error("[ZodError in Action]", JSON.stringify(error.flatten().fieldErrors, null, 2));
     return {
       status: "error",
       message: "Vui lòng kiểm tra lại dữ liệu.",
       fieldErrors: error.flatten().fieldErrors,
     };
+  }
+  if (error instanceof AssessmentSessionStateError) {
+    return { status: "error", message: "Phiên đánh giá không hợp lệ hoặc đã hoàn thành." };
   }
   if (error instanceof AssessmentOwnershipError) {
     return { status: "error", message: "Bạn không có quyền truy cập dữ liệu này." };
@@ -33,6 +38,7 @@ function toActionError(error: unknown): AssessmentActionState {
   if (error instanceof AssessmentValidationError) {
     return { status: "error", message: error.message };
   }
+  console.error("[ActionError]", error);
   return { status: "error", message: "Không thể xử lý đánh giá lúc này. Vui lòng thử lại." };
 }
 

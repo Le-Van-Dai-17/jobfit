@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Search, ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import { CandidateDrawer } from "./CandidateDrawer";
 import { useToast } from "@/hooks/use-toast";
@@ -28,7 +28,7 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [sortField, setSortField] = useState<SortField>("totalScore");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [drawerCandidate, setDrawerCandidate] = useState<AppData | null>(null);
   const { addToast } = useToast();
@@ -62,34 +62,32 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
 
   const handleBulkAction = (newStatus: string) => {
     if (selectedIds.size === 0) return;
-    
+
     // In a real app, this would call an API. Here we just update local state.
-    setCandidates(prev => prev.map(c => 
+    setCandidates(prev => prev.map(c =>
       selectedIds.has(c.id) ? { ...c, status: newStatus } : c
     ));
-    
+
     addToast(`Đã chuyển trạng thái ${selectedIds.size} ứng viên thành ${newStatus}`, "success");
     setSelectedIds(new Set());
   };
 
-  const filteredAndSortedCandidates = useMemo(() => {
-    return candidates
-      .filter(c => {
-        const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              c.email.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesStatus = selectedStatus === "ALL" || c.status === selectedStatus;
-        return matchesSearch && matchesStatus;
-      })
-      .sort((a, b) => {
-        const valA = a[sortField];
-        const valB = b[sortField];
-        if (sortOrder === "asc") {
-          return valA > valB ? 1 : valA < valB ? -1 : 0;
-        } else {
-          return valA < valB ? 1 : valA > valB ? -1 : 0;
-        }
-      });
-  }, [candidates, searchQuery, selectedStatus, sortField, sortOrder]);
+  const filteredAndSortedCandidates = candidates
+    .filter((candidate) => {
+      const normalizedQuery = searchQuery.toLowerCase();
+      const matchesSearch = candidate.name.toLowerCase().includes(normalizedQuery)
+        || candidate.email.toLowerCase().includes(normalizedQuery);
+      const matchesStatus = selectedStatus === "ALL" || candidate.status === selectedStatus;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      const valA = a[sortField];
+      const valB = b[sortField];
+      if (sortOrder === "asc") {
+        return valA > valB ? 1 : valA < valB ? -1 : 0;
+      }
+      return valA < valB ? 1 : valA > valB ? -1 : 0;
+    });
 
   return (
     <>
@@ -105,7 +103,7 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
           />
         </div>
         <div className="flex items-center gap-3">
-          <select 
+          <select
             className="rounded-lg bg-[#F8F9FF] px-4 py-2.5 text-sm font-semibold text-[#0B1C30] hover:bg-gray-100 focus:outline-none"
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
@@ -123,13 +121,13 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
         <div className="mb-4 flex items-center justify-between rounded-lg bg-indigo-50 p-3 border border-indigo-100">
           <span className="text-sm font-semibold text-indigo-900">Đã chọn {selectedIds.size} ứng viên</span>
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={() => handleBulkAction("INTERVIEWING")}
               className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 shadow-sm border border-indigo-200 hover:bg-indigo-100"
             >
               Phỏng vấn
             </button>
-            <button 
+            <button
               onClick={() => handleBulkAction("REJECTED")}
               className="rounded-md bg-white px-3 py-1.5 text-xs font-bold text-red-600 shadow-sm border border-red-200 hover:bg-red-50"
             >
@@ -145,8 +143,8 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
           <thead>
             <tr className="border-b-2 border-gray-100">
               <th className="px-6 py-4 w-12">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   className="rounded border-gray-300 text-[#4648D4] focus:ring-[#4648D4]"
                   checked={filteredAndSortedCandidates.length > 0 && selectedIds.size === filteredAndSortedCandidates.length}
                   onChange={handleSelectAll}
@@ -154,19 +152,19 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
               </th>
               <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 w-16 text-center">Rank</th>
               <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500">Candidate</th>
-              <th 
+              <th
                 className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 w-32 cursor-pointer hover:bg-gray-50"
                 onClick={() => handleSort("cvMatch")}
               >
                 <div className="flex items-center gap-1">CV Match {sortField === "cvMatch" && (sortOrder === "desc" ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>)}</div>
               </th>
-              <th 
+              <th
                 className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-gray-500 w-32 cursor-pointer hover:bg-gray-50"
                 onClick={() => handleSort("techScore")}
               >
                 <div className="flex items-center gap-1">Tech Test {sortField === "techScore" && (sortOrder === "desc" ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>)}</div>
               </th>
-              <th 
+              <th
                 className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-500 w-32 cursor-pointer hover:bg-gray-50"
                 onClick={() => handleSort("totalScore")}
               >
@@ -197,12 +195,12 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
                   badgeBg = "bg-[#D1FAE5]";
                   badgeText = "text-[#059669]";
                 }
-                
+
                 return (
                   <tr key={candidate.id} className={`hover:bg-gray-50/50 ${selectedIds.has(candidate.id) ? 'bg-indigo-50/30' : ''}`}>
                     <td className="px-6 py-5">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         className="rounded border-gray-300 text-[#4648D4] focus:ring-[#4648D4]"
                         checked={selectedIds.has(candidate.id)}
                         onChange={() => handleSelectRow(candidate.id)}
@@ -251,9 +249,9 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
                       </div>
                     </td>
                     <td className="px-6 py-5 text-center">
-                      <button 
+                      <button
                         onClick={() => setDrawerCandidate(candidate)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-[#4648D4] transition-colors" 
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-[#4648D4] transition-colors"
                         title="Xem chi tiết ứng viên"
                       >
                         <ChevronRight className="h-5 w-5" />
@@ -265,13 +263,13 @@ export function LeaderboardClient({ initialCandidates }: LeaderboardClientProps)
             )}
           </tbody>
         </table>
-        
+
         {/* Pagination */}
         <div className="flex items-center justify-between border-t border-gray-100 bg-white px-6 py-4">
           <span className="text-sm font-medium text-gray-500">Hiển thị {filteredAndSortedCandidates.length} ứng viên.</span>
         </div>
       </div>
-      
+
       <CandidateDrawer candidate={drawerCandidate} onClose={() => setDrawerCandidate(null)} />
     </>
   );

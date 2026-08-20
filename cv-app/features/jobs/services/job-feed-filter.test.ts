@@ -10,13 +10,18 @@ const jobs = [
 
 describe("job feed filters", () => {
   it("normalizes scalar query parameters and rejects unsupported modes", () => {
-    expect(parseJobFeedFilters({ q: "  kada ", mode: "REMOTE" })).toEqual({ q: "kada", mode: "remote" });
-    expect(parseJobFeedFilters({ q: ["first", "second"], mode: "other" })).toEqual({ q: "first", mode: "all" });
+    expect(parseJobFeedFilters({ q: "  kada ", mode: "REMOTE" })).toEqual({ q: "kada", mode: "remote", page: 1, limit: 10 });
+    expect(parseJobFeedFilters({ q: ["first", "second"], mode: "other" })).toEqual({ q: "first", mode: "all", page: 1, limit: 10 });
   });
 
   it("filters persisted jobs by title/company and work mode", () => {
-    expect(filterJobFeed(jobs, { q: "kada", mode: "hybrid" })).toEqual([jobs[0]]);
-    expect(filterJobFeed(jobs, { q: "backend", mode: "all" })).toEqual([jobs[1]]);
-    expect(filterJobFeed(jobs, { q: "", mode: "remote" })).toEqual([jobs[1]]);
+    const jobs = [
+      { title: "Frontend", company: "Kada", type: "hybrid" },
+      { title: "Backend", company: "Google", location: "remote" },
+      { title: "Fullstack", company: "Kada", location: "onsite" },
+    ];
+    expect(filterJobFeed(jobs, { q: "kada", mode: "hybrid", page: 1, limit: 10 })).toEqual([jobs[0]]);
+    expect(filterJobFeed(jobs, { q: "", mode: "all", page: 1, limit: 10 })).toHaveLength(3);
+    expect(filterJobFeed(jobs, { q: "", mode: "remote", page: 1, limit: 10 })).toEqual([jobs[1]]);
   });
 });

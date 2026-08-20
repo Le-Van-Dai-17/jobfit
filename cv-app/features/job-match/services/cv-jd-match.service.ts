@@ -86,12 +86,21 @@ function jobSkills(job: MatchJobInput) {
 }
 
 export class CvJdMatchService {
+  constructor(
+    private readonly analyzeWithAi: typeof analyzeResumeMatch | null =
+      process.env.NODE_ENV !== "test" && process.env.GEMINI_API_KEY ? analyzeResumeMatch : null
+  ) {}
+
   async analyze(resumeContent: unknown, job: MatchJobInput): Promise<CvJdMatchResult> {
     const resume = jsonText(resumeContent);
     const jd = jobText(job);
 
+    if (!this.analyzeWithAi) {
+      return this.analyzeHeuristic(resume, jd, job);
+    }
+
     try {
-      const result = await analyzeResumeMatch(resume, jd);
+      const result = await this.analyzeWithAi(resume, jd);
       
       return {
         overallScore: clampScore(result.overallScore),

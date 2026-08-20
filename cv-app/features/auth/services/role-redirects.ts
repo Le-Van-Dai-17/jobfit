@@ -1,6 +1,6 @@
 import type { UserRole } from "@prisma/client";
 
-const publicRoutes = new Set(["/", "/login", "/register"]);
+const publicRoutes = new Set(["/", "/login", "/register", "/jobs"]);
 
 export function getDashboardPathForRole(role: UserRole) {
   if (role === "ADMIN") return "/admin";
@@ -28,7 +28,10 @@ export function getRouteDecision({
   user: { id: string; role: UserRole } | null;
 }): { allow: true } | { redirectTo: string } {
   if (!user) {
-    return publicRoutes.has(pathname) ? { allow: true } : { redirectTo: "/login" };
+    if (publicRoutes.has(pathname) || pathname.startsWith("/jobs/")) {
+      return { allow: true };
+    }
+    return { redirectTo: "/login" };
   }
 
   if (pathname === "/" || pathname === "/login" || pathname === "/register") {
@@ -48,7 +51,6 @@ export function getRouteDecision({
       "/dashboard",
       "/profile",
       "/my-cv",
-      "/jobs",
       "/applications",
       "/assessments",
       "/job-match",

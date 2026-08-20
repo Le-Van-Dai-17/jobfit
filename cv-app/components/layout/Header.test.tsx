@@ -15,7 +15,7 @@ describe("Header role actions", () => {
     const action = screen.getByRole("button", { name: /Tạo CV mới/i });
     expect(action.closest("form")).toBeInTheDocument();
     expect(action).toHaveClass("bg-primary", "text-white", "rounded-lg");
-    expect(screen.getByRole("banner")).toHaveClass("bg-surface-white/95");
+    expect(screen.getByRole("banner")).toHaveClass("bg-surface-white");
   });
 
   it("does not expose the candidate CV action to recruiters or admins", () => {

@@ -9,6 +9,7 @@ import { AssessmentOwnershipError, assessmentService } from "@/features/assessme
 import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
 
 import { AssessmentIDE } from "@/features/assessments/components/AssessmentIDE";
+import { matchScenario } from "@/features/assessments/services/scenario-bank";
 
 const statusLabels = { TASKS_GENERATED: "Đang làm bài", SUBMITTED: "Đã nộp", EVALUATED: "Đã có báo cáo", CANCELLED: "Đã hủy" } as const;
 const seniorityLabels = { INTERN: "Thực tập", JUNIOR: "Mới vào nghề", MID: "Trung cấp", SENIOR: "Cao cấp", LEAD: "Dẫn dắt" } as const;
@@ -24,7 +25,8 @@ export default async function AssessmentSessionPage({ params }: { params: Promis
 
   // Render the immersive IDE if the assessment is in progress
   if (!session.result && session.status === "TASKS_GENERATED") {
-    return <AssessmentIDE sessionId={session.id} roleTitle={session.roleTitle} tasks={session.tasks} />;
+    const scenario = matchScenario(session.job.title, `${session.job.description ?? ""}\n${session.job.requirements ?? ""}`);
+    return <AssessmentIDE sessionId={session.id} roleTitle={session.roleTitle} tasks={session.tasks} scenario={scenario} />;
   }
 
   return (

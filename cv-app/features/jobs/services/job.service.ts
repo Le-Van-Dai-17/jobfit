@@ -12,8 +12,19 @@ export class JobService {
     return this.repository.findActiveJobs();
   }
 
-  async getCandidateFeed(userId: string, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite" }, options?: { includeProgress?: boolean }) {
-    return this.repository.findActiveJobsForCandidate(userId, filters, options);
+  async getCandidateFeed(userId: string | undefined, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite"; page: number; limit: number }, options?: { includeProgress?: boolean }) {
+    const { data, total } = await this.repository.findActiveJobsForCandidate(userId, filters, options);
+    const totalPages = Math.ceil(total / filters.limit);
+    return {
+      data,
+      meta: {
+        total,
+        page: filters.page,
+        limit: filters.limit,
+        totalPages,
+        hasNextPage: filters.page < totalPages,
+      }
+    };
   }
 
   /**

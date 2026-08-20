@@ -1,3 +1,5 @@
+import type { Prisma, WorkMode } from "@prisma/client";
+
 import { prisma } from "@/lib/db/prisma";
 
 export class JobRepository {
@@ -14,8 +16,8 @@ export class JobRepository {
     });
   }
 
-  async findActiveJobsForCandidate(userId: string, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite" } = { q: "", mode: "all" }, options: { includeProgress?: boolean } = { includeProgress: true }) {
-    const conditions = [];
+  async findActiveJobsForCandidate(userId: string | undefined, filters: { q: string; mode: "all" | "remote" | "hybrid" | "onsite"; page: number; limit: number } = { q: "", mode: "all", page: 1, limit: 10 }, options: { includeProgress?: boolean } = { includeProgress: true }) {
+    const conditions: Prisma.JobWhereInput[] = [];
     if (filters.q) {
       conditions.push({
         OR: [
@@ -26,14 +28,14 @@ export class JobRepository {
     }
     if (filters.mode !== "all") {
       const modeUpper = filters.mode.toUpperCase();
-      conditions.push({
-        OR: [
-          { type: { contains: filters.mode, mode: "insensitive" as const } },
-          { location: { contains: filters.mode, mode: "insensitive" as const } },
-          // Include workMode enum if it matches
-          { workMode: (modeUpper === "REMOTE" || modeUpper === "HYBRID" || modeUpper === "ONSITE") ? modeUpper as any : undefined },
-        ].filter(c => c.workMode !== undefined || c.type || c.location)
-      });
+      const modeConditions: Prisma.JobWhereInput[] = [
+        { type: { contains: filters.mode, mode: "insensitive" } },
+        { location: { contains: filters.mode, mode: "insensitive" } },
+      ];
+      if (modeUpper === "REMOTE" || modeUpper === "HYBRID" || modeUpper === "ONSITE") {
+        modeConditions.push({ workMode: modeUpper as WorkMode });
+      }
+      conditions.push({ OR: modeConditions });
     }
 
     const jobs = await prisma.job.findMany({
@@ -55,10 +57,32 @@ export class JobRepository {
         createdAt: true,
       },
       orderBy: { createdAt: "desc" },
+      skip: (filters.page - 1) * filters.limit,
+      take: filters.limit,
+    });
+
+    const total = await prisma.job.count({
+      where: {
+        isArchived: false,
+        status: "PUBLISHED",
+        ...(conditions.length > 0 ? { AND: conditions } : {}),
+      }
     });
 
     const jobIds = jobs.map((job) => job.id);
-    if (jobIds.length === 0) return [];
+    if (jobIds.length === 0) return { data: [], total };
+
+    if (!userId) {
+      return {
+        data: jobs.map((job) => ({
+          ...job,
+          savedBy: [],
+          applications: [],
+          assessmentSessions: [],
+        })),
+        total
+      };
+    }
 
     const savedJobs = await prisma.savedJob.findMany({
       where: { userId, jobId: { in: jobIds } },
@@ -94,21 +118,24 @@ export class JobRepository {
       }
     }
 
-    return jobs.map((job) => {
-      const savedJob = savedByJobId.get(job.id);
-      const application = latestApplicationByJobId.get(job.id);
-      const applicationAssessment = application ? latestAssessmentByApplicationId.get(application.id) : undefined;
-      const jobAssessment = latestAssessmentByJobId.get(job.id);
+    return {
+      data: jobs.map((job) => {
+        const savedJob = savedByJobId.get(job.id);
+        const application = latestApplicationByJobId.get(job.id);
+        const applicationAssessment = application ? latestAssessmentByApplicationId.get(application.id) : undefined;
+        const jobAssessment = latestAssessmentByJobId.get(job.id);
 
-      return {
-        ...job,
-        savedBy: savedJob ? [{ id: savedJob.id }] : [],
-        applications: application
-          ? [{ id: application.id, status: application.status, assessmentSessions: applicationAssessment ? [applicationAssessment] : [] }]
-          : [],
-        assessmentSessions: jobAssessment ? [jobAssessment] : [],
-      };
-    });
+        return {
+          ...job,
+          savedBy: savedJob ? [{ id: savedJob.id }] : [],
+          applications: application
+            ? [{ id: application.id, status: application.status, assessmentSessions: applicationAssessment ? [applicationAssessment] : [] }]
+            : [],
+          assessmentSessions: jobAssessment ? [jobAssessment] : [],
+        };
+      }),
+      total
+    };
   }
 
   async findPublishedById(id: string) {

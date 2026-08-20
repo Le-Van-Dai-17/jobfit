@@ -7,6 +7,7 @@ import {
   ApplicationValidationError,
 } from "./application.service";
 import type { ApplicationRepository } from "../repositories/application.repository";
+import type { CvJdMatchService } from "@/features/job-match/services/cv-jd-match.service";
 
 function createRepositoryMock() {
   return {
@@ -23,10 +24,17 @@ function createRepositoryMock() {
 describe("ApplicationService", () => {
   let repository: ReturnType<typeof createRepositoryMock>;
   let service: ApplicationService;
+  let matchService: { analyze: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     repository = createRepositoryMock();
-    service = new ApplicationService(repository as unknown as ApplicationRepository);
+    matchService = {
+      analyze: vi.fn().mockResolvedValue({ overallScore: 100, matchedSkills: [], missingSkills: [], strengths: [], recommendations: [] }),
+    };
+    service = new ApplicationService(
+      repository as unknown as ApplicationRepository,
+      matchService as unknown as CvJdMatchService
+    );
   });
 
   it("creates an application only with an active job and owned resume version", async () => {
@@ -45,11 +53,11 @@ describe("ApplicationService", () => {
       jobId: "job-1",
       resumeVersionId: "version-1",
     });
-    expect(repository.createMatchAnalysis).toHaveBeenCalledWith(
+    await vi.waitFor(() => expect(repository.createMatchAnalysis).toHaveBeenCalledWith(
       "version-1",
       "job-1",
       expect.objectContaining({ overallScore: expect.any(Number) })
-    );
+    ));
   });
 
   it("does not block application creation when CV-JD match persistence fails", async () => {
@@ -64,7 +72,7 @@ describe("ApplicationService", () => {
       service.applyToJob("user-1", { jobId: "job-1", resumeVersionId: "version-1" })
     ).resolves.toEqual({ id: "application-1" });
 
-    expect(consoleError).toHaveBeenCalledWith("CV-JD match analysis creation failed:", expect.any(Error));
+    await vi.waitFor(() => expect(consoleError).toHaveBeenCalledWith("CV-JD match analysis creation failed:", expect.any(Error)));
     consoleError.mockRestore();
   });
 

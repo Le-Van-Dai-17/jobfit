@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
 import { prisma } from "@/lib/db/prisma";
 import { AssessmentRepository } from "./assessment.repository";
@@ -8,6 +8,8 @@ type TransactionCallback = Parameters<typeof prisma.$transaction>[0];
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
     $transaction: vi.fn(),
+    assessmentSession: { updateMany: vi.fn() },
+    assessmentTask: { count: vi.fn() },
   },
 }));
 
@@ -32,6 +34,8 @@ const input = {
 describe("AssessmentRepository", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.assessmentTask.count).mockResolvedValue(1);
+    vi.mocked(prisma.assessmentSession.updateMany).mockResolvedValue({ count: 1 });
   });
 
   it("atomically claims only a generated session before creating immutable submissions and result", async () => {
@@ -49,10 +53,12 @@ describe("AssessmentRepository", () => {
       (callback as TransactionCallback)(tx as unknown as Parameters<TransactionCallback>[0])
     );
 
+    vi.mocked(prisma.assessmentSession.updateMany).mockResolvedValue({ count: 1 });
+
     const repository = new AssessmentRepository();
     await repository.completeSubmission(input, async () => result);
 
-    expect(tx.assessmentSession.updateMany).toHaveBeenNthCalledWith(1, {
+    expect(prisma.assessmentSession.updateMany).toHaveBeenCalledWith( {
       where: { id: "session-1", userId: "user-1", status: "TASKS_GENERATED" },
       data: { status: "SUBMITTED" },
     });
@@ -67,7 +73,7 @@ describe("AssessmentRepository", () => {
     expect(tx.assessmentResult.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ sessionId: "session-1", userId: "user-1", advisoryScore: 75 }),
     });
-    expect(tx.assessmentSession.updateMany).toHaveBeenNthCalledWith(2, {
+    expect(tx.assessmentSession.updateMany).toHaveBeenCalledWith( {
       where: { id: "session-1", userId: "user-1", status: "SUBMITTED" },
       data: { status: "EVALUATED", completedAt: expect.any(Date) },
     });
@@ -142,6 +148,8 @@ describe("AssessmentRepository", () => {
       (callback as TransactionCallback)(tx as unknown as Parameters<TransactionCallback>[0])
     );
 
+    vi.mocked(prisma.assessmentSession.updateMany).mockResolvedValue({ count: 0 });
+
     const repository = new AssessmentRepository();
     await expect(repository.completeSubmission(input, evaluate)).rejects.toThrow(
       "Assessment session is not accepting submissions"
@@ -167,6 +175,11 @@ describe("AssessmentRepository", () => {
         }),
         findFirst: vi.fn().mockResolvedValue({ id: "session-1", userId: "user-1" }),
       },
+    });
+    (prisma.assessmentSession.updateMany as Mock).mockImplementation(async ({ where, data }) => {
+      if (where.status && status !== where.status) return { count: 0 };
+      status = data.status;
+      return { count: 1 };
     });
     vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
       const tx = makeTx();

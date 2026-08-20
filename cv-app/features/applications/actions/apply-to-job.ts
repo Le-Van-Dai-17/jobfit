@@ -45,6 +45,8 @@ export async function applyToJobAction(
     return { status: "error", message: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ." };
   }
 
+
+
   let application;
   try {
     application = await applicationService.applyToJob(principal.id, parsed.data);
@@ -74,7 +76,7 @@ export async function applyToJobAction(
 
   revalidatePath("/applications");
   revalidatePath("/dashboard");
-  
+
   if (assessmentSession) {
     redirect(`/assessments/${assessmentSession.id}`);
   } else {

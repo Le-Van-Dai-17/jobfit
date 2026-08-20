@@ -29,7 +29,7 @@ describe("ApplicationRepository", () => {
     });
   });
 
-  it("creates an applied timeline event with the candidate application", async () => {
+  it("creates a draft timeline event until the candidate completes the assessment", async () => {
     (prisma.application.create as Mock).mockResolvedValue({ id: "application-1" });
 
     await new ApplicationRepository().createApplication("user-1", {
@@ -40,13 +40,13 @@ describe("ApplicationRepository", () => {
     expect(prisma.application.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          status: "APPLIED",
+          status: "DRAFT",
           events: {
             create: expect.objectContaining({
               type: "STATUS_CHANGE",
               actorUserId: "user-1",
               fromStatus: "DRAFT",
-              toStatus: "APPLIED",
+              toStatus: "DRAFT",
             }),
           },
         }),

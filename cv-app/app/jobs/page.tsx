@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { getRequiredRoleRedirect } from "@/features/auth/services/role-redirects";
+
 import { saveJobAction } from "@/features/jobs/actions/save-job";
 import { parseJobFeedFilters } from "@/features/jobs/services/job-feed-filter";
 import { jobService } from "@/features/jobs/services/job.service";
@@ -21,11 +21,9 @@ function getSkillTags(requirements?: string | null) {
 
 export default async function JobsPage({ searchParams }: { searchParams: Promise<{ q?: string | string[]; mode?: string | string[] }> }) {
   const session = await auth();
-  const roleRedirect = getRequiredRoleRedirect({ user: session?.user, requiredRole: "CANDIDATE" });
-  if (roleRedirect) redirect(roleRedirect);
 
   const filters = parseJobFeedFilters(await searchParams);
-  const jobs = await jobService.getCandidateFeed(session!.user.id, filters);
+  const { data: jobs, meta } = await jobService.getCandidateFeed(session?.user?.id, filters);
 
   return (
     <div className="space-y-5">
@@ -37,7 +35,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
             <p className="mt-2 max-w-2xl text-sm leading-6 text-text-muted">Tìm trong các JD đã được nhà tuyển dụng công khai và ứng tuyển bằng đúng phiên bản CV bạn chọn.</p>
           </div>
           <span className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-white px-3 py-2 text-xs font-semibold text-text-muted">
-            <BriefcaseBusiness className="h-4 w-4 text-primary" />{jobs.length} vị trí phù hợp bộ lọc
+            <BriefcaseBusiness className="h-4 w-4 text-primary" />{meta.total} vị trí phù hợp bộ lọc
           </span>
         </div>
         <form className="mt-5 grid overflow-hidden rounded-lg bg-surface-white shadow-card md:grid-cols-[1fr_220px_120px]" role="search">
@@ -96,6 +94,24 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
                 </article>
               );
             })}
+
+            {meta.totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-4 border-t border-outline-variant/50 pt-6">
+                {meta.page > 1 ? (
+                  <Link href={`/jobs?page=${meta.page - 1}&mode=${filters.mode}${filters.q ? `&q=${encodeURIComponent(filters.q)}` : ""}`} className="rounded-lg px-4 py-2 text-sm font-semibold text-text-muted hover:bg-surface-container hover:text-foreground">Trang trước</Link>
+                ) : (
+                  <span className="cursor-not-allowed rounded-lg px-4 py-2 text-sm font-semibold text-outline">Trang trước</span>
+                )}
+                <span className="text-sm font-semibold text-foreground">
+                  Trang {meta.page} / {meta.totalPages}
+                </span>
+                {meta.hasNextPage ? (
+                  <Link href={`/jobs?page=${meta.page + 1}&mode=${filters.mode}${filters.q ? `&q=${encodeURIComponent(filters.q)}` : ""}`} className="rounded-lg bg-surface-container px-4 py-2 text-sm font-semibold text-primary hover:bg-surface-container-highest">Trang kế</Link>
+                ) : (
+                  <span className="cursor-not-allowed rounded-lg px-4 py-2 text-sm font-semibold text-outline">Trang kế</span>
+                )}
+              </div>
+            )}
           </div>
           <aside className="hidden space-y-4 lg:block">
             <section className="rounded-xl bg-surface-white p-5 shadow-card"><h2 className="flex items-center gap-2 font-semibold text-foreground"><Building2 className="h-5 w-5 text-primary" />Nguồn dữ liệu</h2><p className="mt-3 text-sm leading-6 text-text-muted">Chỉ hiển thị vị trí đang ở trạng thái công khai. Bộ lọc được áp dụng trực tiếp tại kho dữ liệu.</p></section>

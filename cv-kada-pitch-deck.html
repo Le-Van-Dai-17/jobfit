@@ -1,0 +1,2423 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Pitch deck tương tác cho CV_KADA - tuyển dụng kỹ sư bằng bằng chứng năng lực.">
+  <title>CV_KADA | Pitch Deck</title>
+  <style>
+    :root {
+      --ink: #111318;
+      --muted: #5d6370;
+      --paper: #f7f8fb;
+      --white: #ffffff;
+      --line: #d9dde5;
+      --indigo: #4648d4;
+      --indigo-deep: #292b8f;
+      --cyan: #0a779f;
+      --coral: #ef684d;
+      --mint: #4dbb91;
+      --amber: #e9a23b;
+      --charcoal: #17191f;
+      --panel: #22252d;
+      --slide-width: 1280;
+      --slide-height: 720;
+      --scale: 1;
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-width: 320px;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #0e1014;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    button:focus-visible,
+    [contenteditable="true"]:focus-visible {
+      outline: 3px solid #79d6ff;
+      outline-offset: 3px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: 58px minmax(0, 1fr);
+      width: 100%;
+      height: 100%;
+    }
+
+    .topbar {
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 16px;
+      border-bottom: 1px solid #2d313a;
+      background: #16181d;
+    }
+
+    .brand-lockup,
+    .topbar-actions,
+    .deck-nav,
+    .slide-count {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-lockup {
+      min-width: 0;
+      gap: 10px;
+      color: #f5f7fb;
+      font-size: 14px;
+      font-weight: 760;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid #7578ef;
+      border-radius: 6px;
+      color: #b9bbff;
+      font-size: 12px;
+    }
+
+    .file-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .topbar-actions {
+      gap: 8px;
+    }
+
+    .toolbar-button,
+    .nav-button,
+    .menu-button {
+      min-height: 36px;
+      border: 1px solid #393e48;
+      border-radius: 6px;
+      background: #20232a;
+      color: #eef1f6;
+      cursor: pointer;
+    }
+
+    .toolbar-button {
+      padding: 0 13px;
+      font-size: 13px;
+      font-weight: 680;
+    }
+
+    .toolbar-button:hover,
+    .nav-button:hover,
+    .menu-button:hover,
+    .toolbar-button[aria-pressed="true"] {
+      border-color: #7377ee;
+      background: #2b2e4d;
+    }
+
+    .menu-button {
+      display: none;
+      width: 38px;
+      padding: 0;
+      font-size: 20px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 226px minmax(0, 1fr);
+      min-height: 0;
+    }
+
+    .filmstrip {
+      z-index: 15;
+      overflow-y: auto;
+      padding: 14px 12px 28px;
+      border-right: 1px solid #2d313a;
+      background: #121419;
+      scrollbar-color: #454a55 transparent;
+    }
+
+    .filmstrip-label {
+      margin: 2px 4px 12px;
+      color: #8f96a3;
+      font-size: 11px;
+      font-weight: 760;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .thumb-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .thumb-button {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 8px;
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #2d313a;
+      border-radius: 6px;
+      background: #1a1d23;
+      color: #c9ced8;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .thumb-button:hover {
+      border-color: #555b68;
+      background: #20232a;
+    }
+
+    .thumb-button[aria-current="true"] {
+      border-color: #777af0;
+      background: #24273f;
+      box-shadow: inset 3px 0 0 #777af0;
+      color: #ffffff;
+    }
+
+    .thumb-number {
+      color: #878e9b;
+      font-size: 11px;
+      font-weight: 760;
+      line-height: 18px;
+      text-align: center;
+    }
+
+    .thumb-copy {
+      min-width: 0;
+    }
+
+    .thumb-title {
+      display: block;
+      overflow: hidden;
+      font-size: 12px;
+      font-weight: 720;
+      line-height: 17px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .thumb-preview {
+      display: block;
+      height: 32px;
+      margin-top: 5px;
+      overflow: hidden;
+      border-radius: 3px;
+      background: #2b3039;
+    }
+
+    .thumb-preview::before,
+    .thumb-preview::after {
+      content: "";
+      display: block;
+      width: 70%;
+      height: 3px;
+      margin: 8px 7px 0;
+      background: #59616f;
+    }
+
+    .thumb-preview::after {
+      width: 44%;
+      margin-top: 5px;
+      background: #777af0;
+    }
+
+    .deck-main {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      grid-template-rows: minmax(0, 1fr) 54px;
+      background: #0e1014;
+    }
+
+    .stage-viewport {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      place-items: center;
+      padding: 22px;
+    }
+
+    .stage-frame {
+      position: relative;
+      width: calc(var(--slide-width) * 1px * var(--scale));
+      height: calc(var(--slide-height) * 1px * var(--scale));
+      overflow: hidden;
+      border: 1px solid #30353e;
+      border-radius: 4px;
+      background: var(--paper);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
+    }
+
+    .slide-canvas {
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: calc(var(--slide-width) * 1px);
+      height: calc(var(--slide-height) * 1px);
+      transform: scale(var(--scale));
+      transform-origin: top left;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      width: 1280px;
+      height: 720px;
+      overflow: hidden;
+      flex-direction: column;
+      padding: 50px 60px 44px;
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    .slide::after {
+      position: absolute;
+      right: 26px;
+      bottom: 19px;
+      color: currentColor;
+      content: attr(data-page);
+      font-size: 12px;
+      font-weight: 760;
+      opacity: 0.52;
+    }
+
+    .slide-dark {
+      background: var(--charcoal);
+      color: #f6f7fa;
+    }
+
+    .slide-indigo {
+      background: var(--indigo-deep);
+      color: #ffffff;
+    }
+
+    .slide-coral {
+      background: var(--coral);
+      color: #17191f;
+    }
+
+    .slide-kicker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      color: var(--indigo);
+      font-size: 13px;
+      font-weight: 820;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .slide-kicker::before {
+      width: 28px;
+      height: 3px;
+      background: currentColor;
+      content: "";
+    }
+
+    .slide-dark .slide-kicker,
+    .slide-indigo .slide-kicker {
+      color: #9fdcf1;
+    }
+
+    .slide-coral .slide-kicker {
+      color: #4c1a12;
+    }
+
+    .slide-title {
+      max-width: 1060px;
+      margin: 0;
+      font-size: 47px;
+      font-weight: 820;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .slide-lead {
+      max-width: 860px;
+      margin: 15px 0 0;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1.45;
+    }
+
+    .slide-dark .slide-lead,
+    .slide-indigo .slide-lead {
+      color: #c8cdd8;
+    }
+
+    .accent {
+      color: var(--coral);
+    }
+
+    .accent-cyan {
+      color: #64c6e9;
+    }
+
+    .section-rule {
+      width: 100%;
+      height: 1px;
+      margin-top: 26px;
+      background: var(--line);
+    }
+
+    .slide-dark .section-rule,
+    .slide-indigo .section-rule {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .slide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 22px;
+      color: #777e8a;
+      font-size: 12px;
+      font-weight: 680;
+    }
+
+    .slide-dark .slide-footer,
+    .slide-indigo .slide-footer {
+      color: #aeb4c0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .editable[contenteditable="true"] {
+      border-radius: 3px;
+      box-shadow: inset 0 -2px 0 rgba(121, 214, 255, 0.8);
+      cursor: text;
+    }
+
+    .cover {
+      justify-content: flex-end;
+      padding: 62px 68px;
+      background-color: #111318;
+      background-image: url("cv-app/public/pitch-assets/cv-kada-cover.png");
+      background-position: center;
+      background-size: cover;
+      color: #ffffff;
+    }
+
+    .cover::before {
+      position: absolute;
+      inset: 0;
+      background: rgba(8, 11, 16, 0.62);
+      content: "";
+    }
+
+    .cover::after {
+      color: #ffffff;
+    }
+
+    .cover-content {
+      position: relative;
+      z-index: 1;
+      max-width: 910px;
+    }
+
+    .cover-brand {
+      margin: 0 0 22px;
+      color: #ffffff;
+      font-size: 72px;
+      font-weight: 870;
+      line-height: 0.96;
+      letter-spacing: 0;
+    }
+
+    .cover-tagline {
+      max-width: 800px;
+      margin: 0;
+      font-size: 37px;
+      font-weight: 730;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .cover-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 28px;
+      color: #dce0e8;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .cover-meta span + span::before {
+      margin-right: 12px;
+      color: var(--coral);
+      content: "/";
+    }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 238px 1fr;
+      gap: 24px;
+      margin-top: 36px;
+      align-items: stretch;
+    }
+
+    .pain-column {
+      padding-top: 12px;
+    }
+
+    .pain-column h3 {
+      margin: 0 0 18px;
+      font-size: 16px;
+      font-weight: 820;
+      text-transform: uppercase;
+    }
+
+    .pain-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pain-list li {
+      display: grid;
+      min-height: 72px;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #ffffff;
+      font-size: 16px;
+      font-weight: 680;
+      line-height: 1.35;
+    }
+
+    .pain-index {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 50%;
+      background: #fee4de;
+      color: #a93321;
+      font-size: 12px;
+      font-weight: 840;
+    }
+
+    .signal-gap {
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      border: 1px solid #313641;
+      border-radius: 6px;
+      background: var(--charcoal);
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .signal-gap strong {
+      display: block;
+      color: var(--coral);
+      font-size: 58px;
+      line-height: 1;
+    }
+
+    .signal-gap span {
+      display: block;
+      margin-top: 12px;
+      font-size: 17px;
+      font-weight: 760;
+      line-height: 1.35;
+    }
+
+    .signal-gap small {
+      display: block;
+      margin-top: 10px;
+      color: #aeb5c2;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .canvas-grid {
+      display: grid;
+      flex: 1;
+      min-height: 0;
+      grid-template-columns: 1fr 1fr;
+      grid-auto-rows: 1fr;
+      gap: 9px;
+      margin-top: 27px;
+    }
+
+    .canvas-cell {
+      position: relative;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: center;
+      min-height: 0;
+      padding: 12px 17px;
+      border: 1px solid #343841;
+      border-radius: 4px;
+      background: #1d2026;
+    }
+
+    .canvas-cell:nth-child(4n + 2),
+    .canvas-cell:nth-child(4n + 3) {
+      background: #20211e;
+    }
+
+    .canvas-number {
+      color: var(--coral);
+      font-size: 13px;
+      font-weight: 840;
+    }
+
+    .canvas-cell h3 {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .canvas-cell p {
+      margin: 0;
+      color: #b9c0cc;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .loop-layout {
+      display: grid;
+      flex: 1;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 24px;
+      align-items: center;
+      margin-top: 22px;
+    }
+
+    .loop-step {
+      position: relative;
+      min-height: 308px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .loop-step:not(:last-child)::after {
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      right: -39px;
+      width: 54px;
+      height: 4px;
+      background: var(--coral);
+      content: "";
+    }
+
+    .loop-step:not(:last-child)::before {
+      position: absolute;
+      z-index: 3;
+      top: calc(50% - 7px);
+      right: -40px;
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 12px solid var(--coral);
+      content: "";
+    }
+
+    .loop-code {
+      color: var(--indigo);
+      font-size: 13px;
+      font-weight: 840;
+    }
+
+    .loop-icon {
+      display: grid;
+      width: 92px;
+      height: 92px;
+      margin: 23px 0 25px;
+      place-items: center;
+      border: 1px solid #bdc2ce;
+      border-radius: 50%;
+      background: #f1f3f8;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 880;
+    }
+
+    .loop-step h3 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .loop-step p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.48;
+    }
+
+    .product-layout {
+      display: grid;
+      flex: 1;
+      min-height: 0;
+      grid-template-columns: 350px 1fr;
+      gap: 38px;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .product-copy {
+      display: grid;
+      gap: 20px;
+    }
+
+    .product-point {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .product-point-number {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--coral);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 840;
+    }
+
+    .product-point h3 {
+      margin: 1px 0 5px;
+      font-size: 18px;
+    }
+
+    .product-point p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .app-window {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid #bbc1cd;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 22px 45px rgba(28, 34, 48, 0.16);
+    }
+
+    .window-bar {
+      display: flex;
+      height: 38px;
+      align-items: center;
+      gap: 7px;
+      padding: 0 13px;
+      border-bottom: 1px solid #d8dde6;
+      background: #eef1f6;
+    }
+
+    .window-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #9ea5b2;
+    }
+
+    .window-title {
+      margin-left: 8px;
+      color: #646b77;
+      font-size: 11px;
+      font-weight: 720;
+    }
+
+    .ide-shell {
+      display: grid;
+      height: 414px;
+      grid-template-columns: 172px 1fr 238px;
+    }
+
+    .ide-sidebar {
+      padding: 18px 12px;
+      border-right: 1px solid #343946;
+      background: #20232b;
+      color: #c8ced8;
+    }
+
+    .ide-sidebar strong {
+      display: block;
+      margin-bottom: 14px;
+      color: #ffffff;
+      font-size: 12px;
+    }
+
+    .task-mini {
+      margin-bottom: 8px;
+      padding: 10px;
+      border-radius: 4px;
+      background: #2b303a;
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+    .task-mini.active-task {
+      box-shadow: inset 3px 0 0 #6e72ed;
+      background: #30344b;
+    }
+
+    .code-panel {
+      padding: 19px;
+      background: #181b22;
+      color: #dbe1ec;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 11px;
+      line-height: 1.66;
+    }
+
+    .code-panel .code-dim {
+      color: #717988;
+    }
+
+    .code-panel .code-key {
+      color: #77bdf2;
+    }
+
+    .code-panel .code-value {
+      color: #ef9f76;
+    }
+
+    .evidence-panel {
+      padding: 16px;
+      border-left: 1px solid #dde1e8;
+      background: #f7f8fb;
+      color: var(--ink);
+    }
+
+    .evidence-panel h4 {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .score-ring {
+      display: grid;
+      width: 88px;
+      height: 88px;
+      margin: 18px auto;
+      place-items: center;
+      border: 10px solid #d9ddef;
+      border-top-color: var(--indigo);
+      border-right-color: var(--indigo);
+      border-radius: 50%;
+      color: var(--indigo-deep);
+      font-size: 22px;
+      font-weight: 860;
+    }
+
+    .rubric-row {
+      margin-top: 11px;
+      font-size: 10px;
+      font-weight: 730;
+    }
+
+    .rubric-bar {
+      height: 5px;
+      margin-top: 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #dde1e8;
+    }
+
+    .rubric-bar span {
+      display: block;
+      height: 100%;
+      background: var(--mint);
+    }
+
+    .report-shell {
+      display: grid;
+      flex: 1;
+      min-height: 0;
+      grid-template-columns: 278px 1fr;
+      gap: 18px;
+      margin-top: 26px;
+    }
+
+    .report-summary,
+    .report-detail {
+      min-height: 0;
+    }
+
+    .report-summary {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+    }
+
+    .summary-block,
+    .rubric-block,
+    .evidence-block,
+    .limitation-block {
+      border: 1px solid #d4d8e1;
+      border-radius: 6px;
+      background: #ffffff;
+    }
+
+    .summary-score {
+      padding: 18px;
+      background: #e8efff;
+    }
+
+    .summary-score small {
+      display: block;
+      color: #555e70;
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    .summary-score strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--indigo-deep);
+      font-size: 48px;
+      line-height: 1;
+    }
+
+    .summary-score span {
+      color: #666e7c;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .summary-block {
+      padding: 15px;
+    }
+
+    .summary-block h4,
+    .rubric-block h4,
+    .evidence-block h4,
+    .limitation-block h4 {
+      margin: 0 0 10px;
+      font-size: 13px;
+    }
+
+    .summary-block p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .human-note {
+      border-color: #e5b75d;
+      background: #fff7df;
+    }
+
+    .report-detail {
+      display: grid;
+      grid-template-rows: 1.16fr 0.84fr;
+      gap: 12px;
+    }
+
+    .rubric-block,
+    .evidence-block,
+    .limitation-block {
+      padding: 16px;
+    }
+
+    .rubric-table {
+      display: grid;
+      gap: 8px;
+    }
+
+    .rubric-line {
+      display: grid;
+      grid-template-columns: 185px 1fr 42px;
+      gap: 12px;
+      align-items: center;
+      padding: 9px 10px;
+      border-radius: 4px;
+      background: #f3f5f8;
+      font-size: 12px;
+      font-weight: 690;
+    }
+
+    .rubric-line .line-bar {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #d8dce5;
+    }
+
+    .rubric-line .line-bar span {
+      display: block;
+      height: 100%;
+      background: var(--cyan);
+    }
+
+    .report-bottom {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .evidence-quote {
+      margin: 0;
+      padding-left: 13px;
+      border-left: 3px solid var(--mint);
+      color: #3f4651;
+      font-size: 12px;
+      line-height: 1.48;
+    }
+
+    .evidence-quote + .evidence-quote {
+      margin-top: 10px;
+    }
+
+    .limitation-block {
+      border-color: #efc5bc;
+      background: #fff0ec;
+    }
+
+    .limitation-block ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #6f342b;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .trust-grid {
+      display: grid;
+      flex: 1;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 30px;
+    }
+
+    .trust-rule {
+      position: relative;
+      padding: 25px 26px 23px 86px;
+      border: 1px solid #414651;
+      border-radius: 6px;
+      background: #20232a;
+    }
+
+    .trust-rule-number {
+      position: absolute;
+      top: 25px;
+      left: 24px;
+      color: var(--coral);
+      font-size: 32px;
+      font-weight: 860;
+    }
+
+    .trust-rule h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .trust-rule p {
+      margin: 0;
+      color: #bfc5cf;
+      font-size: 14px;
+      line-height: 1.48;
+    }
+
+    .trust-callout {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 17px;
+      padding: 13px 18px;
+      border: 1px solid #54606b;
+      border-radius: 6px;
+      background: #15171c;
+      color: #cfd5df;
+      font-size: 13px;
+    }
+
+    .trust-callout strong {
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    .market-layout {
+      display: grid;
+      flex: 1;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 46px;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .market-wedge {
+      display: grid;
+      gap: 13px;
+      align-content: center;
+    }
+
+    .wedge-row {
+      display: grid;
+      min-height: 88px;
+      grid-template-columns: 140px 1fr;
+      gap: 18px;
+      align-items: center;
+      padding: 16px 20px;
+      border: 1px solid #cfd4de;
+      border-radius: 6px;
+      background: #ffffff;
+    }
+
+    .wedge-row:nth-child(1) {
+      width: 70%;
+      border-color: var(--coral);
+    }
+
+    .wedge-row:nth-child(2) {
+      width: 85%;
+      border-color: var(--cyan);
+    }
+
+    .wedge-row:nth-child(3) {
+      width: 100%;
+      border-color: var(--indigo);
+    }
+
+    .wedge-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 820;
+      text-transform: uppercase;
+    }
+
+    .wedge-row strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 17px;
+    }
+
+    .wedge-row p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .market-formula {
+      padding: 24px;
+      border: 1px solid #30343d;
+      border-radius: 8px;
+      background: var(--charcoal);
+      color: #ffffff;
+    }
+
+    .market-formula h3 {
+      margin: 0 0 18px;
+      color: #9fdcf1;
+      font-size: 15px;
+      text-transform: uppercase;
+    }
+
+    .formula-line {
+      padding: 13px 0;
+      border-top: 1px solid #343945;
+      color: #c6ccd6;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .formula-line strong {
+      color: #ffffff;
+    }
+
+    .hypothesis-note {
+      margin: 17px 0 0;
+      color: #f3b7a9;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .model-grid {
+      display: grid;
+      flex: 1;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      align-items: stretch;
+      margin-top: 30px;
+    }
+
+    .model-card {
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      border: 1px solid #d3d8e1;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .model-card.featured {
+      border: 2px solid var(--indigo);
+      background: #f0f1ff;
+    }
+
+    .model-label {
+      color: var(--indigo);
+      font-size: 12px;
+      font-weight: 840;
+      text-transform: uppercase;
+    }
+
+    .model-card h3 {
+      margin: 13px 0 8px;
+      font-size: 25px;
+    }
+
+    .model-card > p {
+      min-height: 62px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .model-card ul {
+      display: grid;
+      gap: 10px;
+      margin: 19px 0 0;
+      padding: 18px 0 0;
+      border-top: 1px solid #d6dbe4;
+      list-style: none;
+      color: #373c45;
+      font-size: 13px;
+      line-height: 1.38;
+    }
+
+    .model-card li::before {
+      margin-right: 8px;
+      color: var(--mint);
+      content: "✓";
+      font-weight: 900;
+    }
+
+    .model-status {
+      margin-top: auto;
+      padding-top: 20px;
+      color: #8c4b22;
+      font-size: 12px;
+      font-weight: 780;
+    }
+
+    .matrix-layout {
+      display: grid;
+      flex: 1;
+      grid-template-columns: 1fr 290px;
+      gap: 38px;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .matrix {
+      position: relative;
+      height: 400px;
+      margin: 12px 0 0 42px;
+      border-left: 2px solid #707784;
+      border-bottom: 2px solid #707784;
+      background-image: linear-gradient(#e3e6ec 1px, transparent 1px), linear-gradient(90deg, #e3e6ec 1px, transparent 1px);
+      background-size: 25% 25%;
+    }
+
+    .axis-y,
+    .axis-x {
+      position: absolute;
+      color: #5a616e;
+      font-size: 12px;
+      font-weight: 820;
+      text-transform: uppercase;
+    }
+
+    .axis-y {
+      top: 50%;
+      left: -154px;
+      width: 230px;
+      transform: rotate(-90deg);
+      text-align: center;
+    }
+
+    .axis-x {
+      right: 0;
+      bottom: -33px;
+    }
+
+    .matrix-point {
+      position: absolute;
+      display: grid;
+      min-width: 112px;
+      min-height: 48px;
+      place-items: center;
+      padding: 8px 12px;
+      border: 1px solid #c7ccd6;
+      border-radius: 6px;
+      background: #ffffff;
+      box-shadow: 0 8px 18px rgba(27, 32, 42, 0.08);
+      color: #363b45;
+      font-size: 12px;
+      font-weight: 780;
+      text-align: center;
+    }
+
+    .point-cv {
+      left: 18%;
+      bottom: 19%;
+    }
+
+    .point-ats {
+      left: 48%;
+      bottom: 29%;
+    }
+
+    .point-test {
+      right: 15%;
+      bottom: 52%;
+    }
+
+    .point-kada {
+      top: 11%;
+      right: 7%;
+      min-width: 154px;
+      min-height: 58px;
+      border: 2px solid var(--coral);
+      background: var(--charcoal);
+      color: #ffffff;
+      font-size: 15px;
+    }
+
+    .matrix-copy {
+      display: grid;
+      gap: 14px;
+    }
+
+    .matrix-copy h3 {
+      margin: 0;
+      font-size: 23px;
+    }
+
+    .matrix-copy p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .matrix-copy strong {
+      color: var(--ink);
+    }
+
+    .proof-layout {
+      display: grid;
+      flex: 1;
+      grid-template-columns: 320px 1fr;
+      gap: 38px;
+      align-items: stretch;
+      margin-top: 28px;
+    }
+
+    .proof-stats {
+      display: grid;
+      grid-template-rows: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .proof-stat {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 18px;
+      border: 1px solid #d2d7e0;
+      border-radius: 6px;
+      background: #ffffff;
+    }
+
+    .proof-stat strong {
+      color: var(--indigo);
+      font-size: 40px;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .proof-stat span {
+      color: #414752;
+      font-size: 14px;
+      font-weight: 720;
+      line-height: 1.38;
+    }
+
+    .ship-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      align-content: start;
+    }
+
+    .ship-item {
+      min-height: 104px;
+      padding: 17px;
+      border: 1px solid #343945;
+      border-radius: 6px;
+      background: #20232a;
+    }
+
+    .ship-status {
+      color: #74d4ae;
+      font-size: 11px;
+      font-weight: 820;
+      text-transform: uppercase;
+    }
+
+    .ship-item h3 {
+      margin: 9px 0 5px;
+      font-size: 16px;
+    }
+
+    .ship-item p {
+      margin: 0;
+      color: #adb5c2;
+      font-size: 12px;
+      line-height: 1.42;
+    }
+
+    .proof-disclaimer {
+      grid-column: 1 / -1;
+      margin: 3px 0 0;
+      color: #f1baad;
+      font-size: 12px;
+    }
+
+    .gtm-layout {
+      display: grid;
+      flex: 1;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-top: 28px;
+    }
+
+    .gtm-track {
+      padding: 24px;
+      border: 1px solid #d2d7e0;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .gtm-track h3 {
+      margin: 0 0 20px;
+      font-size: 22px;
+    }
+
+    .gtm-step {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 13px;
+      padding: 13px 0;
+      border-top: 1px solid #e1e4ea;
+    }
+
+    .gtm-step:first-of-type {
+      border-top: 0;
+    }
+
+    .gtm-step b {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--indigo);
+      color: #ffffff;
+      font-size: 11px;
+    }
+
+    .gtm-step strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .gtm-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.43;
+    }
+
+    .metric-box {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .metric-box div {
+      min-height: 79px;
+      padding: 13px;
+      border-radius: 5px;
+      background: #f0f2f7;
+    }
+
+    .metric-box strong {
+      display: block;
+      color: var(--indigo-deep);
+      font-size: 13px;
+    }
+
+    .metric-box span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .architecture-layout {
+      display: grid;
+      flex: 1;
+      grid-template-columns: 1.18fr 0.82fr;
+      gap: 32px;
+      align-items: center;
+      margin-top: 24px;
+    }
+
+    .architecture-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: center;
+    }
+
+    .architecture-node {
+      display: grid;
+      min-height: 126px;
+      place-items: center;
+      padding: 14px;
+      border: 1px solid #555c68;
+      border-radius: 6px;
+      background: #20232a;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 760;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .architecture-arrow {
+      color: var(--coral);
+      font-size: 28px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .tech-principles {
+      display: grid;
+      gap: 12px;
+    }
+
+    .tech-principle {
+      padding: 14px 16px;
+      border-left: 4px solid var(--mint);
+      background: #22252c;
+    }
+
+    .tech-principle strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .tech-principle span {
+      color: #b9c0cb;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .roadmap-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .roadmap-phase {
+      padding: 13px 14px;
+      border: 1px solid #444a56;
+      border-radius: 5px;
+      background: #1d2026;
+    }
+
+    .roadmap-phase b {
+      color: #85ddba;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .roadmap-phase p {
+      margin: 5px 0 0;
+      color: #c1c7d1;
+      font-size: 11px;
+      line-height: 1.36;
+    }
+
+    .team-grid {
+      display: grid;
+      flex: 1;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      align-items: stretch;
+      margin-top: 32px;
+    }
+
+    .team-member {
+      display: flex;
+      flex-direction: column;
+      padding: 22px;
+      border: 1px solid #d2d7e0;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .team-avatar {
+      display: grid;
+      width: 66px;
+      height: 66px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--charcoal);
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    .team-member:nth-child(2) .team-avatar {
+      background: var(--indigo);
+    }
+
+    .team-member:nth-child(3) .team-avatar {
+      background: var(--cyan);
+    }
+
+    .team-member:nth-child(4) .team-avatar {
+      background: var(--coral);
+    }
+
+    .team-member h3 {
+      margin: 17px 0 5px;
+      font-size: 18px;
+    }
+
+    .team-role {
+      min-height: 35px;
+      margin: 0;
+      color: var(--indigo);
+      font-size: 12px;
+      font-weight: 810;
+      line-height: 1.4;
+    }
+
+    .team-scope {
+      margin: 16px 0 0;
+      padding-top: 15px;
+      border-top: 1px solid #dde1e8;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .ask {
+      justify-content: center;
+      padding: 66px 72px;
+    }
+
+    .ask-layout {
+      display: grid;
+      grid-template-columns: 1fr 430px;
+      gap: 65px;
+      align-items: center;
+    }
+
+    .ask h2 {
+      max-width: 650px;
+      margin: 0;
+      font-size: 56px;
+      line-height: 1.05;
+    }
+
+    .ask-lead {
+      max-width: 650px;
+      margin: 18px 0 0;
+      color: #d1d6df;
+      font-size: 19px;
+      line-height: 1.48;
+    }
+
+    .ask-list {
+      display: grid;
+      gap: 12px;
+      margin: 27px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ask-list li {
+      display: grid;
+      grid-template-columns: 23px 1fr;
+      gap: 10px;
+      color: #eef1f5;
+      font-size: 15px;
+      line-height: 1.42;
+    }
+
+    .ask-list li::before {
+      color: var(--mint);
+      content: "✓";
+      font-weight: 900;
+    }
+
+    .pilot-card {
+      padding: 28px;
+      border: 1px solid #5a606d;
+      border-radius: 8px;
+      background: #20232a;
+    }
+
+    .pilot-card .pill {
+      color: #9fdcf1;
+    }
+
+    .pilot-card h3 {
+      margin: 21px 0 13px;
+      font-size: 27px;
+    }
+
+    .pilot-card p {
+      margin: 0;
+      color: #bfc6d0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .pilot-card strong {
+      display: block;
+      margin-top: 22px;
+      color: #ffffff;
+      font-size: 14px;
+    }
+
+    .deck-nav {
+      z-index: 10;
+      justify-content: center;
+      gap: 14px;
+      border-top: 1px solid #2d313a;
+      background: #15171c;
+    }
+
+    .nav-button {
+      display: grid;
+      width: 38px;
+      height: 34px;
+      min-height: 34px;
+      place-items: center;
+      padding: 0;
+      font-size: 23px;
+      line-height: 1;
+    }
+
+    .nav-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
+    }
+
+    .slide-count {
+      min-width: 86px;
+      justify-content: center;
+      gap: 6px;
+      color: #c6cbd5;
+      font-size: 13px;
+      font-weight: 730;
+    }
+
+    .progress-track {
+      position: absolute;
+      right: 0;
+      bottom: 53px;
+      left: 0;
+      z-index: 11;
+      height: 3px;
+      background: #242832;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: var(--coral);
+      transition: width 180ms ease;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (max-width: 840px) {
+      .app {
+        grid-template-rows: 54px minmax(0, 1fr);
+      }
+
+      .topbar {
+        gap: 8px;
+        padding: 0 10px;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .filmstrip {
+        position: fixed;
+        top: 54px;
+        bottom: 0;
+        left: 0;
+        width: min(276px, 86vw);
+        transform: translateX(-105%);
+        transition: transform 180ms ease;
+        box-shadow: 18px 0 45px rgba(0, 0, 0, 0.38);
+      }
+
+      .filmstrip.open {
+        transform: translateX(0);
+      }
+
+      .menu-button {
+        display: inline-grid;
+        place-items: center;
+      }
+
+      .toolbar-button.secondary-action {
+        display: none;
+      }
+
+      .stage-viewport {
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .file-name {
+        max-width: 112px;
+      }
+
+      .toolbar-button {
+        min-height: 34px;
+        padding: 0 9px;
+        font-size: 12px;
+      }
+
+      .brand-mark {
+        display: none;
+      }
+    }
+
+    @media print {
+      @page {
+        size: 13.333in 7.5in;
+        margin: 0;
+      }
+
+      html,
+      body {
+        width: auto;
+        height: auto;
+        overflow: visible;
+        background: #ffffff;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .topbar,
+      .filmstrip,
+      .deck-nav,
+      .progress-track {
+        display: none !important;
+      }
+
+      .editable[contenteditable="true"] {
+        box-shadow: none !important;
+      }
+
+      .app,
+      .workspace,
+      .deck-main,
+      .stage-viewport,
+      .stage-frame,
+      .slide-canvas {
+        display: block;
+        width: 1280px !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+
+      .slide {
+        position: relative;
+        display: flex !important;
+        page-break-after: always;
+        break-after: page;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <button class="menu-button" id="menuButton" type="button" aria-label="Mở danh sách slide" aria-expanded="false" title="Danh sách slide">☰</button>
+        <span class="brand-mark" aria-hidden="true">CK</span>
+        <span class="file-name">CV_KADA — Investor deck</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="toolbar-button" id="editButton" type="button" aria-pressed="false">Chỉnh sửa</button>
+        <button class="toolbar-button secondary-action" id="printButton" type="button">Xuất PDF</button>
+        <button class="toolbar-button secondary-action" id="fullscreenButton" type="button">Toàn màn hình</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="filmstrip" id="filmstrip" aria-label="Danh sách slide">
+        <p class="filmstrip-label">15 slide</p>
+        <div class="thumb-list" id="thumbList"></div>
+      </aside>
+
+      <main class="deck-main">
+        <div class="stage-viewport" id="stageViewport">
+          <div class="stage-frame" id="stageFrame">
+            <div class="slide-canvas" id="slideCanvas">
+              <section class="slide cover active" data-title="Mở đầu" data-page="01 / 15" aria-hidden="false">
+                <div class="cover-content">
+                  <p class="cover-brand editable">CV_KADA</p>
+                  <h1 class="cover-tagline editable">Tuyển kỹ sư bằng <span class="accent">bằng chứng năng lực</span>, không chỉ bằng từ khóa trong CV.</h1>
+                  <div class="cover-meta">
+                    <span class="editable">Pitch deck MVP</span>
+                    <span class="editable">Việt Nam</span>
+                    <span class="editable">2026</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="slide" data-title="Vấn đề" data-page="02 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Vấn đề</p>
+                <h2 class="slide-title editable">CV là lời khai. Tuyển dụng kỹ thuật cần <span class="accent">tín hiệu có thể kiểm chứng.</span></h2>
+                <div class="problem-grid">
+                  <div class="pain-column">
+                    <h3 class="editable">Ứng viên IT</h3>
+                    <ul class="pain-list">
+                      <li><span class="pain-index">01</span><span class="editable">Khó chứng minh kỹ năng thật khi kinh nghiệm còn ngắn.</span></li>
+                      <li><span class="pain-index">02</span><span class="editable">Tối ưu CV theo từng JD tốn thời gian, dễ viết quá tay.</span></li>
+                      <li><span class="pain-index">03</span><span class="editable">Không biết mình thiếu gì trước vòng phỏng vấn.</span></li>
+                    </ul>
+                  </div>
+                  <div class="signal-gap">
+                    <div>
+                      <strong>?</strong>
+                      <span class="editable">Khoảng trống niềm tin</span>
+                      <small class="editable">CV khớp từ khóa không đồng nghĩa với khả năng giải quyết công việc.</small>
+                    </div>
+                  </div>
+                  <div class="pain-column">
+                    <h3 class="editable">Nhà tuyển dụng</h3>
+                    <ul class="pain-list">
+                      <li><span class="pain-index">01</span><span class="editable">Sàng lọc nhiều hồ sơ nhưng tín hiệu kỹ thuật còn mỏng.</span></li>
+                      <li><span class="pain-index">02</span><span class="editable">Bài test chung chung không phản ánh đúng vai trò và seniority.</span></li>
+                      <li><span class="pain-index">03</span><span class="editable">Khó truy ngược kết luận đánh giá về bằng chứng cụ thể.</span></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="slide-footer"><span class="editable">Cơ hội: biến mỗi lượt ứng tuyển thành một hồ sơ năng lực có bằng chứng.</span><span>CV_KADA</span></div>
+              </section>
+
+              <section class="slide slide-dark" data-title="Opportunity canvas" data-page="03 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Opportunity canvas</p>
+                <h2 class="slide-title editable">Cơ hội trong một khung nhìn</h2>
+                <div class="canvas-grid">
+                  <article class="canvas-cell"><span class="canvas-number">01</span><div><h3 class="editable">Tagline</h3><p class="editable">CV → bài tập kỹ thuật sát thực tế → báo cáo đánh giá có bằng chứng.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">02</span><div><h3 class="editable">Khách hàng trả tiền</h3><p class="editable">Doanh nghiệp và đội tuyển dụng kỹ sư cần tín hiệu sàng lọc tốt hơn.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">03</span><div><h3 class="editable">Vấn đề</h3><p class="editable">CV và keyword chưa đủ để dự báo khả năng làm việc trong bối cảnh thật.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">04</span><div><h3 class="editable">Giải pháp</h3><p class="editable">Tạo bài tập theo CV + JD; chấm theo rubric; dẫn lại bằng chứng và giới hạn.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">05</span><div><h3 class="editable">Sản phẩm</h3><p class="editable">Một vòng lặp chung cho ứng viên và nhà tuyển dụng, thay vì các công cụ rời rạc.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">06</span><div><h3 class="editable">Mô hình</h3><p class="editable">Ứng viên dùng lõi miễn phí; doanh nghiệp trả phí cho workflow và báo cáo.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">07</span><div><h3 class="editable">Lợi thế</h3><p class="editable">Dữ liệu rubric + evidence gắn với CV version và JD cụ thể.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">08</span><div><h3 class="editable">Bằng chứng hiện tại</h3><p class="editable">MVP hai vai trò đã có luồng assessment, submission và employer-safe report.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">09</span><div><h3 class="editable">Đội ngũ</h3><p class="editable">Fullstack, frontend, backend và AI/data cùng xây trên một modular monolith.</p></div></article>
+                  <article class="canvas-cell"><span class="canvas-number">10</span><div><h3 class="editable">Đề nghị</h3><p class="editable">Tìm đối tác tuyển dụng để chạy pilot có đo lường trong 90 ngày.</p></div></article>
+                </div>
+              </section>
+
+              <section class="slide" data-title="Giải pháp" data-page="04 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Giải pháp</p>
+                <h2 class="slide-title editable">Một vòng lặp tạo ra tín hiệu tuyển dụng tốt hơn sau mỗi bước.</h2>
+                <p class="slide-lead editable">Mọi kết luận đều quay về đúng CV version, đúng JD, đúng bài làm và đúng rubric.</p>
+                <div class="loop-layout">
+                  <article class="loop-step">
+                    <span class="loop-code">01 — CONTEXT</span>
+                    <div class="loop-icon" aria-hidden="true">CV + JD</div>
+                    <h3 class="editable">Hiểu bối cảnh</h3>
+                    <p class="editable">Ứng viên chọn phiên bản CV và công việc mục tiêu. Hệ thống giữ nguyên dữ kiện, không bịa thêm thành tích.</p>
+                  </article>
+                  <article class="loop-step">
+                    <span class="loop-code">02 — WORK</span>
+                    <div class="loop-icon" aria-hidden="true">TASK</div>
+                    <h3 class="editable">Làm việc thật</h3>
+                    <p class="editable">Bài code review hoặc system design phù hợp vai trò, seniority và kỹ năng cần kiểm chứng.</p>
+                  </article>
+                  <article class="loop-step">
+                    <span class="loop-code">03 — PROOF</span>
+                    <div class="loop-icon" aria-hidden="true">REPORT</div>
+                    <h3 class="editable">Đọc bằng chứng</h3>
+                    <p class="editable">Điểm tư vấn đi kèm rubric breakdown, trích dẫn bài làm, điểm mạnh, khoảng trống và giới hạn.</p>
+                  </article>
+                </div>
+                <div class="slide-footer"><span class="editable">Không phải chứng chỉ. Không phải mạng xã hội. Là workflow tuyển dụng có thể kiểm chứng.</span><span>CV_KADA</span></div>
+              </section>
+
+              <section class="slide" data-title="Trải nghiệm ứng viên" data-page="05 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Sản phẩm — ứng viên</p>
+                <h2 class="slide-title editable">Từ “CV của tôi nói gì?” đến “bài làm của tôi chứng minh gì?”</h2>
+                <div class="product-layout">
+                  <div class="product-copy">
+                    <div class="product-point"><span class="product-point-number">1</span><div><h3 class="editable">Chọn CV + công việc</h3><p class="editable">Context được khóa theo phiên bản để kết quả không trôi theo dữ liệu mới.</p></div></div>
+                    <div class="product-point"><span class="product-point-number">2</span><div><h3 class="editable">Giải tình huống kỹ thuật</h3><p class="editable">Code review, performance, system design và các tình huống sát vai trò.</p></div></div>
+                    <div class="product-point"><span class="product-point-number">3</span><div><h3 class="editable">Nhận feedback hành động được</h3><p class="editable">Biết điểm mạnh, khoảng trống và bằng chứng nào đã tạo ra nhận định.</p></div></div>
+                  </div>
+                  <div class="app-window" aria-label="Minh họa không gian làm bài assessment">
+                    <div class="window-bar"><span class="window-dot"></span><span class="window-dot"></span><span class="window-dot"></span><span class="window-title">CV_KADA / Assessment workspace</span></div>
+                    <div class="ide-shell">
+                      <aside class="ide-sidebar"><strong>Nhiệm vụ</strong><div class="task-mini active-task">01 / Code review<br>N+1 query</div><div class="task-mini">02 / System design<br>Scale 10×</div></aside>
+                      <div class="code-panel"><span class="code-dim">01</span>&nbsp; <span class="code-key">for</span> (orderId <span class="code-key">of</span> orderIds) {<br><span class="code-dim">02</span>&nbsp;&nbsp;&nbsp; order = repository.<span class="code-value">findById</span>(orderId)<br><span class="code-dim">03</span>&nbsp;&nbsp;&nbsp; user = users.<span class="code-value">findById</span>(order.userId)<br><span class="code-dim">04</span>&nbsp;&nbsp;&nbsp; <span class="code-key">for</span> (productId <span class="code-key">of</span> products) {<br><span class="code-dim">05</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; product = catalog.<span class="code-value">findById</span>(productId)<br><span class="code-dim">06</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; catalog.<span class="code-value">save</span>(product)<br><span class="code-dim">07</span>&nbsp;&nbsp;&nbsp; }<br><span class="code-dim">08</span>&nbsp; }<br><br><span class="code-dim">// Phân tích bottleneck, đề xuất</span><br><span class="code-dim">// rollback, test và monitoring.</span></div>
+                      <aside class="evidence-panel"><h4>Báo cáo tư vấn</h4><div class="score-ring">82</div><div class="rubric-row">Định nghĩa vấn đề<div class="rubric-bar"><span style="width: 88%"></span></div></div><div class="rubric-row">Thiết kế kỹ thuật<div class="rubric-bar"><span style="width: 76%"></span></div></div><div class="rubric-row">Triển khai & kiểm thử<div class="rubric-bar"><span style="width: 84%"></span></div></div><div class="rubric-row">Rủi ro vận hành<div class="rubric-bar"><span style="width: 68%"></span></div></div></aside>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="slide" data-title="Trải nghiệm nhà tuyển dụng" data-page="06 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Sản phẩm — nhà tuyển dụng</p>
+                <h2 class="slide-title editable">Một báo cáo ngắn để quyết định <span class="accent">nên hỏi gì tiếp theo.</span></h2>
+                <div class="report-shell">
+                  <div class="report-summary">
+                    <div class="summary-block summary-score"><small>Điểm tư vấn</small><strong>82<span>/100</span></strong></div>
+                    <div class="summary-block"><h4>Phù hợp với vai trò</h4><p class="editable">Ứng viên nhận diện đúng N+1 query và đề xuất batch loading, nhưng kế hoạch rollback còn thiếu chi tiết.</p></div>
+                    <div class="summary-block human-note"><h4>Quyết định của con người</h4><p class="editable">Báo cáo hỗ trợ sàng lọc; không thay thế phỏng vấn, xác minh kinh nghiệm hoặc quyết định tuyển dụng.</p></div>
+                  </div>
+                  <div class="report-detail">
+                    <div class="rubric-block"><h4>Rubric breakdown</h4><div class="rubric-table"><div class="rubric-line"><span>Định nghĩa vấn đề</span><span class="line-bar"><span style="width: 88%"></span></span><b>4.4</b></div><div class="rubric-line"><span>Thiết kế kỹ thuật</span><span class="line-bar"><span style="width: 76%"></span></span><b>3.8</b></div><div class="rubric-line"><span>Triển khai & kiểm thử</span><span class="line-bar"><span style="width: 84%"></span></span><b>4.2</b></div><div class="rubric-line"><span>Rủi ro vận hành</span><span class="line-bar"><span style="width: 68%"></span></span><b>3.4</b></div></div></div>
+                    <div class="report-bottom">
+                      <div class="evidence-block"><h4>Bằng chứng được sử dụng</h4><p class="evidence-quote editable">“Prefetch orders and products in two batched queries, then write within one transaction.”</p><p class="evidence-quote editable">“Add a load test and track DB CPU before rollout.”</p></div>
+                      <div class="limitation-block"><h4>Giới hạn cần kiểm chứng</h4><ul><li class="editable">Chưa nêu chiến lược rollback.</li><li class="editable">Chưa phân tích race condition tồn kho.</li><li class="editable">Cần phỏng vấn sâu về trade-off.</li></ul></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="slide slide-dark" data-title="Lớp tin cậy" data-page="07 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Trust by design</p>
+                <h2 class="slide-title editable">AI đưa ra đề xuất. <span class="accent">Bằng chứng giữ quyền kiểm chứng.</span></h2>
+                <div class="trust-grid">
+                  <article class="trust-rule"><span class="trust-rule-number">01</span><h3 class="editable">Rubric trước, điểm sau</h3><p class="editable">Tiêu chí, trọng số và expected evidence được cấu trúc rõ trước khi đánh giá.</p></article>
+                  <article class="trust-rule"><span class="trust-rule-number">02</span><h3 class="editable">Trích dẫn từ bài làm</h3><p class="editable">Mỗi kết luận quan trọng phải quay về đoạn bằng chứng cụ thể của ứng viên.</p></article>
+                  <article class="trust-rule"><span class="trust-rule-number">03</span><h3 class="editable">Giới hạn luôn hiển thị</h3><p class="editable">Nói rõ những gì bài test chưa đo được, thay vì biến score thành kết luận tuyệt đối.</p></article>
+                  <article class="trust-rule"><span class="trust-rule-number">04</span><h3 class="editable">Dữ liệu thuộc về người dùng</h3><p class="editable">Identity lấy từ server session; CV, JD và kết quả được kiểm soát quyền truy cập.</p></article>
+                </div>
+                <div class="trust-callout"><strong class="editable">Nguyên tắc sản phẩm</strong><span class="editable">Không bịa dữ kiện ứng viên · Không chấm điểm hộp đen · Không quyết định thay con người</span></div>
+              </section>
+
+              <section class="slide" data-title="Thị trường" data-page="08 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Thị trường</p>
+                <h2 class="slide-title editable">Bắt đầu từ một ngách có nỗi đau rõ: tuyển kỹ sư đầu sự nghiệp tại Việt Nam.</h2>
+                <div class="market-layout">
+                  <div class="market-wedge">
+                    <div class="wedge-row"><span class="wedge-label">Beachhead</span><div><strong class="editable">Fresher / Junior IT</strong><p class="editable">Ứng viên cần chứng minh năng lực vượt ra ngoài CV ngắn.</p></div></div>
+                    <div class="wedge-row"><span class="wedge-label">Buyer đầu tiên</span><div><strong class="editable">SME & đội tuyển dụng công nghệ</strong><p class="editable">Cần shortlist nhanh hơn mà không xây assessment stack riêng.</p></div></div>
+                    <div class="wedge-row"><span class="wedge-label">Mở rộng</span><div><strong class="editable">Trung tâm đào tạo & doanh nghiệp lớn</strong><p class="editable">Đánh giá đầu ra, internship và tuyển theo năng lực có cấu trúc.</p></div></div>
+                  </div>
+                  <aside class="market-formula">
+                    <h3 class="editable">Sizing theo bottom-up</h3>
+                    <div class="formula-line editable"><strong>TAM</strong> = số doanh nghiệp tuyển IT × chi phí assessment/năm</div>
+                    <div class="formula-line editable"><strong>SAM</strong> = doanh nghiệp có tuyển fresher/junior × số vị trí phù hợp</div>
+                    <div class="formula-line editable"><strong>SOM</strong> = số pilot có thể phục vụ × tỷ lệ chuyển đổi trả phí</div>
+                    <p class="hypothesis-note editable">Chưa gắn con số thị trường khi chưa có nguồn và khảo sát buyer đủ tin cậy. Pilot sẽ khóa các biến đầu vào này.</p>
+                  </aside>
+                </div>
+              </section>
+
+              <section class="slide" data-title="Mô hình kinh doanh" data-page="09 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Business model</p>
+                <h2 class="slide-title editable">Giữ ứng viên dễ tiếp cận. Thu phí nơi giá trị tuyển dụng được tạo ra.</h2>
+                <div class="model-grid">
+                  <article class="model-card"><span class="model-label editable">Candidate</span><h3 class="editable">Free core</h3><p class="editable">Tạo CV, chọn JD, làm assessment và đọc feedback cá nhân.</p><ul><li class="editable">Giảm rào cản tạo supply</li><li class="editable">Hồ sơ kỹ năng tái sử dụng có kiểm soát</li><li class="editable">Tùy chọn nâng cấp tối ưu CV</li></ul><span class="model-status editable">Giả thuyết cần kiểm chứng</span></article>
+                  <article class="model-card featured"><span class="model-label editable">Employer</span><h3 class="editable">Hiring workspace</h3><p class="editable">Workflow tuyển dụng, báo cáo assessment, shortlist và quản lý pipeline.</p><ul><li class="editable">Gói theo tháng / team</li><li class="editable">Giới hạn theo job hoặc lượt assessment</li><li class="editable">Pilot trả phí trước khi scale</li></ul><span class="model-status editable">Nguồn doanh thu ưu tiên</span></article>
+                  <article class="model-card"><span class="model-label editable">Partner</span><h3 class="editable">Program license</h3><p class="editable">Cohort đánh giá đầu ra cho trường, bootcamp và chương trình internship.</p><ul><li class="editable">Template task theo vai trò</li><li class="editable">Dashboard cohort tổng hợp</li><li class="editable">Không biến thành LMS</li></ul><span class="model-status editable">Mở rộng sau product-market fit</span></article>
+                </div>
+                <div class="slide-footer"><span class="editable">Pricing chỉ được chốt sau khi đo willingness-to-pay trong pilot.</span><span>CV_KADA</span></div>
+              </section>
+
+              <section class="slide" data-title="Khác biệt" data-page="10 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Positioning</p>
+                <h2 class="slide-title editable">Không thay ATS hay coding test. CV_KADA nối phần còn thiếu giữa hai hệ thống.</h2>
+                <div class="matrix-layout">
+                  <div class="matrix" aria-label="Ma trận định vị sản phẩm">
+                    <span class="axis-y">Gắn với CV và JD</span><span class="axis-x">Bằng chứng kỹ thuật →</span>
+                    <span class="matrix-point point-cv editable">CV builder</span>
+                    <span class="matrix-point point-ats editable">ATS / Job board</span>
+                    <span class="matrix-point point-test editable">Coding test</span>
+                    <span class="matrix-point point-kada editable">CV_KADA</span>
+                  </div>
+                  <div class="matrix-copy">
+                    <h3 class="editable">Wedge khác biệt</h3>
+                    <p class="editable"><strong>Contextual:</strong> task bắt đầu từ đúng CV version và JD.</p>
+                    <p class="editable"><strong>Evidence-first:</strong> score đi cùng rubric, quote và limitation.</p>
+                    <p class="editable"><strong>Two-sided:</strong> ứng viên nhận feedback; recruiter nhận báo cáo dùng được.</p>
+                    <p class="editable"><strong>Focused:</strong> không mở rộng thành LMS, social network hay certification marketplace.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="slide slide-dark" data-title="Bằng chứng MVP" data-page="11 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Bằng chứng MVP</p>
+                <h2 class="slide-title editable">Sản phẩm đã có vertical slice. <span class="accent">Traction thị trường vẫn cần được chứng minh.</span></h2>
+                <div class="proof-layout">
+                  <div class="proof-stats">
+                    <div class="proof-stat"><strong>2</strong><span class="editable">trải nghiệm riêng cho ứng viên và recruiter</span></div>
+                    <div class="proof-stat"><strong>1</strong><span class="editable">vòng lặp xuyên suốt CV → task → report</span></div>
+                    <div class="proof-stat"><strong>0</strong><span class="editable">chỉ số tăng trưởng được bịa để làm đẹp deck</span></div>
+                  </div>
+                  <div class="ship-list">
+                    <article class="ship-item"><span class="ship-status">Implemented</span><h3 class="editable">CV & Job context</h3><p class="editable">CV version, JD, matching và quyền sở hữu theo server session.</p></article>
+                    <article class="ship-item"><span class="ship-status">Implemented</span><h3 class="editable">Assessment session</h3><p class="editable">Task kỹ thuật, submission, rubric và kết quả được lưu có cấu trúc.</p></article>
+                    <article class="ship-item"><span class="ship-status">Implemented</span><h3 class="editable">Candidate report</h3><p class="editable">Điểm tư vấn, strengths, gaps, evidence và limitations.</p></article>
+                    <article class="ship-item"><span class="ship-status">Implemented</span><h3 class="editable">Recruiter workspace</h3><p class="editable">Job, candidate pipeline và employer-safe assessment report.</p></article>
+                    <article class="ship-item"><span class="ship-status">Supporting flow</span><h3 class="editable">CV optimization</h3><p class="editable">Gemini-backed matching, gợi ý keyword và rephrase khi có credential.</p></article>
+                    <article class="ship-item"><span class="ship-status">Supporting flow</span><h3 class="editable">Tracker & interview</h3><p class="editable">Luồng hỗ trợ còn cần hoàn thiện persistence và governance.</p></article>
+                    <p class="proof-disclaimer editable">MVP readiness không đồng nghĩa với product-market fit. Slide này chỉ mô tả trạng thái triển khai trong repository.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="slide" data-title="Go-to-market" data-page="12 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Go-to-market</p>
+                <h2 class="slide-title editable">Bán một pilot đo được, không bán một tầm nhìn mơ hồ.</h2>
+                <div class="gtm-layout">
+                  <article class="gtm-track">
+                    <h3 class="editable">Acquire supply</h3>
+                    <div class="gtm-step"><b>01</b><div><strong class="editable">Cohort ứng viên nhỏ</strong><p class="editable">Fresher/junior từ CLB công nghệ, cộng đồng lập trình và đối tác đào tạo.</p></div></div>
+                    <div class="gtm-step"><b>02</b><div><strong class="editable">Job-specific challenge</strong><p class="editable">Mỗi ứng viên làm task gắn với vị trí thật, không làm test đại trà.</p></div></div>
+                    <div class="gtm-step"><b>03</b><div><strong class="editable">Portable proof</strong><p class="editable">Feedback giúp ứng viên học; report được chia sẻ theo quyền với recruiter.</p></div></div>
+                  </article>
+                  <article class="gtm-track">
+                    <h3 class="editable">Convert demand</h3>
+                    <div class="gtm-step"><b>01</b><div><strong class="editable">1–3 đối tác pilot</strong><p class="editable">Chọn doanh nghiệp có vị trí IT lặp lại và pain sàng lọc rõ.</p></div></div>
+                    <div class="gtm-step"><b>02</b><div><strong class="editable">Đo trước / sau</strong><p class="editable">So thời gian shortlist, tỷ lệ hoàn thành và độ hữu ích của report.</p></div></div>
+                    <div class="metric-box"><div><strong class="editable">Time-to-shortlist</strong><span class="editable">Từ nhận hồ sơ tới danh sách phỏng vấn.</span></div><div><strong class="editable">Completion rate</strong><span class="editable">Ứng viên bắt đầu và hoàn tất task.</span></div><div><strong class="editable">Signal agreement</strong><span class="editable">Recruiter có đồng ý với evidence/rubric?</span></div><div><strong class="editable">Willingness-to-pay</strong><span class="editable">Có tiếp tục trả phí sau pilot?</span></div></div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="slide slide-dark" data-title="Công nghệ & lộ trình" data-page="13 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Technology & roadmap</p>
+                <h2 class="slide-title editable">Kiến trúc đủ gọn để đi nhanh, đủ ranh giới để dữ liệu tuyển dụng không đi lạc.</h2>
+                <div class="architecture-layout">
+                  <div class="architecture-flow" aria-label="Kiến trúc modular monolith"><div class="architecture-node editable">UI<br>Server-first</div><div class="architecture-arrow">›</div><div class="architecture-node editable">Action /<br>Controller</div><div class="architecture-arrow">›</div><div class="architecture-node editable">Service<br>Domain rules</div></div>
+                  <div class="tech-principles">
+                    <div class="tech-principle"><strong class="editable">Repository / Provider boundary</strong><span class="editable">Prisma/PostgreSQL và AI provider không rò vào presentation.</span></div>
+                    <div class="tech-principle"><strong class="editable">Structured AI output</strong><span class="editable">Zod validation, rubric/evidence có schema, mock path cho CI.</span></div>
+                    <div class="tech-principle"><strong class="editable">Ownership-safe by default</strong><span class="editable">Không tin userId từ client; recruiter access theo company membership.</span></div>
+                  </div>
+                </div>
+                <div class="roadmap-strip">
+                  <div class="roadmap-phase"><b class="editable">0–30 ngày</b><p class="editable">Khóa task bank, report UX và dữ liệu đo lường pilot.</p></div>
+                  <div class="roadmap-phase"><b class="editable">31–60 ngày</b><p class="editable">Chạy cohort đầu tiên, audit chất lượng evidence và completion.</p></div>
+                  <div class="roadmap-phase"><b class="editable">61–90 ngày</b><p class="editable">Đo buyer value, chốt packaging và quyết định hướng scale.</p></div>
+                </div>
+              </section>
+
+              <section class="slide" data-title="Đội ngũ" data-page="14 / 15" aria-hidden="true">
+                <p class="slide-kicker editable">Đội ngũ</p>
+                <h2 class="slide-title editable">Bốn năng lực cần thiết để khép kín vòng lặp sản phẩm.</h2>
+                <div class="team-grid">
+                  <article class="team-member"><div class="team-avatar" aria-hidden="true">LĐ</div><h3 class="editable">Lê Văn Đại</h3><p class="team-role editable">Team Lead · Fullstack</p><p class="team-scope editable">Kiến trúc tổng thể, Auth.js và tích hợp các năng lực AI.</p></article>
+                  <article class="team-member"><div class="team-avatar" aria-hidden="true">PĐ</div><h3 class="editable">Phạm Văn Đoàn</h3><p class="team-role editable">Frontend Developer</p><p class="team-scope editable">UI/UX, CV Builder và trải nghiệm application tracking.</p></article>
+                  <article class="team-member"><div class="team-avatar" aria-hidden="true">TT</div><h3 class="editable">Trần Trường Thuận</h3><p class="team-role editable">Backend Developer</p><p class="team-scope editable">Prisma/PostgreSQL, API, Server Actions và dữ liệu cốt lõi.</p></article>
+                  <article class="team-member"><div class="team-avatar" aria-hidden="true">PB</div><h3 class="editable">Phan Giảng Bình</h3><p class="team-role editable">AI & Data Engineer</p><p class="team-scope editable">Prompt, Gemini provider, matching và mock interview.</p></article>
+                </div>
+                <div class="slide-footer"><span class="editable">Năng lực tiếp theo cần bổ sung: customer discovery, sales B2B và assessment science.</span><span>CV_KADA</span></div>
+              </section>
+
+              <section class="slide slide-dark ask" data-title="Đề nghị pilot" data-page="15 / 15" aria-hidden="true">
+                <div class="ask-layout">
+                  <div>
+                    <p class="slide-kicker editable">The ask</p>
+                    <h2 class="editable">Cùng kiểm chứng liệu bằng chứng kỹ thuật có thể tạo ra một shortlist tốt hơn.</h2>
+                    <p class="ask-lead editable">CV_KADA đang tìm đối tác tuyển dụng để chạy pilot 90 ngày trên một nhóm vị trí IT có pain sàng lọc rõ.</p>
+                    <ul class="ask-list"><li class="editable">Cung cấp 1–3 JD thực tế và rubric kỳ vọng.</li><li class="editable">Mời một cohort ứng viên đủ nhỏ để quan sát sâu.</li><li class="editable">Đánh giá report dựa trên tính hữu ích, không chỉ điểm số.</li></ul>
+                  </div>
+                  <aside class="pilot-card"><span class="pill editable">Pilot partner</span><h3 class="editable">Đầu ra sau 90 ngày</h3><p class="editable">Một bộ task được hiệu chỉnh, dữ liệu completion, thời gian shortlist, phản hồi recruiter và quyết định rõ ràng về pricing/product-market fit.</p><strong class="editable">Liên hệ: [email / số điện thoại]</strong></aside>
+                </div>
+                <div class="slide-footer"><span class="editable">CV_KADA · Evidence-based technical hiring</span><span>cv-kada.local</span></div>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+        <nav class="deck-nav" aria-label="Điều hướng slide">
+          <button class="nav-button" id="prevButton" type="button" aria-label="Slide trước" title="Slide trước">‹</button>
+          <div class="slide-count" aria-live="polite"><span id="currentSlide">1</span><span>/</span><span id="totalSlides">15</span></div>
+          <button class="nav-button" id="nextButton" type="button" aria-label="Slide tiếp theo" title="Slide tiếp theo">›</button>
+        </nav>
+      </main>
+    </div>
+  </div>
+
+  <div class="sr-only" id="statusMessage" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const WIDTH = 1280;
+      const HEIGHT = 720;
+      const STORAGE_KEY = "cv-kada-pitch-deck-v1";
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const stageViewport = document.getElementById("stageViewport");
+      const stageFrame = document.getElementById("stageFrame");
+      const thumbList = document.getElementById("thumbList");
+      const filmstrip = document.getElementById("filmstrip");
+      const menuButton = document.getElementById("menuButton");
+      const prevButton = document.getElementById("prevButton");
+      const nextButton = document.getElementById("nextButton");
+      const currentSlide = document.getElementById("currentSlide");
+      const totalSlides = document.getElementById("totalSlides");
+      const progressBar = document.getElementById("progressBar");
+      const editButton = document.getElementById("editButton");
+      const printButton = document.getElementById("printButton");
+      const fullscreenButton = document.getElementById("fullscreenButton");
+      const statusMessage = document.getElementById("statusMessage");
+      const editableElements = Array.from(document.querySelectorAll(".editable"));
+      let activeIndex = 0;
+      let editMode = false;
+
+      totalSlides.textContent = String(slides.length);
+
+      editableElements.forEach((element, index) => {
+        element.dataset.editKey = `copy-${index}`;
+      });
+
+      function loadEdits() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          editableElements.forEach((element) => {
+            const value = saved[element.dataset.editKey];
+            if (typeof value === "string") element.innerHTML = value;
+          });
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
+      function saveEdits() {
+        const saved = {};
+        editableElements.forEach((element) => {
+          saved[element.dataset.editKey] = element.innerHTML;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        statusMessage.textContent = "Đã lưu thay đổi trên trình duyệt này.";
+      }
+
+      function buildThumbs() {
+        slides.forEach((slide, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "thumb-button";
+          button.dataset.slideIndex = String(index);
+          button.setAttribute("aria-label", `Mở slide ${index + 1}: ${slide.dataset.title}`);
+          button.innerHTML = `<span class="thumb-number">${String(index + 1).padStart(2, "0")}</span><span class="thumb-copy"><span class="thumb-title"></span><span class="thumb-preview" aria-hidden="true"></span></span>`;
+          button.querySelector(".thumb-title").textContent = slide.dataset.title;
+          button.addEventListener("click", () => showSlide(index, true));
+          thumbList.appendChild(button);
+        });
+      }
+
+      function fitStage() {
+        const bounds = stageViewport.getBoundingClientRect();
+        const styles = getComputedStyle(stageViewport);
+        const horizontalPadding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+        const verticalPadding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+        const availableWidth = Math.max(1, bounds.width - horizontalPadding - 2);
+        const availableHeight = Math.max(1, bounds.height - verticalPadding - 2);
+        const scale = Math.min(availableWidth / WIDTH, availableHeight / HEIGHT, 1.18);
+        document.documentElement.style.setProperty("--scale", scale.toFixed(4));
+        stageFrame.style.width = `${WIDTH * scale}px`;
+        stageFrame.style.height = `${HEIGHT * scale}px`;
+      }
+
+      function showSlide(index, closeMenu = false) {
+        activeIndex = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach((slide, slideIndex) => {
+          const isActive = slideIndex === activeIndex;
+          slide.classList.toggle("active", isActive);
+          slide.setAttribute("aria-hidden", String(!isActive));
+        });
+        Array.from(thumbList.children).forEach((button, buttonIndex) => {
+          button.setAttribute("aria-current", String(buttonIndex === activeIndex));
+        });
+        currentSlide.textContent = String(activeIndex + 1);
+        progressBar.style.width = `${((activeIndex + 1) / slides.length) * 100}%`;
+        prevButton.disabled = activeIndex === 0;
+        nextButton.disabled = activeIndex === slides.length - 1;
+        const currentThumb = thumbList.children[activeIndex];
+        if (currentThumb) currentThumb.scrollIntoView({ block: "nearest" });
+        if (closeMenu && window.innerWidth <= 840) toggleMenu(false);
+        history.replaceState(null, "", `#slide-${activeIndex + 1}`);
+        document.title = `${String(activeIndex + 1).padStart(2, "0")} · ${slides[activeIndex].dataset.title} | CV_KADA`;
+      }
+
+      function toggleMenu(force) {
+        const isOpen = typeof force === "boolean" ? force : !filmstrip.classList.contains("open");
+        filmstrip.classList.toggle("open", isOpen);
+        menuButton.setAttribute("aria-expanded", String(isOpen));
+      }
+
+      function toggleEdit() {
+        editMode = !editMode;
+        editButton.setAttribute("aria-pressed", String(editMode));
+        editButton.textContent = editMode ? "Đang chỉnh sửa" : "Chỉnh sửa";
+        editableElements.forEach((element) => {
+          element.contentEditable = String(editMode);
+          element.spellcheck = editMode;
+        });
+        statusMessage.textContent = editMode ? "Đã bật chế độ chỉnh sửa." : "Đã tắt chế độ chỉnh sửa.";
+        if (!editMode) saveEdits();
+      }
+
+      function parseHash() {
+        const match = location.hash.match(/^#slide-(\d+)$/);
+        return match ? Number(match[1]) - 1 : 0;
+      }
+
+      buildThumbs();
+      loadEdits();
+      showSlide(parseHash());
+      fitStage();
+
+      prevButton.addEventListener("click", () => showSlide(activeIndex - 1));
+      nextButton.addEventListener("click", () => showSlide(activeIndex + 1));
+      menuButton.addEventListener("click", () => toggleMenu());
+      editButton.addEventListener("click", toggleEdit);
+      printButton.addEventListener("click", () => window.print());
+      fullscreenButton.addEventListener("click", async () => {
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else await document.documentElement.requestFullscreen();
+        } catch {
+          statusMessage.textContent = "Trình duyệt không cho phép mở toàn màn hình.";
+        }
+      });
+
+      editableElements.forEach((element) => {
+        element.addEventListener("input", saveEdits);
+      });
+
+      window.addEventListener("resize", fitStage);
+      window.addEventListener("hashchange", () => showSlide(parseHash()));
+      document.addEventListener("fullscreenchange", () => {
+        fullscreenButton.textContent = document.fullscreenElement ? "Thoát toàn màn hình" : "Toàn màn hình";
+        fitStage();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (editMode && event.target.closest("[contenteditable='true']")) return;
+        if (["ArrowRight", "PageDown", " "].includes(event.key)) {
+          event.preventDefault();
+          showSlide(activeIndex + 1);
+        }
+        if (["ArrowLeft", "PageUp"].includes(event.key)) {
+          event.preventDefault();
+          showSlide(activeIndex - 1);
+        }
+        if (event.key === "Home") showSlide(0);
+        if (event.key === "End") showSlide(slides.length - 1);
+        if (event.key === "Escape") toggleMenu(false);
+      });
+    })();
+  </script>
+</body>
+</html>

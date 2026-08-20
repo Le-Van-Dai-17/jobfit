@@ -137,28 +137,40 @@ export class AssessmentRepository {
     sessionId: string;
     submissions: Array<{ taskId: string; answerText: string }>;
   }, evaluate: () => Promise<AssessmentResultInput>) {
+    // 1. Pre-claim the session outside the main transaction
+    const claimed = await prisma.assessmentSession.updateMany({
+      where: { id: input.sessionId, userId: input.userId, status: "TASKS_GENERATED" },
+      data: { status: "SUBMITTED" },
+    });
+
+    if (claimed.count !== 1) {
+      throw new AssessmentSessionStateError();
+    }
+
+    const taskCount = await prisma.assessmentTask.count({
+      where: {
+        sessionId: input.sessionId,
+        id: { in: input.submissions.map((submission) => submission.taskId) },
+      },
+    });
+    if (taskCount !== input.submissions.length) {
+      // Revert
+      await prisma.assessmentSession.updateMany({ where: { id: input.sessionId }, data: { status: "TASKS_GENERATED" }});
+      throw new AssessmentSessionStateError();
+    }
+
+    // 2. Evaluate using AI provider (Long running, do not hold DB transaction)
+    let result;
+    try {
+      result = await evaluate();
+    } catch (e) {
+      // Revert if AI fails
+      await prisma.assessmentSession.updateMany({ where: { id: input.sessionId }, data: { status: "TASKS_GENERATED" }});
+      throw e;
+    }
+
+    // 3. Save submissions and result in a fast transaction
     return prisma.$transaction(async (tx) => {
-      const claimed = await tx.assessmentSession.updateMany({
-        where: { id: input.sessionId, userId: input.userId, status: "TASKS_GENERATED" },
-        data: { status: "SUBMITTED" },
-      });
-
-      if (claimed.count !== 1) {
-        throw new AssessmentSessionStateError();
-      }
-
-      const taskCount = await tx.assessmentTask.count({
-        where: {
-          sessionId: input.sessionId,
-          id: { in: input.submissions.map((submission) => submission.taskId) },
-        },
-      });
-      if (taskCount !== input.submissions.length) {
-        throw new AssessmentSessionStateError();
-      }
-
-      const result = await evaluate();
-
       for (const submission of input.submissions) {
         await tx.assessmentSubmission.create({
           data: {
@@ -200,6 +212,24 @@ export class AssessmentRepository {
 
       if (!session) {
         throw new Error("Assessment session was not found after saving the result.");
+      }
+
+      if (session.applicationId) {
+        await tx.application.update({
+          where: { id: session.applicationId },
+          data: {
+            status: "APPLIED",
+            events: {
+              create: {
+                type: "STATUS_CHANGE",
+                actorUserId: input.userId,
+                fromStatus: "DRAFT",
+                toStatus: "APPLIED",
+                notes: "Ứng viên đã hoàn thành bài kiểm tra. Đơn ứng tuyển chính thức được nộp.",
+              },
+            },
+          },
+        });
       }
 
       return session;
